@@ -32,6 +32,7 @@ glew/
 freeglut/
 
 #misc
+CG_skel.sdf
 CG_skel_w_MFC/Debug/
 Debug/
 ipch/
@@ -39,4 +40,6 @@ CG_skel.v12.suo
 *.log
 *.tlog
 CG_skel.opensdf
-CG_skel.sdf
+CG_skel_w_MFC/
+!CG_skel_w_MFC/*.cpp
+!CG_skel_w_MFC/*.h
