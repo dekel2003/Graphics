@@ -15,6 +15,8 @@ class Renderer
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
 
+	void DrawLine(vec3, vec3);
+
 	//////////////////////////////
 	// openGL stuff. Don't touch.
 

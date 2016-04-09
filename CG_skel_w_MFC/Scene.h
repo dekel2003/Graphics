@@ -48,6 +48,7 @@ public:
 	void loadOBJModel(string fileName);
 	void draw();
 	void drawDemo();
+	vector<vec3> translateOrigin(vector<vec3>);
 	
 	int activeModel;
 	int activeLight;

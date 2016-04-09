@@ -108,21 +108,31 @@ void MeshModel::loadFile(string fileName)
 	//Then vertex_positions should contain:
 	//vertex_positions={v1,v2,v3,v1,v3,v4}
 
-	vertex_positions = new vec3[3*faces.size()];
+	num_vertices = 3 * faces.size();
+	vertex_positions = new vec3[num_vertices];
 	// iterate through all stored faces and create triangles
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions[k++] = vec3(vertices[it->v[i]]);
+			vertex_positions[k++] =  vec3(vertices[it->v[i]-1]);
 		}
 	}
 }
 
 
 
+
 void MeshModel::draw()
 {
+	mat3 proj;
+	proj = proj * 1000;
+	proj[0][0] = 0;
+//	projected_vecs = new vec3[num_vertices];
+	for (int i = 0; i < num_vertices; i++){
+		projected_vecs.push_back(proj * vertex_positions[i]);
+	}
+
 	
 }

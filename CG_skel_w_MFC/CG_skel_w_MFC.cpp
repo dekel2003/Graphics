@@ -40,11 +40,14 @@ bool lb_down,rb_down,mb_down;
 void display( void )
 {
 //Call the scene and ask it to draw itself
+	scene->draw();
 }
 
 void reshape( int width, int height )
 {
 //update the renderer's buffers
+	renderer = new Renderer(width, height);
+	// TODO: update scene.
 }
 
 void keyboard( unsigned char key, int x, int y )

@@ -21,6 +21,10 @@ Renderer::~Renderer(void)
 {
 }
 
+void Renderer::Init(){
+
+}
+
 
 
 void Renderer::CreateBuffers(int width, int height)
@@ -57,7 +61,31 @@ void Renderer::SetDemoBuffer()
 
 }
 
+void Renderer::DrawLine(vec3 a, vec3 b){
+	for (int t = 0; t<m_width; t++)
+	{
+		vec3 i = (1 - (GLfloat)t / m_width) * a + ((GLfloat)t / m_width) * b;
+		int px = (int)i.y;
+		int py = (int)i.z;
+		m_outBuffer[INDEX(m_width, px, py, 0)] = 1;	m_outBuffer[INDEX(m_width, px, py, 1)] = 1;	m_outBuffer[INDEX(m_width, px, py, 2)] = 1;
 
+	}
+}
+
+void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals){
+	//vertical line
+
+	for (vector<vec3>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
+		vec3 a, b, c;
+		a = *it++;
+		b = *it++;
+		c = *it;
+		DrawLine(a, b);
+		DrawLine(b, c);
+		DrawLine(c, a);
+	}
+
+}
 
 
 
