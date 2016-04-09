@@ -37,3 +37,6 @@ Debug/
 ipch/
 CG_skel.v12.suo
 *.log
+*.tlog
+CG_skel.opensdf
+CG_skel.sdf
