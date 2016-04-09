@@ -30,3 +30,9 @@
 #OpenGL
 glew/
 freeglut/
+
+#misc
+CG_skel_w_MFC/Debug/
+Debug/
+ipch/
+CG_skel.v12.suo
