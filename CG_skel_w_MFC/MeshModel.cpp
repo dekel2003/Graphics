@@ -74,6 +74,7 @@ void MeshModel::loadFile(string fileName)
 	ifstream ifile(fileName.c_str());
 	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
+	
 	// while not end of file
 	while (!ifile.eof())
 	{
@@ -92,6 +93,8 @@ void MeshModel::loadFile(string fileName)
 			vertices.push_back(vec3fFromStream(issLine));
 		else if (lineType == "f")
 			faces.push_back(issLine);
+		else if (lineType == "vn")
+			normals2vertices.push_back(vec3fFromStream(issLine));
 		else if (lineType == "#" || lineType == "")
 		{
 			// comment / empty line
@@ -109,30 +112,34 @@ void MeshModel::loadFile(string fileName)
 	//vertex_positions={v1,v2,v3,v1,v3,v4}
 
 	num_vertices = 3 * faces.size();
-	vertex_positions = new vec3[num_vertices];
+	// vertex_positions = new vec3[num_vertices];
 	// iterate through all stored faces and create triangles
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions[k++] =  vec3(vertices[it->v[i]-1]);
+			vertex_positions.push_back(vec3(vertices[it->v[i]-1]));
 		}
 	}
 }
 
 
-
-
-void MeshModel::draw()
+void MeshModel::draw(Renderer* renderer)
 {
-	mat3 proj;
-	proj = proj * 1000;
-	proj[0][0] = 0;
+//	vector<vec3> vecs;
+//		for (int i = 0; i < num_vertices; i++){
+//			vecs.push_back(proj * vertex_positions[i]);
+//		}
+	renderer->DrawTriangles(&vertex_positions);
+
+//	mat4 proj = _world_transform;
+//	proj = proj * 1000;
+//	proj[0][0] = 0;
 //	projected_vecs = new vec3[num_vertices];
-	for (int i = 0; i < num_vertices; i++){
-		projected_vecs.push_back(proj * vertex_positions[i]);
-	}
+//	for (int i = 0; i < num_vertices; i++){
+//		projected_vecs.push_back(proj * vertex_positions[i]);
+//	}
 
 	
 }

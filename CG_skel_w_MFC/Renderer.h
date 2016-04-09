@@ -15,7 +15,7 @@ class Renderer
 	void CreateBuffers(int width, int height);
 	void CreateLocalBuffer();
 
-	void DrawLine(vec3, vec3);
+	void DrawLine(vec4, vec4);
 
 	//////////////////////////////
 	// openGL stuff. Don't touch.
@@ -24,6 +24,8 @@ class Renderer
 	GLuint gScreenVtc;
 	void CreateOpenGLBuffer();
 	void InitOpenGLRendering();
+
+	mat4 projectionMatrix;
 	//////////////////////////////
 public:
 	Renderer();
@@ -38,4 +40,6 @@ public:
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
+	vec4 changeVec3toVec4(const vec3 v);
+	
 };

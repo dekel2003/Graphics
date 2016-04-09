@@ -10,20 +10,22 @@ class MeshModel : public Model
 {
 protected :
 	MeshModel() {}
-	vec3 *vertex_positions;
+	vector<vec3> vertex_positions;
+	vector<vec3> normals2vertices;
 	int num_vertices;
 	//add more attributes
 	mat4 _world_transform;
 	mat3 _normal_transform;
-	
+	vector<vec4> projected_vecs;
 
 public:
 
 	MeshModel(string fileName);
 	~MeshModel(void);
 	void loadFile(string fileName);
-	void draw();
+	void draw(Renderer* renderer);
 
-	vector<vec3> projected_vecs;
+	vector<vec4> GetModel();
+	
 	
 };
