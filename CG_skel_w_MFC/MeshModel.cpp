@@ -115,7 +115,7 @@ void MeshModel::loadFile(string fileName)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions[k++] = vec3(vertices[it->v[i]]); /*BUG*/
+			vertex_positions[k++] = vec3(vertices[it->v[i]]);
 		}
 	}
 }
