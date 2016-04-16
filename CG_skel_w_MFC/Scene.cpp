@@ -44,6 +44,23 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 	return translatedVertices;
 }
 
+void Scene::zoomIn(){
+	cameras[activeCamera]->zoomIn();
+}
+void Scene::zoomOut(){
+	cameras[activeCamera]->zoomOut();
+}
+
+
+void Camera::zoomIn(){
+	//
+
+
+}
+
+void Camera::zoomOut(){
+	//
+}
 
 //void Frustum(T left, T right, T bottom, T top, T zNear, T zFar)
 //{

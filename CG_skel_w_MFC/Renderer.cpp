@@ -146,8 +146,8 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 
 	//Now resizing according to screen
 	for(int i = 0; i < count; i++){
-		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 2;
-		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 2;
+		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 4;
+		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 4;
 	}
 
 	//Now Drawing

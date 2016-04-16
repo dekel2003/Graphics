@@ -75,6 +75,12 @@ void mouse(int button, int state, int x, int y)
 		case GLUT_MIDDLE_BUTTON:
 			mb_down = (state==GLUT_UP)?0:1;	
 			break;
+		case 3: // roll in
+			scene->zoomIn();
+			break;
+		case 4: // roll out
+			scene->zoomOut();
+			break;
 	}
 
 	// add your code
@@ -130,7 +136,6 @@ void initMenu()
 	glutSetMenu(MAIN_MENU);
 }
 //----------------------------------------------------------------------------
-
 
 int my_main( int argc, char **argv )
 {
