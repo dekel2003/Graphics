@@ -559,7 +559,7 @@ mat4 Translate( const GLfloat x, const GLfloat y, const GLfloat z )
 {
     mat4 c;
     c[0][3] = x;
-    c[1][3] = y;  /*BUG*/
+    c[1][3] = y; 
     c[2][3] = z;
     return c;
 }

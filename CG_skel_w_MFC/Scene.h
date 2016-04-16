@@ -20,7 +20,7 @@ class Light {
 };
 
 class Camera {
-	mat4 world_to_camera;
+	
 	mat4 projection; // camera to screen
 
 	float left, right, bottom, top, zNear, zFar;
@@ -28,6 +28,7 @@ class Camera {
 
 public:
 	Camera();
+	mat4 world_to_camera;
 	mat4& normalizedProjection();
 
 	void setTransformation(const mat4& transform);
@@ -42,6 +43,7 @@ public:
 		const float zNear, const float zFar);
 	void zoomIn();
 	void zoomOut();
+	void move(GLfloat dx, GLfloat dy);
 };
 
 class Scene {
@@ -63,6 +65,8 @@ public:
 	void  addCamera(Camera* camera); //CG_skel will create and add the camera
 	void zoomIn();
 	void zoomOut();
+	void move(GLfloat dx, GLfloat dy);
+
 	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);
 	int activeModel;

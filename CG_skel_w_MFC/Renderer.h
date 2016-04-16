@@ -28,13 +28,18 @@ class Renderer
 	//Our private Funcs
 	void DrawLine(vec2, vec2);
 	vec2 vec4toVec2(const vec4 v);
-	void CreateBuffers(int width, int height);
+	
 	void CreateLocalBuffer();
 
 
 
 
 public:
+	void CreateBuffers(int width, int height); // initially private
+
+
+
+
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);

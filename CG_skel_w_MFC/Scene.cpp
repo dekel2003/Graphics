@@ -18,8 +18,10 @@ void Scene::draw()
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	int stupiDtMP = 0;
-	if (m_renderer && cameras[activeCamera])
+	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
+		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
+	}
 	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		(*it)->draw(m_renderer);
 
@@ -49,7 +51,7 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 
 
 Camera::Camera(){
-	int k = 0.5;
+	float k = 1;
 	left = bottom = zNear = -k;
 	right = top = zFar = k;
 }
@@ -75,15 +77,30 @@ void Scene::zoomOut(){
 	cameras[activeCamera]->zoomOut();
 }
 
+void Scene::move(GLfloat dx, GLfloat dy){
+	cameras[activeCamera]->move(dx/512.0, dy/512.0);
+}
 
 void Camera::zoomIn(){
 	//
-
-
+	//left = bottom = bottom - 0.1;
+	//right = top = top - 0.1;
+	// zNear -= 0.1;
+	// zFar -= 0.1;
+	projection = Scale(1.1, 1.1, 1.1) * projection;
 }
 
 void Camera::zoomOut(){
-	//
+	//left = bottom = bottom + 0.1;
+	//right = top = top + 0.1;
+	//zNear += 0.1;
+	//zFar += 0.1;
+	projection = Scale(0.9, 0.9, 0.9) * projection;
+}
+
+void Camera::move(GLfloat dx, GLfloat dy){
+	world_to_camera = Translate(dx, dy, 0) * world_to_camera;
+
 }
 
 

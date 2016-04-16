@@ -46,7 +46,7 @@ void display( void )
 void reshape( int width, int height )
 {
 //update the renderer's buffers
-	renderer = new Renderer(width, height);
+	renderer->CreateBuffers(width, height);
 	// TODO: update scene.
 }
 
@@ -77,9 +77,11 @@ void mouse(int button, int state, int x, int y)
 			break;
 		case 3: // roll in
 			scene->zoomIn();
+			display();
 			break;
 		case 4: // roll out
 			scene->zoomOut();
+			display();
 			break;
 	}
 
@@ -94,6 +96,8 @@ void motion(int x, int y)
 	// update last x,y
 	last_x=x;
 	last_y=y;
+
+	scene->move(dx, dy);
 }
 
 void fileMenu(int id)

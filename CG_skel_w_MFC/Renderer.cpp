@@ -134,8 +134,8 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 }
 
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
-	mat4 objectToClip = projectionMatrix*transpose(world_to_camera)*object_to_world;
-
+	mat4 objectToClip = projectionMatrix*world_to_camera*object_to_world;
+	CreateBuffers(m_width, m_height);
 	vector<vec4> clipVertices;
 	int count = 0;
 	for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
@@ -146,8 +146,8 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 
 	//Now resizing according to screen
 	for(int i = 0; i < count; i++){
-		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 4;
-		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 4;
+		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 2;
+		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 2;
 	}
 
 	//Now Drawing
@@ -156,6 +156,10 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		a = vec4toVec2(clipVertices[i++]);
 		b = vec4toVec2(clipVertices[i++]);
 		c = vec4toVec2(clipVertices[i]);
+		if (a.x < 0 || b.x < 0 || c.x < 0 || a.y < 0 || b.y < 0 || c.y < 0 ||
+			a.x > m_width || b.x >= m_width || c.x >= m_width || a.y >= m_height || b.y >= m_height || c.y >= m_height){
+			continue;
+		}
 		DrawLine(a, b);
 		DrawLine(b, c);
 		DrawLine(c, a);
