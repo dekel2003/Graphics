@@ -119,26 +119,12 @@ void MeshModel::loadFile(string fileName)
 	{
 		for (int i = 0; i < 3; i++)
 		{
-			vertex_positions.push_back(vec3(vertices[it->v[i]-1]));
+			vertex_positions.push_back(vec4(vertices[it->v[i] - 1].x, vertices[it->v[i] - 1].y, vertices[it->v[i] - 1].z, 1));
 		}
 	}
 }
 
 void MeshModel::draw(Renderer* renderer)
 {
-//	vector<vec3> vecs;
-//		for (int i = 0; i < num_vertices; i++){
-//			vecs.push_back(proj * vertex_positions[i]);
-//		}
 	renderer->DrawTriangles(&vertex_positions);
-
-//	mat4 proj = _world_transform;
-//	proj = proj * 1000;
-//	proj[0][0] = 0;
-//	projected_vecs = new vec3[num_vertices];
-//	for (int i = 0; i < num_vertices; i++){
-//		projected_vecs.push_back(proj * vertex_positions[i]);
-//	}
-
-	
 }

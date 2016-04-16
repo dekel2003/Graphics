@@ -25,12 +25,7 @@ Renderer::~Renderer(void)
 }
 
 void Renderer::Init(){
-	projectionMatrix[0][0] = 0;
-	projectionMatrix *= 1000; //scaling
-	projectionMatrix[0][3] = m_width/2; //translations
-	projectionMatrix[1][3] = m_width/2;
-	projectionMatrix[2][3] = m_width/2;
-	projectionMatrix[3][3] = 1;
+	projectionMatrix[2][2] = 0;
 }
 
 
@@ -60,12 +55,6 @@ void Renderer::SetDemoBuffer()
 	DrawLine(a, c2);
 	DrawLine(a, d2);
 
-
-
-
-
-
-
 	//vertical line
 	//for(int i=0; i<m_width; i++)
 	//{
@@ -91,16 +80,16 @@ void Renderer::SetDemoBuffer()
 }
 
 void Renderer::SetProjection(const mat4& projection){
-	projectionMatrix = projection;
+	this->projectionMatrix = projection;
 }
 
+void Renderer::SetCameraTransform(const mat4& world_to_camera){
+	this->world_to_camera = world_to_camera;
+}
 
-
-
-
-
-
-
+void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform){
+	this->object_to_world = oTransform;
+}
 
 
 void Renderer::DrawLine(vec2 a, vec2 b){
@@ -144,29 +133,41 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 	}
 }
 
+void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
+	mat4 objectToClip = projectionMatrix*transpose(world_to_camera)*object_to_world;
 
+	vector<vec4> clipVertices;
+	int count = 0;
+	for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
+		vec4 tmp = objectToClip*(*it);
+		clipVertices.push_back(tmp);
+		count++;
+	}
 
+	//Now resizing according to screen
+	for(int i = 0; i < count; i++){
+		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 2;
+		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 2;
+	}
 
-void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals){
-	/*for (vector<vec3>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
-		vec4 a, b, c;
-		a = projectionMatrix * vec3toVec4(*it++);
-		b = projectionMatrix * vec3toVec4(*it++);
-		c = projectionMatrix * vec3toVec4(*it);
+	//Now Drawing
+	for (int i = 0; i < count; i++){
+		vec2 a, b, c;
+		a = vec4toVec2(clipVertices[i++]);
+		b = vec4toVec2(clipVertices[i++]);
+		c = vec4toVec2(clipVertices[i]);
 		DrawLine(a, b);
 		DrawLine(b, c);
 		DrawLine(c, a);
-	}*/
+	}
+
+
+
 }
 
-vec4 Renderer::vec3toVec4(const vec3 v){
-	return vec4(v.x, v.y, v.z, 1);
+vec2 Renderer::vec4toVec2(const vec4 v){
+	return vec2(v.x, v.y);
 }
-
-
-
-
-
 
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.

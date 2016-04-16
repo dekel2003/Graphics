@@ -10,7 +10,7 @@ class MeshModel : public Model
 {
 protected :
 	MeshModel() {}
-	vector<vec3> vertex_positions;
+	vector<vec4> vertex_positions;
 	vector<vec3> normals2vertices;
 	int num_vertices;
 	//add more attributes
