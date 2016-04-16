@@ -23,8 +23,13 @@ class Camera {
 	mat4 world_to_camera;
 	mat4 projection; // camera to screen
 
+	float left, right, bottom, top, zNear, zFar;
+
 
 public:
+	Camera();
+	mat4& normalizedProjection();
+
 	void setTransformation(const mat4& transform);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up );
 	void Ortho( const float left, const float right,
@@ -46,7 +51,11 @@ class Scene {
 
 public:
 	Scene() {};
-	Scene(Renderer *renderer) : m_renderer(renderer) {};
+	Scene(Renderer *renderer) : m_renderer(renderer) {
+		Camera * camera = new Camera;
+		cameras.push_back(camera);
+		int activeCamera = 0;
+	};
 	void loadOBJModel(string fileName);
 	void draw();
 	void drawDemo();
@@ -56,5 +65,5 @@ public:
 	
 	int activeModel;
 	int activeLight;
-	int activeCamera;
+	int activeCamera = 0;
 };

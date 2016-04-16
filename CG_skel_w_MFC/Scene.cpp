@@ -12,11 +12,14 @@ void Scene::loadOBJModel(string fileName)
 	models.push_back(model);
 }
 
+
 void Scene::draw()
 {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	int stupiDtMP = 0;
+	if (m_renderer && cameras[activeCamera])
+		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		(*it)->draw(m_renderer);
 
@@ -43,6 +46,26 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 	}
 	return translatedVertices;
 }
+
+Camera::Camera(){
+	int k = 0.5;
+	left = bottom = zNear = -k;
+	right = top = zFar = k;
+}
+
+mat4& Camera::normalizedProjection(){
+	
+	mat4 normalizationMatrix;
+	normalizationMatrix[0][0] = 2.0 / (right - left);
+	normalizationMatrix[1][1] = 2.0 / (top - bottom);
+	normalizationMatrix[2][2] = -2.0 / (zNear - zFar);
+	normalizationMatrix[0][1] = -(right + left) / (right - left);
+	normalizationMatrix[0][2] = -(top + bottom) / (top - bottom);
+	normalizationMatrix[0][3] = -(zNear + zFar) / (zFar - zNear);
+
+	return normalizationMatrix * projection;
+}
+
 
 
 //void Frustum(T left, T right, T bottom, T top, T zNear, T zFar)
