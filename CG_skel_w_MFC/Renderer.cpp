@@ -12,6 +12,7 @@ Renderer::Renderer() :m_width(512), m_height(512)
 	CreateBuffers(512,512);
 	Init();
 }
+
 Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
 {
 	InitOpenGLRendering();
@@ -33,7 +34,6 @@ void Renderer::Init(){
 }
 
 
-
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width=width;
@@ -44,60 +44,127 @@ void Renderer::CreateBuffers(int width, int height)
 
 void Renderer::SetDemoBuffer()
 {
+	vec2 a(m_width / 2, m_height / 2);
+	vec2 b(0, 0);
+	vec2 c(m_width/2, 0);
+	vec2 d(m_width-1, 0);
+	vec2 b2(0, m_height-1);
+	vec2 c2(m_width / 2, m_height-1);
+	vec2 d2(m_width-1, m_height-1);
+
+
+	DrawLine(a, b);
+	DrawLine(a, c);
+	DrawLine(a, d);
+	DrawLine(a, b2);
+	DrawLine(a, c2);
+	DrawLine(a, d2);
+
+
+
+
+
+
+
 	//vertical line
-	for(int i=0; i<m_width; i++)
-	{
-		m_outBuffer[INDEX(m_width,256,i,0)]=1;	m_outBuffer[INDEX(m_width,256,i,1)]=0;	m_outBuffer[INDEX(m_width,256,i,2)]=0;
+	//for(int i=0; i<m_width; i++)
+	//{
+	//	m_outBuffer[INDEX(m_width,256,i,0)]=1;	m_outBuffer[INDEX(m_width,256,i,1)]=0;	m_outBuffer[INDEX(m_width,256,i,2)]=0;
 
-	}
+	//}
 
 
-	//horizontal line
-	for(int i=0; i<m_width; i++)
-	{
-		m_outBuffer[INDEX(m_width,i,256,0)]=1;	m_outBuffer[INDEX(m_width,i,256,1)]=0;	m_outBuffer[INDEX(m_width,i,256,2)]=1;
+	////horizontal line
+	//for(int i=0; i<m_width; i++)
+	//{
+	//	m_outBuffer[INDEX(m_width,i,256,0)]=1;	m_outBuffer[INDEX(m_width,i,256,1)]=0;	m_outBuffer[INDEX(m_width,i,256,2)]=1;
 
-	}
+	//}
 
-	//diagonal line
-	for (int i = 0; i<m_width; i++)
-	{
-		m_outBuffer[INDEX(m_width, i, i, 0)] = 0.5;	m_outBuffer[INDEX(m_width, i, i, 1)] = 1;	m_outBuffer[INDEX(m_width, i, i, 2)] = 0.5;
+	////diagonal line
+	//for (int i = 0; i<m_width; i++)
+	//{
+	//	m_outBuffer[INDEX(m_width, i, i, 0)] = 0.5;	m_outBuffer[INDEX(m_width, i, i, 1)] = 1;	m_outBuffer[INDEX(m_width, i, i, 2)] = 0.5;
 
-	}
+	//}
 
 }
 
-void Renderer::DrawLine(vec4 a, vec4 b){
-	//TODO: Takes to 2d vectors and draws line betwen them
-	for (int t = 0; t<m_width; t++)
-	{
-		vec4 tmpVec = (1 - (GLfloat)t / m_width) * a + ((GLfloat)t / m_width) * b;
-		int px = (int)tmpVec.y;
-		int py = (int)tmpVec.z;
-		m_outBuffer[INDEX(m_width, px, py, 0)] = 1;	m_outBuffer[INDEX(m_width, px, py, 1)] = 1;	m_outBuffer[INDEX(m_width, px, py, 2)] = 1;
+void Renderer::SetProjection(const mat4& projection){
+	projectionMatrix = projection;
+}
 
+
+
+
+
+
+
+
+
+
+void Renderer::DrawLine(vec2 a, vec2 b){
+	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
+	int xCounter = a.x < b.x ? 1 : -1;
+	int yCounter = a.y < b.y ? 1 : -1;
+	int deltaY = abs((int)a.y - (int)b.y) << 1;
+	int deltaX = abs((int)a.x - (int)b.x) << 1;
+
+	if (deltaX >= deltaY){	//slope<1
+		int errorInteger = deltaY - deltaX >> 1;
+		int deltaError = deltaY;
+		int deltaErrorNegation = deltaY - deltaX;
+		int y = a.y;
+		for (int x = a.x; xCounter*x <= xCounter*b.x; x = x + xCounter){
+			if (errorInteger > 0 && (errorInteger || (xCounter > 0))){
+				errorInteger += deltaErrorNegation;
+				y += yCounter;
+			}
+			else{
+				errorInteger += deltaError;
+			}
+			m_outBuffer[INDEX(m_width, x, y, 0)] = 1;	m_outBuffer[INDEX(m_width, x, y, 1)] = 1;	m_outBuffer[INDEX(m_width, x, y, 2)] = 1;
+		}
+	}
+	else{
+		int errorInteger = deltaX - deltaY>>1;
+		int deltaError = deltaX;
+		int deltaErrorNegation = deltaX - deltaY;
+		int x = a.x;
+		for (int y = a.y; yCounter*y <= yCounter*b.y; y = y + yCounter){
+			if (errorInteger > 0 && (errorInteger || (yCounter > 0))){
+				errorInteger += deltaErrorNegation;
+				x = x + xCounter;
+			}
+			else{
+				errorInteger += deltaError;
+			}
+			m_outBuffer[INDEX(m_width, x, y, 0)] = 1;	m_outBuffer[INDEX(m_width, x, y, 1)] = 1;	m_outBuffer[INDEX(m_width, x, y, 2)] = 1;
+		}
 	}
 }
+
+
+
 
 void Renderer::DrawTriangles(const vector<vec3>* vertices, const vector<vec3>* normals){
-	//vertical line
-
-	for (vector<vec3>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
+	/*for (vector<vec3>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
 		vec4 a, b, c;
-		a = projectionMatrix * changeVec3toVec4(*it++);
-		b = projectionMatrix * changeVec3toVec4(*it++);
-		c = projectionMatrix * changeVec3toVec4(*it);
+		a = projectionMatrix * vec3toVec4(*it++);
+		b = projectionMatrix * vec3toVec4(*it++);
+		c = projectionMatrix * vec3toVec4(*it);
 		DrawLine(a, b);
 		DrawLine(b, c);
 		DrawLine(c, a);
-	}
-
+	}*/
 }
 
-vec4 Renderer::changeVec3toVec4(const vec3 v){
+vec4 Renderer::vec3toVec4(const vec3 v){
 	return vec4(v.x, v.y, v.z, 1);
 }
+
+
+
 
 
 

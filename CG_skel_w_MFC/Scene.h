@@ -20,21 +20,21 @@ class Light {
 };
 
 class Camera {
-	mat4 cTransform;
-	mat4 projection;
+	mat4 world_to_camera;
+	mat4 projection; // camera to screen
+
 
 public:
 	void setTransformation(const mat4& transform);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up );
 	void Ortho( const float left, const float right,
 		const float bottom, const float top,
-		const float zNear, const float zFar );
+		const float zNear, const float zFar ); //M*(ST) - see tutorial 4 - 13
 	void Frustum( const float left, const float right,
 		const float bottom, const float top,
-		const float zNear, const float zFar );
+		const float zNear, const float zFar ); //See reference in Cpp
 	mat4 Perspective( const float fovy, const float aspect,
 		const float zNear, const float zFar);
-
 };
 
 class Scene {
@@ -50,6 +50,8 @@ public:
 	void loadOBJModel(string fileName);
 	void draw();
 	void drawDemo();
+	void  addCamera(Camera* camera); //CG_skel will create and add the camera
+	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);
 	
 	int activeModel;

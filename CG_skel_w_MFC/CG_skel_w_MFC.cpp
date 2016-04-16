@@ -120,7 +120,6 @@ void mainMenu(int id)
 
 void initMenu()
 {
-
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
 	glutCreateMenu(mainMenu);
@@ -128,9 +127,9 @@ void initMenu()
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
+	glutSetMenu(MAIN_MENU);
 }
 //----------------------------------------------------------------------------
-
 
 
 int my_main( int argc, char **argv )
@@ -162,10 +161,12 @@ int my_main( int argc, char **argv )
 	// Initialize Callbacks
 
 	glutDisplayFunc( display );
+
 	glutKeyboardFunc( keyboard );
 	glutMouseFunc( mouse );
 	glutMotionFunc ( motion );
 	glutReshapeFunc( reshape );
+	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 	initMenu();
 	
 

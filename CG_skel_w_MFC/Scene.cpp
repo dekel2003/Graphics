@@ -33,7 +33,6 @@ void Scene::drawDemo()
 	m_renderer->SwapBuffers();
 }
 
-
 vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 	vector<vec3> translatedVertices;
 	for (vector<vec3>::iterator it = vertices.begin(); it != vertices.end(); ++it)
@@ -44,3 +43,39 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 	}
 	return translatedVertices;
 }
+
+
+//void Frustum(T left, T right, T bottom, T top, T zNear, T zFar)
+//{
+//	T zDelta = (zFar - zNear);
+//	T dir = (right - left);
+//	T height = (top - bottom);
+//	T zNear2 = 2 * zNear;
+//
+//	m[0][0] = 2.0f*zNear / dir;
+//	m[0][1] = 0.0f;
+//	m[0][2] = (right + left) / dir;
+//	m[0][3] = 0.0f;
+//	m[1][0] = 0.0f;
+//	m[1][1] = zNear2 / height;
+//	m[1][2] = (top + bottom) / height;
+//	m[1][3] = 0.0f;
+//	m[2][0] = 0.0f;
+//	m[2][1] = 0.0f;
+//	m[2][2] = -(zFar + zNear) / zDelta;
+//	m[2][3] = -zNear2*zFar / zDelta;
+//	m[3][0] = 0.0f;
+//	m[3][1] = 0.0f;
+//	m[3][2] = -1.0f;
+//	m[3][3] = 0.0f;
+//}
+//
+//void perspective(t fovy, t aspectratio, t znear, t zfar)
+//{
+//	t xmin, xmax, ymin, ymax;
+//	ymax = znear* tan(fovy*math<t>::pi / 360.0);
+//	ymin = -ymax;
+//	xmin = ymin*aspectratio;
+//	xmax = ymax*aspectratio;
+//	frustum(xmin, xmax, ymin, ymax, znear, zfar);
+//}

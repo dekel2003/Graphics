@@ -124,7 +124,6 @@ void MeshModel::loadFile(string fileName)
 	}
 }
 
-
 void MeshModel::draw(Renderer* renderer)
 {
 //	vector<vec3> vecs;
