@@ -40,10 +40,11 @@ public:
 		const float zNear, const float zFar ); //See reference in Cpp
 	mat4 Perspective( const float fovy, const float aspect,
 		const float zNear, const float zFar);
+	void zoomIn();
+	void zoomOut();
 };
 
 class Scene {
-
 	vector<Model*> models;
 	vector<Light*> lights;
 	vector<Camera*> cameras;
@@ -60,9 +61,10 @@ public:
 	void draw();
 	void drawDemo();
 	void  addCamera(Camera* camera); //CG_skel will create and add the camera
+	void zoomIn();
+	void zoomOut();
 	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);
-	
 	int activeModel;
 	int activeLight;
 	int activeCamera = 0;

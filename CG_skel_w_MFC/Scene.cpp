@@ -47,6 +47,7 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
 	return translatedVertices;
 }
 
+
 Camera::Camera(){
 	int k = 0.5;
 	left = bottom = zNear = -k;
@@ -66,6 +67,24 @@ mat4& Camera::normalizedProjection(){
 	return normalizationMatrix * projection;
 }
 
+
+void Scene::zoomIn(){
+	cameras[activeCamera]->zoomIn();
+}
+void Scene::zoomOut(){
+	cameras[activeCamera]->zoomOut();
+}
+
+
+void Camera::zoomIn(){
+	//
+
+
+}
+
+void Camera::zoomOut(){
+	//
+}
 
 
 //void Frustum(T left, T right, T bottom, T top, T zNear, T zFar)
