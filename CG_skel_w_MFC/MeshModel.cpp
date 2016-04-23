@@ -126,5 +126,14 @@ void MeshModel::loadFile(string fileName)
 
 void MeshModel::draw(Renderer* renderer)
 {
+	renderer->SetObjectMatrices(model_to_world_transform * _world_transform, _normal_transform);
 	renderer->DrawTriangles(&vertex_positions);
+}
+
+void MeshModel::setModelTransformation(const mat4& T){
+	model_to_world_transform = T * model_to_world_transform;
+}
+
+void MeshModel::setWorldTransformation(const mat4& T){
+	_world_transform = T * _world_transform;
 }

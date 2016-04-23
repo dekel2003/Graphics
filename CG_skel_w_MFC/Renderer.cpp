@@ -133,21 +133,24 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 	}
 }
 
-void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
-	mat4 objectToClip = projectionMatrix*world_to_camera*object_to_world;
-	CreateBuffers(m_width, m_height);
+void Renderer::DrawTriangles(vector<vec4>* vertices, const vector<vec3>* normals){
+	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
+	objectToClip /= objectToClip[3][3]; // normalizing in accordance to it's weight.
+	// CreateBuffers(m_width, m_height);
 	vector<vec4> clipVertices;
 	int count = 0;
-	for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
-		vec4 tmp = objectToClip*(*it);
-		clipVertices.push_back(tmp);
-		count++;
+	for(vector<vec4>::iterator it = vertices->begin(); it != vertices->end(); ++it){
+		vec4 v = objectToClip*(*it);
+		// v /= v.w; // normalizing in accordance to it's weight.
+		clipVertices.push_back(v);
 	}
+
+	count = clipVertices.size();
 
 	//Now resizing according to screen
 	for(int i = 0; i < count; i++){
 		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 2;
-		clipVertices[i].y = m_width*(clipVertices[i].y + 1) / 2;
+		clipVertices[i].y = m_height*(clipVertices[i].y + 1) / 2;
 	}
 
 	//Now Drawing
@@ -164,9 +167,6 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		DrawLine(b, c);
 		DrawLine(c, a);
 	}
-
-
-
 }
 
 vec2 Renderer::vec4toVec2(const vec4 v){

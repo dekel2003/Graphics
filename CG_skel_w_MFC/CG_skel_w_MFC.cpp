@@ -47,7 +47,6 @@ void reshape( int width, int height )
 {
 //update the renderer's buffers
 	renderer->CreateBuffers(width, height);
-	// TODO: update scene.
 }
 
 void keyboard( unsigned char key, int x, int y )
@@ -59,11 +58,32 @@ void keyboard( unsigned char key, int x, int y )
 	}
 }
 
+void motion(int x, int y)
+{
+	// calc difference in mouse movement
+	int dx = x - last_x;
+	int dy = y - last_y;
+	// update last x,y
+	last_x = x;
+	last_y = y;
+
+	cout << '(' << dx << ',' << dy << ')' << endl;
+
+	static int updateCounter = 0;
+	if (lb_down){
+		updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
+		scene->moveCurrentModel(dx, -dy);
+		if (!updateCounter)
+			display();
+	}
+}
+
 void mouse(int button, int state, int x, int y)
 {
 	//button = {GLUT_LEFT_BUTTON, GLUT_MIDDLE_BUTTON, GLUT_RIGHT_BUTTON}
 	//state = {GLUT_DOWN,GLUT_UP}
 	
+	motion(x, y);
 	//set down flags
 	switch(button) {
 		case GLUT_LEFT_BUTTON:
@@ -75,6 +95,7 @@ void mouse(int button, int state, int x, int y)
 		case GLUT_MIDDLE_BUTTON:
 			mb_down = (state==GLUT_UP)?0:1;	
 			break;
+			
 		case 3: // roll in
 			scene->zoomIn();
 			display();
@@ -88,17 +109,6 @@ void mouse(int button, int state, int x, int y)
 	// add your code
 }
 
-void motion(int x, int y)
-{
-	// calc difference in mouse movement
-	int dx=x-last_x;
-	int dy=y-last_y;
-	// update last x,y
-	last_x=x;
-	last_y=y;
-
-	scene->move(dx, dy);
-}
 
 void fileMenu(int id)
 {
@@ -128,14 +138,35 @@ void mainMenu(int id)
 	}
 }
 
+void menuMesh(int id)
+{
+	switch (id)
+	{
+	case MAIN_DEMO:
+		scene->drawDemo();
+		break;
+	case MAIN_ABOUT:
+		AfxMessageBox(_T("Computer Graphics"));
+		break;
+	}
+}
+
 void initMenu()
 {
+
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
+
+	int 
+
+
 	glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
+
+
+
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 	glutSetMenu(MAIN_MENU);
 }
@@ -180,6 +211,7 @@ int my_main( int argc, char **argv )
 	
 
 	glutMainLoop();
+
 	delete scene;
 	delete renderer;
 	return 0;

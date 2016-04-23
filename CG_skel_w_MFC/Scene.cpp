@@ -10,6 +10,7 @@ void Scene::loadOBJModel(string fileName)
 {
 	MeshModel *model = new MeshModel(fileName);
 	models.push_back(model);
+	activeModel = models.size() - 1;
 }
 
 
@@ -18,16 +19,13 @@ void Scene::draw()
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	int stupiDtMP = 0;
+	m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
 	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
 	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		(*it)->draw(m_renderer);
-
-		// vector<vec3> translatedModelVertices = translateOrigin(((MeshModel*)models[stupiDtMP])->projected_vecs);
-		// m_renderer->DrawTriangles(&translatedModelVertices);
-		//TODO: make it less stupid
 	}
 	m_renderer->SwapBuffers();
 }
@@ -38,8 +36,9 @@ void Scene::drawDemo()
 	m_renderer->SwapBuffers();
 }
 
-vector<vec3> Scene::translateOrigin(vector<vec3> vertices){
+vector<vec3> Scene::translateOrigin(vector<vec3> vertices){ // currently not in use.
 	vector<vec3> translatedVertices;
+	
 	for (vector<vec3>::iterator it = vertices.begin(); it != vertices.end(); ++it)
 	{
 		//TODO: change 256  to center origin - based on the current camera position
@@ -71,14 +70,18 @@ mat4& Camera::normalizedProjection(){
 
 
 void Scene::zoomIn(){
-	cameras[activeCamera]->zoomIn();
+	// cameras[activeCamera]->zoomIn();
+	models[activeModel]->setModelTransformation(Scale(1.1, 1.1, 1.1));
 }
 void Scene::zoomOut(){
-	cameras[activeCamera]->zoomOut();
+	// cameras[activeCamera]->zoomOut();
+	models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
 }
 
-void Scene::move(GLfloat dx, GLfloat dy){
-	cameras[activeCamera]->move(dx/512.0, dy/512.0);
+void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
+	//cameras[activeCamera]->move(dx/512.0, dy/512.0);
+	models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
+
 }
 
 void Camera::zoomIn(){
@@ -87,7 +90,7 @@ void Camera::zoomIn(){
 	//right = top = top - 0.1;
 	// zNear -= 0.1;
 	// zFar -= 0.1;
-	projection = Scale(1.1, 1.1, 1.1) * projection;
+	//projection = Scale(1.1, 1.1, 1.1) * projection;
 }
 
 void Camera::zoomOut(){
@@ -95,7 +98,7 @@ void Camera::zoomOut(){
 	//right = top = top + 0.1;
 	//zNear += 0.1;
 	//zFar += 0.1;
-	projection = Scale(0.9, 0.9, 0.9) * projection;
+	//projection = Scale(0.9, 0.9, 0.9) * projection;
 }
 
 void Camera::move(GLfloat dx, GLfloat dy){
