@@ -61,13 +61,13 @@ public:
 		Camera * camera = new Camera;
 		cameras.push_back(camera);
 		activeCamera = 0;
-		activeModel = 0;
+		activeModel = -1;
 	};
 	Scene(Renderer *renderer) : m_renderer(renderer) {
 		Camera * camera = new Camera;
 		cameras.push_back(camera);
 		activeCamera = 0;
-		activeModel = 0;
+		activeModel = -1;
 	};
 	void loadOBJModel(string fileName);
 	void draw();

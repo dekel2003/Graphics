@@ -8,4 +8,7 @@ void keyboard( unsigned char key, int x, int y );
 void mouse(int button, int state, int x, int y);
 void fileMenu(int id);
 void mainMenu(int id);
+void meshMenu(int id);
+void addMeshToMenu();
 void initMenu();
+

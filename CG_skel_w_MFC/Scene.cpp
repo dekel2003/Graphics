@@ -11,6 +11,7 @@ void Scene::loadOBJModel(string fileName)
 	MeshModel *model = new MeshModel(fileName);
 	models.push_back(model);
 	activeModel = models.size() - 1;
+	addMeshToMenu();
 }
 
 
@@ -71,16 +72,19 @@ mat4& Camera::normalizedProjection(){
 
 void Scene::zoomIn(){
 	// cameras[activeCamera]->zoomIn();
-	models[activeModel]->setModelTransformation(Scale(1.1, 1.1, 1.1));
+	if (activeModel!=-1)
+		models[activeModel]->setModelTransformation(Scale(1.1, 1.1, 1.1));
 }
 void Scene::zoomOut(){
-	// cameras[activeCamera]->zoomOut();
-	models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
+	// cameras[activeCamera]->zoomOut();.
+	if (activeModel != -1)
+		models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
 }
 
 void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 	//cameras[activeCamera]->move(dx/512.0, dy/512.0);
-	models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
+	if (activeModel != -1)
+		models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
 
 }
 

@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -25,8 +24,9 @@
 #define BUFFER_OFFSET( offset )   ((GLvoid*) (offset))
 
 #define FILE_OPEN 1
-#define MAIN_DEMO 1
-#define MAIN_ABOUT 2
+#define SELECT_MESH 1
+#define MAIN_DEMO 3
+#define MAIN_ABOUT 4
 
 Scene *scene;
 Renderer *renderer;
@@ -138,17 +138,34 @@ void mainMenu(int id)
 	}
 }
 
-void menuMesh(int id)
+void meshMenu(int id)
 {
-	switch (id)
-	{
-	case MAIN_DEMO:
-		scene->drawDemo();
-		break;
-	case MAIN_ABOUT:
-		AfxMessageBox(_T("Computer Graphics"));
-		break;
+	scene->activeModel = id;
+}
+
+void cameraMenu(int id)
+{
+	if (id == 0){
+		//TODO: add new camera
 	}
+	else
+	{
+		scene->activeCamera = id - 1;
+	}
+}
+
+int menuMesh, mainMenuRef, menuCamera;
+char c[2];
+void addMeshToMenu(){
+	static int numMeshes = 0;
+	glutSetMenu(menuMesh);
+	sprintf(c, "%s", to_string(numMeshes).c_str());
+	cout << to_string(numMeshes) << endl << to_string(numMeshes).c_str() << endl;
+	glutAddMenuEntry(c, numMeshes);
+	glutSetMenu(mainMenuRef);
+	glutChangeToSubMenu(menuMesh, "Choose Model", menuMesh);
+	numMeshes++;
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
 void initMenu()
@@ -157,18 +174,26 @@ void initMenu()
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
 
-	int 
+	menuMesh = glutCreateMenu(meshMenu);
+	//glutAddMenuEntry("0", 0);
+	//glutAddMenuEntry("1", 1);
+	//glutAddMenuEntry("2", 2);
 
+	menuCamera = glutCreateMenu(cameraMenu);
+	glutAddMenuEntry("Add camera", 0);
+	glutAddMenuEntry("0", 1);
 
-	glutCreateMenu(mainMenu);
+	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
+	glutAddSubMenu("Choose Model", menuMesh);
+	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 
 
 
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
-	glutSetMenu(MAIN_MENU);
+
 }
 //----------------------------------------------------------------------------
 
