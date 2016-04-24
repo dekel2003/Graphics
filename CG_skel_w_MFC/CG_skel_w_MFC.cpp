@@ -25,17 +25,22 @@
 
 #define FILE_OPEN 1
 #define SELECT_MESH 1
+#define VIEW_ORTHOGONAL 1
+#define VIEW_PERSPECTIVE 2
 #define MAIN_DEMO 3
 #define MAIN_ABOUT 4
 
 Scene *scene;
 Renderer *renderer;
-
+int menuMesh, mainMenuRef, menuCamera, menuView;
+char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
 
 //----------------------------------------------------------------------------
 // Callbacks
+
+
 
 void display( void )
 {
@@ -110,6 +115,9 @@ void mouse(int button, int state, int x, int y)
 }
 
 
+//----------------------- Menus ------------------------------------
+
+
 void fileMenu(int id)
 {
 	switch (id)
@@ -154,8 +162,19 @@ void cameraMenu(int id)
 	}
 }
 
-int menuMesh, mainMenuRef, menuCamera;
-char c[2];
+void viewMenu(int id)
+{
+	switch (id)
+	{
+	case VIEW_ORTHOGONAL:
+		scene->setOrthogonalView();
+		break;
+	case VIEW_PERSPECTIVE:
+		scene->setPerspectiveView();
+		break;
+	}
+}
+
 void addMeshToMenu(){
 	static int numMeshes = 0;
 	glutSetMenu(menuMesh);
@@ -173,29 +192,30 @@ void initMenu()
 
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
-
 	menuMesh = glutCreateMenu(meshMenu);
-	//glutAddMenuEntry("0", 0);
-	//glutAddMenuEntry("1", 1);
-	//glutAddMenuEntry("2", 2);
-
+	menuView = glutCreateMenu(viewMenu);
+	glutAddMenuEntry("Orthogonal", 0);
+	glutAddMenuEntry("Perspective", 1);
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);
-
 	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddSubMenu("Choose Model", menuMesh);
 	glutAddSubMenu("Choose Camera", menuCamera);
+	glutAddSubMenu("Choose View", menuView);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
-
-
-
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 
+	//glutAddMenuEntry("0", 0);
+	//glutAddMenuEntry("1", 1);
+	//glutAddMenuEntry("2", 2);
 }
+
+
 //----------------------------------------------------------------------------
+
 
 int my_main( int argc, char **argv )
 {
@@ -219,11 +239,12 @@ int my_main( int argc, char **argv )
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
 	
-	
 	renderer = new Renderer(512,512);
 	scene = new Scene(renderer);
-	//----------------------------------------------------------------------------
-	// Initialize Callbacks
+	scene->setOrthogonalView();
+
+
+	//Initialize Callbacks
 
 	glutDisplayFunc( display );
 
@@ -233,16 +254,11 @@ int my_main( int argc, char **argv )
 	glutReshapeFunc( reshape );
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 	initMenu();
-	
-
 	glutMainLoop();
-
 	delete scene;
 	delete renderer;
 	return 0;
 }
-
-CWinApp theApp;
 
 using namespace std;
 

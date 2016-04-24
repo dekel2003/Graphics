@@ -36,12 +36,12 @@ public:
 
 	void setTransformation(const mat4& transform);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up );
-	void Ortho( const float left, const float right,
-		const float bottom, const float top,
-		const float zNear, const float zFar );//TODO: calculate ST, and put in ST //M*(ST) - see tutorial 4 - 13
-	void Frustum( const float left, const float right,
-		const float bottom, const float top,
-		const float zNear, const float zFar ); //See reference in Cpp
+	void Ortho(const float left = -1, const float right = 1,
+		const float bottom = -1, const float top=1,
+		const float zNear = -1, const float zFar = 1);
+	void Frustum(const float left = -1, const float right = 1,
+		const float bottom = -1, const float top = 1,
+		const float zNear = -1, const float zFar = 1); 
 	mat4 Perspective( const float fovy, const float aspect,
 		const float zNear, const float zFar);
 	void zoomIn();
@@ -54,7 +54,7 @@ class Scene {
 	vector<Light*> lights;
 	vector<Camera*> cameras;
 	Renderer *m_renderer;
-
+	bool orthogonalView = true;
 public:
 	mat4 model_to_world; // Tw
 	Scene() {
@@ -69,16 +69,18 @@ public:
 		activeCamera = 0;
 		activeModel = -1;
 	};
+
 	void loadOBJModel(string fileName);
 	void draw();
 	void drawDemo();
 	void addCamera(Camera* camera); //CG_skel will create and add the camera
 	void zoomIn();
 	void zoomOut();
+	void setOrthogonalView();
+	void setPerspectiveView();
 
 	void moveWorld(GLfloat dx, GLfloat dy); //TODO: implement
 	void moveCurrentModel(GLfloat dx, GLfloat dy); //TODO: implement Better - Make sure that It is called from a right place in CG
-
 	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);
 	int activeModel;

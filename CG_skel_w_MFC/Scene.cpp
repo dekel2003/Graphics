@@ -14,12 +14,10 @@ void Scene::loadOBJModel(string fileName)
 	addMeshToMenu();
 }
 
-
 void Scene::draw()
 {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
-	int stupiDtMP = 0;
 	m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
 	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
@@ -49,7 +47,6 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){ // currently not in 
 	return translatedVertices;
 }
 
-
 Camera::Camera(){
 	float k = 1;
 	left = bottom = zNear = -k;
@@ -57,16 +54,9 @@ Camera::Camera(){
 }
 
 mat4& Camera::normalizedProjection(){
-	
-	mat4 normalizationMatrix;
-	normalizationMatrix[0][0] = 2.0 / (right - left);
-	normalizationMatrix[1][1] = 2.0 / (top - bottom);
-	normalizationMatrix[2][2] = -2.0 / (zNear - zFar);
-	normalizationMatrix[0][1] = -(right + left) / (right - left);
-	normalizationMatrix[0][2] = -(top + bottom) / (top - bottom);
-	normalizationMatrix[0][3] = -(zNear + zFar) / (zFar - zNear);
-
-	return normalizationMatrix * projection;
+	mat4* tmp = new mat4();
+	tmp=&( ST * projection);
+	return *tmp;
 }
 
 
@@ -75,10 +65,21 @@ void Scene::zoomIn(){
 	if (activeModel!=-1)
 		models[activeModel]->setModelTransformation(Scale(1.1, 1.1, 1.1));
 }
+
 void Scene::zoomOut(){
 	// cameras[activeCamera]->zoomOut();.
 	if (activeModel != -1)
 		models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
+}
+
+void Scene::setOrthogonalView(){
+	this->cameras[activeCamera]->Ortho();
+	this->orthogonalView = true;
+}
+
+void Scene::setPerspectiveView(){
+	this->cameras[activeCamera]->Frustum();
+	this->orthogonalView = false;
 }
 
 void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
@@ -110,31 +111,57 @@ void Camera::move(GLfloat dx, GLfloat dy){
 
 }
 
+void Camera::Ortho(const float left, const float right,const float bottom , 
+	const float top, const float zNear , const float zFar){
+	mat4 normalized;
+	normalized[0][0] = 2.0 / (right - left);
+	normalized[1][1] = 2.0 / (top - bottom);
+	normalized[2][2] = -2.0 / (zNear - zFar);
+	normalized[0][3] = -(right + left) / (right - left);
+	normalized[1][3] = -(top + bottom) / (top - bottom);
+	normalized[2][3] = -(zNear + zFar) / (zFar - zNear);
+	//Because it makes something bad with floats
+	if (left == -right){
+		normalized[0][3] = 0;
+	}
+	if (top == -bottom){
+		normalized[1][3] = 0;
+	}
+	if (zNear == -zFar){
+		normalized[2][3] = 0;
+	}
+	ST = normalized;
+}
 
-//void Frustum(T left, T right, T bottom, T top, T zNear, T zFar)
-//{
-//	T zDelta = (zFar - zNear);
-//	T dir = (right - left);
-//	T height = (top - bottom);
-//	T zNear2 = 2 * zNear;
-//
-//	m[0][0] = 2.0f*zNear / dir;
-//	m[0][1] = 0.0f;
-//	m[0][2] = (right + left) / dir;
-//	m[0][3] = 0.0f;
-//	m[1][0] = 0.0f;
-//	m[1][1] = zNear2 / height;
-//	m[1][2] = (top + bottom) / height;
-//	m[1][3] = 0.0f;
-//	m[2][0] = 0.0f;
-//	m[2][1] = 0.0f;
-//	m[2][2] = -(zFar + zNear) / zDelta;
-//	m[2][3] = -zNear2*zFar / zDelta;
-//	m[3][0] = 0.0f;
-//	m[3][1] = 0.0f;
-//	m[3][2] = -1.0f;
-//	m[3][3] = 0.0f;
-//}
+void Camera::Frustum(const float left, const float right,const float bottom,
+	const float top, const float zNear, const float zFar){
+
+	const float zdelta = (zFar - zNear);
+	const float dir = (right - left);
+	const float height = (top - bottom);
+	const float znear2 = 2 * zNear;
+	mat4 normalized;
+	normalized[0][0] = 2.0f*zNear / dir;
+	normalized[0][1] = 0.0f;
+	normalized[0][2] = (right + left) / dir;
+	normalized[0][3] = 0.0f;
+	normalized[1][0] = 0.0f;
+	normalized[1][1] = znear2 / height;
+	normalized[1][2] = (top + bottom) / height;
+	normalized[1][3] = 0.0f;
+	normalized[2][0] = 0.0f;
+	normalized[2][1] = 0.0f;
+	normalized[2][2] = -(zFar + zNear) / zdelta;
+	normalized[2][3] = -znear2*zFar / zdelta;
+	normalized[3][0] = 0.0f;
+	normalized[3][1] = 0.0f;
+	normalized[3][2] = -1.0f;
+	normalized[3][3] = 0.0f;
+	ST = normalized;
+}
+
+
+
 //
 //void perspective(t fovy, t aspectratio, t znear, t zfar)
 //{

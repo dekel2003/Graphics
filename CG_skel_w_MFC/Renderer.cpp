@@ -28,7 +28,6 @@ void Renderer::Init(){
 	projectionMatrix[2][2] = 0;
 }
 
-
 void Renderer::CreateBuffers(int width, int height)
 {
 	m_width=width;
@@ -90,7 +89,6 @@ void Renderer::SetCameraTransform(const mat4& world_to_camera){
 void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform){
 	this->object_to_world = oTransform;
 }
-
 
 void Renderer::DrawLine(vec2 a, vec2 b){
 	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
@@ -172,6 +170,8 @@ void Renderer::DrawTriangles(vector<vec4>* vertices, const vector<vec3>* normals
 vec2 Renderer::vec4toVec2(const vec4 v){
 	return vec2(v.x, v.y);
 }
+
+
 
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.
