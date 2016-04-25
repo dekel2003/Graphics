@@ -61,7 +61,9 @@ enum ROTATION{ NO_ROTATION, MODEL, WORLD };
 static ROTATION rotation = NO_ROTATION;
 void keyboard( unsigned char key, int x, int y )
 {
-	
+	CFrustumDialog dlg;
+	std::pair<vec3, vec3> v;
+
 	switch ( key ) {
 	case 033:
 		exit( EXIT_SUCCESS );
@@ -83,6 +85,25 @@ void keyboard( unsigned char key, int x, int y )
 		}
 		rotation = WORLD;
 		cout << "model world rotation ON" << endl;
+		break;
+	case 'q':
+		
+		if (dlg.DoModal() == IDOK){
+			//string command = dlg.GetCmd();
+			v = dlg.GetXYZ();
+			cout << v.first << " --- " << v.second << endl;
+								//	left       right       bottom       top         near       far
+			//scene->setFrustum(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
+		}
+		break;
+	case 'w':
+		if (dlg.DoModal() == IDOK) {
+			//string command = dlg.GetCmd();
+			v = dlg.GetXYZ();
+			cout << v.first << " --- " << v.second << endl;
+							//	left       right       bottom       top         near       far
+			//scene->setOrtho(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
+		}
 		break;
 	}
 }
