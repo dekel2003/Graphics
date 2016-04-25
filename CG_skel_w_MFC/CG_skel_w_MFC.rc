@@ -13,11 +13,13 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// English (U.S.) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -47,32 +49,61 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Menu
+// String Table
 //
 
-MAIN_MENU MENU
+STRINGTABLE 
 BEGIN
-    POPUP "Model"
-    BEGIN
-        MENUITEM "1",                           ID_SELECTNEXTMODEL_N, CHECKED
-        MENUITEM "2",                           ID_MODEL_2
-        MENUITEM "3",                           ID_MODEL_3
-        MENUITEM "4",                           ID_MODEL_4
-    END
+    IDS_APP_TITLE           "CG_skel_w_MFC"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Hebrew resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_HEB)
+#ifdef _WIN32
+LANGUAGE LANG_HEBREW, SUBLANG_DEFAULT
+#pragma code_page(1255)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_INPUTDIALOG DIALOG  0, 0, 320, 200
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,209,179,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,263,179,50,14
 END
 
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// String Table
+// DESIGNINFO
 //
 
-STRINGTABLE
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
 BEGIN
-    IDS_APP_TITLE           "CG_skel_w_MFC"
+    IDD_INPUTDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 313
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 193
+    END
 END
+#endif    // APSTUDIO_INVOKED
 
-#endif    // English (United States) resources
+#endif    // Hebrew resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "CG_skel_w_MFC.h"
+#include "InputDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,6 +37,7 @@ int menuMesh, mainMenuRef, menuCamera, menuView;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
+bool camIsFocused = false;
 
 //----------------------------------------------------------------------------
 // Callbacks
@@ -75,12 +77,18 @@ void motion(int x, int y)
 	cout << '(' << dx << ',' << dy << ')' << endl;
 
 	static int updateCounter = 0;
-	if (lb_down){
-		updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
-		scene->moveCurrentModel(dx, -dy);
-		if (!updateCounter)
-			display();
-	}
+	
+		if (lb_down){
+			updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
+			if (!camIsFocused){
+				scene->moveCurrentModel(dx, -dy);
+			}
+			else{
+				scene->moveCamera(dx, -dy);
+			}
+			if (!updateCounter)
+				display();
+		}
 }
 
 void mouse(int button, int state, int x, int y)
@@ -164,12 +172,18 @@ void cameraMenu(int id)
 
 void viewMenu(int id)
 {
+	CCmdXyzDialog dlg("inputDialog");
 	switch (id)
 	{
 	case VIEW_ORTHOGONAL:
+		if (dlg.DoModal() == IDOK) {
+			string command = dlg.GetCmd();
+			vec3 v = dlg.GetXYZ();
+		}
 		scene->setOrthogonalView();
 		break;
 	case VIEW_PERSPECTIVE:
+		
 		scene->setPerspectiveView();
 		break;
 	}
@@ -194,8 +208,8 @@ void initMenu()
 	glutAddMenuEntry("Open..",FILE_OPEN);
 	menuMesh = glutCreateMenu(meshMenu);
 	menuView = glutCreateMenu(viewMenu);
-	glutAddMenuEntry("Orthogonal", 0);
-	glutAddMenuEntry("Perspective", 1);
+	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
+	glutAddMenuEntry("Perspective", VIEW_PERSPECTIVE);
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);
@@ -255,6 +269,7 @@ int my_main( int argc, char **argv )
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 	initMenu();
 	glutMainLoop();
+
 	delete scene;
 	delete renderer;
 	return 0;

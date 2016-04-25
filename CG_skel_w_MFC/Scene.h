@@ -24,7 +24,7 @@ class Light {
 class Camera {
 	
 	mat4 projection; // camera to screen
-
+	float perspectiveD = -1;
 	float left, right, bottom, top, zNear, zFar;
 
 
@@ -55,6 +55,8 @@ class Scene {
 	vector<Camera*> cameras;
 	Renderer *m_renderer;
 	bool orthogonalView = true;
+	bool modelIsFocused = false;
+
 public:
 	mat4 model_to_world; // Tw
 	Scene() {
@@ -78,7 +80,7 @@ public:
 	void zoomOut();
 	void setOrthogonalView();
 	void setPerspectiveView();
-
+	void moveCamera(GLfloat dx, GLfloat dy);
 	void moveWorld(GLfloat dx, GLfloat dy); //TODO: implement
 	void moveCurrentModel(GLfloat dx, GLfloat dy); //TODO: implement Better - Make sure that It is called from a right place in CG
 	Model*  getModel(int id); //returns the model

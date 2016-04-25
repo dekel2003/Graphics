@@ -171,8 +171,6 @@ vec2 Renderer::vec4toVec2(const vec4 v){
 	return vec2(v.x, v.y);
 }
 
-
-
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.
 

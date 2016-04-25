@@ -59,10 +59,9 @@ mat4& Camera::normalizedProjection(){
 	return *tmp;
 }
 
-
 void Scene::zoomIn(){
-	// cameras[activeCamera]->zoomIn();
-	if (activeModel!=-1)
+
+	if (activeModel != -1)
 		models[activeModel]->setModelTransformation(Scale(1.1, 1.1, 1.1));
 }
 
@@ -73,12 +72,16 @@ void Scene::zoomOut(){
 }
 
 void Scene::setOrthogonalView(){
-	this->cameras[activeCamera]->Ortho();
+	for (vector<Camera*>::iterator it = cameras.begin(); it != cameras.end(); it++){
+		(*it)->Ortho();
+	}
 	this->orthogonalView = true;
 }
 
 void Scene::setPerspectiveView(){
-	this->cameras[activeCamera]->Frustum();
+	for (vector<Camera*>::iterator it = cameras.begin(); it != cameras.end(); it++){
+		(*it)->Frustum();
+	}
 	this->orthogonalView = false;
 }
 
@@ -87,6 +90,10 @@ void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 	if (activeModel != -1)
 		models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
 
+}
+
+void Scene::moveCamera(GLfloat dx, GLfloat dy){
+	cameras[activeModel]->move(dx, dy);
 }
 
 void Camera::zoomIn(){
@@ -107,8 +114,7 @@ void Camera::zoomOut(){
 }
 
 void Camera::move(GLfloat dx, GLfloat dy){
-	world_to_camera = Translate(dx, dy, 0) * world_to_camera;
-
+	world_to_camera = Translate(dx / 512, dy / 512, 0) * world_to_camera;
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
@@ -131,6 +137,10 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 		normalized[2][3] = 0;
 	}
 	ST = normalized;
+
+	//Set projecion Matrix
+	projection = mat4();
+	projection[2][2] = 0; // projection Matrix
 }
 
 void Camera::Frustum(const float left, const float right,const float bottom,
@@ -158,6 +168,11 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 	normalized[3][2] = -1.0f;
 	normalized[3][3] = 0.0f;
 	ST = normalized;
+
+	//Set projecion Matrix
+	projection = mat4();
+	projection[3][3] = 0;
+	projection[3][2] = projection[2][2]/perspectiveD;
 }
 
 

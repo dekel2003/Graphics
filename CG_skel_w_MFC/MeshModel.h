@@ -26,7 +26,6 @@ public:
 	void loadFile(string fileName);
 	void draw(Renderer* renderer);
 	vector<vec4> GetModel();
-	
 	void setModelTransformation(const mat4& T);
 	void setWorldTransformation(const mat4& T);
 };
