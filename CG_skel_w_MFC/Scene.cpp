@@ -47,18 +47,6 @@ vector<vec3> Scene::translateOrigin(vector<vec3> vertices){ // currently not in 
 	return translatedVertices;
 }
 
-Camera::Camera(){
-	float k = 1;
-	left = bottom = zNear = -k;
-	right = top = zFar = k;
-}
-
-mat4& Camera::normalizedProjection(){
-	mat4* tmp = new mat4();
-	tmp=&( ST * projection);
-	return *tmp;
-}
-
 void Scene::zoomIn(){
 
 	if (activeModel != -1)
@@ -94,6 +82,23 @@ void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
 	cameras[activeModel]->move(dx, dy);
+}
+
+
+
+//------------------------------Camera -----------------------------------------------------
+
+
+Camera::Camera(){
+	float k = 1;
+	left = bottom = zNear = -k;
+	right = top = zFar = k;
+}
+
+mat4& Camera::normalizedProjection(){
+	mat4* tmp = new mat4();
+	tmp = &(ST * projection);
+	return *tmp;
 }
 
 void Camera::zoomIn(){

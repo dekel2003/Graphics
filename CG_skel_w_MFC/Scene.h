@@ -24,7 +24,7 @@ class Light {
 class Camera {
 	
 	mat4 projection; // camera to screen
-	float perspectiveD = -1;
+	float perspectiveD = 1;
 	float left, right, bottom, top, zNear, zFar;
 
 
@@ -48,6 +48,7 @@ public:
 	void zoomOut();
 	void move(GLfloat dx, GLfloat dy);
 };
+
 
 class Scene {
 	vector<Model*> models;

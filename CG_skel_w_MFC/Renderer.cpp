@@ -133,13 +133,15 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 
 void Renderer::DrawTriangles(vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
-	objectToClip /= objectToClip[3][3]; // normalizing in accordance to it's weight.
+	if (objectToClip[3][3] != 0){
+		objectToClip /= objectToClip[3][3]; // normalizing in accordance to it's weight.
+	}
 	// CreateBuffers(m_width, m_height);
 	vector<vec4> clipVertices;
 	int count = 0;
 	for(vector<vec4>::iterator it = vertices->begin(); it != vertices->end(); ++it){
-		vec4 v = objectToClip*(*it);
-		// v /= v.w; // normalizing in accordance to it's weight.
+		vec4 v = projectionMatrix * world_to_camera * object_to_world *(*it);
+		//v /= v.w; // normalizing in accordance to it's weight.
 		clipVertices.push_back(v);
 	}
 
