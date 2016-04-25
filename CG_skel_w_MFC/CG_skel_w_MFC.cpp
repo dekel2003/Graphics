@@ -56,11 +56,33 @@ void reshape( int width, int height )
 	renderer->CreateBuffers(width, height);
 }
 
+
+enum ROTATION{ NO_ROTATION, MODEL, WORLD };
+static ROTATION rotation = NO_ROTATION;
 void keyboard( unsigned char key, int x, int y )
 {
+	
 	switch ( key ) {
 	case 033:
 		exit( EXIT_SUCCESS );
+		break;
+	case 'z':
+		if (rotation == MODEL){
+			rotation = NO_ROTATION;
+			cout << "rotation OFF" << endl;
+			break;
+		}
+		rotation = MODEL;
+		cout << "model rotation ON" << endl;
+		break;
+	case 'Z':
+		if (rotation == WORLD){
+			rotation = NO_ROTATION;
+			cout << "rotation OFF" << endl;
+			break;
+		}
+		rotation = WORLD;
+		cout << "model world rotation ON" << endl;
 		break;
 	}
 }
@@ -80,7 +102,13 @@ void motion(int x, int y)
 	
 		if (lb_down){
 			updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
-			if (!camIsFocused){
+			if (rotation == MODEL){
+				scene->rotateCurrentModel(dx, -dy);
+			}
+			else if (rotation == WORLD){
+				scene->rotateCurrentModelWorld(dx, -dy);
+			}
+			else if (!camIsFocused){
 				scene->moveCurrentModel(dx, -dy);
 			}
 			else{

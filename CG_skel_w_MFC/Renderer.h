@@ -41,7 +41,7 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
-	void DrawTriangles(vector<vec4>* vertices, const vector<vec3>* normals=NULL);
+	void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform); //only The Active Model - ask Itay about nTransform

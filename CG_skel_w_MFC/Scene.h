@@ -84,6 +84,11 @@ public:
 	void moveCamera(GLfloat dx, GLfloat dy);
 	void moveWorld(GLfloat dx, GLfloat dy); //TODO: implement
 	void moveCurrentModel(GLfloat dx, GLfloat dy); //TODO: implement Better - Make sure that It is called from a right place in CG
+	
+	void rotateCurrentModel(GLfloat dx, GLfloat dy);
+	void rotateCurrentModelWorld(GLfloat dx, GLfloat dy);
+
+	
 	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);
 	int activeModel;

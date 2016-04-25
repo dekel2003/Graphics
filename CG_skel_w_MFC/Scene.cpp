@@ -80,8 +80,18 @@ void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 
 }
 
+void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
+	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_width));
+}
+void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
+	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_width));
+}
+
+
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
-	cameras[activeModel]->move(dx, dy);
+	cameras[activeCamera]->move(dx, dy);
 }
 
 
@@ -127,7 +137,7 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 	mat4 normalized;
 	normalized[0][0] = 2.0 / (right - left);
 	normalized[1][1] = 2.0 / (top - bottom);
-	normalized[2][2] = -2.0 / (zNear - zFar);
+	normalized[2][2] = 2.0 / (zNear - zFar);
 	normalized[0][3] = -(right + left) / (right - left);
 	normalized[1][3] = -(top + bottom) / (top - bottom);
 	normalized[2][3] = -(zNear + zFar) / (zFar - zNear);
