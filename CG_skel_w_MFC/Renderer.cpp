@@ -131,6 +131,55 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 	}
 }
 
+void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
+	//Function for Coordinate System for now
+	mat4 objectToClip = projectionMatrix * world_to_camera;
+	vecA = objectToClip * vecA;
+	vecB = objectToClip * vecB;
+	vecA /= vecA.w;
+	vecB /= vecB.w;
+
+	vec2 a =  vec2(vecA.x, vecA.y);
+	vec2 b = vec2(vecB.x, vecB.y);
+	vec2 n = normalize(a - b);
+
+	//Check collision with sides
+
+	float t = -500, s = -500, q = -500, r = -500;
+	if (n.x != 0){
+		float t = -a.x / n.x; // for point on the floor
+		float q = (m_width - 1 - a.x) / n.x; // for point on the top
+	}
+	if (n.y != 0){
+		float s = -a.y / n.y;  // for point on the left wall
+		float r = (m_height - 1 - a.y) / n.y;  // for point on the right wall
+	}
+
+	vector<vec2> drawablePoints;
+	int count = 0;
+	float check = a.y + t*n.y;
+	if (check >= 0 && check < m_height){
+		drawablePoints.push_back(vec2(0, check));
+	}
+	 check = a.x + s*n.x;
+	if (check >= 0 && check < m_width){
+		drawablePoints.push_back(vec2(check, 0));
+	}
+	 check = a.y + q*n.y;
+	if (check >= 0 && check < m_height){
+		drawablePoints.push_back(vec2(m_width - 1, check));
+	}
+	 check = a.x + r*n.x;
+	if (check >= 0 && check < m_width){
+		drawablePoints.push_back(vec2(m_height - 1, check));
+	}
+
+	if (count >= 2){
+		DrawLine(drawablePoints[0], drawablePoints[1]);
+	}
+
+}
+
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 	if (objectToClip[3][3] != 0){

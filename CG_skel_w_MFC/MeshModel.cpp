@@ -137,3 +137,7 @@ void MeshModel::setModelTransformation(const mat4& T){
 void MeshModel::setWorldTransformation(const mat4& T){
 	_world_transform = T * _world_transform;
 }
+
+vec4 MeshModel::getOrigin(){
+	return vertex_positions[num_vertices/2];
+}

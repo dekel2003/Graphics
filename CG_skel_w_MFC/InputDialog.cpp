@@ -235,7 +235,7 @@ void CCmdXyzDialog::OnPaint()
 // ----------------------
 
 CFrustumDialog::CFrustumDialog(CString title)
-: CInputDialog(title), mX(0.0), mY(0.0), mZ(0.0), nX(0.0), nY(0.0), nZ(0.0)
+: CInputDialog(title), mX(-1), mY(-1), mZ(-1), nX(1), nY(1), nZ(1)
 { }
 
 CFrustumDialog::~CFrustumDialog()

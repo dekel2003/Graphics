@@ -28,4 +28,5 @@ public:
 	vector<vec4> GetModel();
 	void setModelTransformation(const mat4& T);
 	void setWorldTransformation(const mat4& T);
+	vec4 getOrigin(); // returns the origin of the model
 };

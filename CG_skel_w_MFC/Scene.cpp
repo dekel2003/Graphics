@@ -12,6 +12,7 @@ void Scene::loadOBJModel(string fileName)
 	models.push_back(model);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
+	cameras[activeCamera]->LookAt(vec4(0, 0, 5, 1), ((MeshModel*)(models[activeModel]))->getOrigin(), vec4(0, 1, 0, 1));
 }
 
 void Scene::draw()
@@ -20,6 +21,14 @@ void Scene::draw()
 	// 2. Tell all models to draw themselves
 	m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
 	if (m_renderer && cameras[activeCamera]){
+
+		// Draw coordinates System - not working for now
+		/*m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
+		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
+		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(500, 0, 0, 1));
+		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(0, 500, 0, 1));
+		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(0, 0, 500, 1));*/
+
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
@@ -37,7 +46,6 @@ void Scene::drawDemo()
 
 vector<vec3> Scene::translateOrigin(vector<vec3> vertices){ // currently not in use.
 	vector<vec3> translatedVertices;
-	
 	for (vector<vec3>::iterator it = vertices.begin(); it != vertices.end(); ++it)
 	{
 		//TODO: change 256  to center origin - based on the current camera position
@@ -59,17 +67,15 @@ void Scene::zoomOut(){
 		models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
 }
 
-void Scene::setOrthogonalView(){
-	for (vector<Camera*>::iterator it = cameras.begin(); it != cameras.end(); it++){
-		(*it)->Ortho();
-	}
+void Scene::setOrthogonalView(const float left, const float right, const float bottom,
+	const float top, const float zNear, const float zFar){
+	cameras[activeCamera]->Ortho(left, right, bottom, top, zNear, zFar);
 	this->orthogonalView = true;
 }
 
-void Scene::setPerspectiveView(){
-	for (vector<Camera*>::iterator it = cameras.begin(); it != cameras.end(); it++){
-		(*it)->Frustum();
-	}
+void Scene::setPerspectiveView(const float left, const float right, const float bottom,
+	const float top, const float zNear, const float zFar){
+	cameras[activeCamera]->Frustum(left, right, bottom, top, zNear, zFar);
 	this->orthogonalView = false;
 }
 
@@ -84,17 +90,20 @@ void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
 	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
 	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_width));
 }
+
 void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
 	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->m_width));
 	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_width));
 }
 
-
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
 	cameras[activeCamera]->move(dx, dy);
 }
 
+void Scene::drawCoordinateSystem(){
+	
 
+}
 
 //------------------------------Camera -----------------------------------------------------
 
@@ -190,7 +199,14 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 	projection[3][2] = projection[2][2]/perspectiveD;
 }
 
-
+void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
+	vec4 n = normalize(eye - at);
+	vec4 u = normalize(cross(up, n));
+	vec4 v = normalize(cross(n, u));
+	vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
+	mat4 c = mat4(u, v, n, t);
+	world_to_camera = c * Translate(-eye);
+}
 
 //
 //void perspective(t fovy, t aspectratio, t znear, t zfar)

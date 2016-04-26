@@ -6,6 +6,8 @@
 #include "Renderer.h"
 using namespace std;
 
+
+
 class Model {
 public:
 	void virtual draw(Renderer* renderer) = 0;
@@ -29,6 +31,8 @@ class Camera {
 
 
 public:
+
+
 	Camera();
 	mat4 world_to_camera; //Tc
 	mat4& normalizedProjection();
@@ -57,6 +61,10 @@ class Scene {
 	Renderer *m_renderer;
 	bool orthogonalView = true;
 	bool modelIsFocused = false;
+	
+
+	void drawCoordinateSystem();
+
 
 public:
 	mat4 model_to_world; // Tw
@@ -75,12 +83,17 @@ public:
 
 	void loadOBJModel(string fileName);
 	void draw();
+
+	
+
 	void drawDemo();
 	void addCamera(Camera* camera); //CG_skel will create and add the camera
 	void zoomIn();
 	void zoomOut();
-	void setOrthogonalView();
-	void setPerspectiveView();
+	void setOrthogonalView(const float left, const float right, const float bottom,
+		const float top, const float zNear, const float zFar);
+	void setPerspectiveView(const float left, const float right, const float bottom,
+		const float top, const float zNear, const float zFar);
 	void moveCamera(GLfloat dx, GLfloat dy);
 	void moveWorld(GLfloat dx, GLfloat dy); //TODO: implement
 	void moveCurrentModel(GLfloat dx, GLfloat dy); //TODO: implement Better - Make sure that It is called from a right place in CG

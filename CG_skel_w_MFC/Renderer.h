@@ -49,6 +49,6 @@ public:
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
-	
+	void DrawLineBetween3Dvecs(vec4 a, vec4 b);
 	
 };

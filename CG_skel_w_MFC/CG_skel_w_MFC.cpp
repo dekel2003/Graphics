@@ -56,14 +56,13 @@ void reshape( int width, int height )
 	renderer->CreateBuffers(width, height);
 }
 
-
 enum ROTATION{ NO_ROTATION, MODEL, WORLD };
 static ROTATION rotation = NO_ROTATION;
 void keyboard( unsigned char key, int x, int y )
 {
 	CFrustumDialog dlg;
 	std::pair<vec3, vec3> v;
-
+	float t = 50;
 	switch ( key ) {
 	case 033:
 		exit( EXIT_SUCCESS );
@@ -96,7 +95,7 @@ void keyboard( unsigned char key, int x, int y )
 			//scene->setFrustum(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
 		}
 		break;
-	case 'w':
+	case 'r':
 		if (dlg.DoModal() == IDOK) {
 			//string command = dlg.GetCmd();
 			v = dlg.GetXYZ();
@@ -104,6 +103,27 @@ void keyboard( unsigned char key, int x, int y )
 							//	left       right       bottom       top         near       far
 			//scene->setOrtho(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
 		}
+		break;
+		
+	case 'a':
+		scene->moveCamera(t, 0);
+		cout << "Camera moving Left" << endl;
+		display();
+		break;
+	case 's':
+		cout << "Camera moving Down" << endl;
+		scene->moveCamera(0, t);
+		display();
+		break;
+	case 'd':
+		cout << "Camera moving Right" << endl;
+		scene->moveCamera(-t, 0);
+		display();
+		break;
+	case 'w':
+		cout << "Camera moving up" << endl;
+		scene->moveCamera(0, -t);
+		display();
 		break;
 	}
 }
@@ -120,24 +140,24 @@ void motion(int x, int y)
 	cout << '(' << dx << ',' << dy << ')' << endl;
 
 	static int updateCounter = 0;
-	
-		if (lb_down){
-			updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
-			if (rotation == MODEL){
-				scene->rotateCurrentModel(dx, -dy);
-			}
-			else if (rotation == WORLD){
-				scene->rotateCurrentModelWorld(dx, -dy);
-			}
-			else if (!camIsFocused){
-				scene->moveCurrentModel(dx, -dy);
-			}
-			else{
-				scene->moveCamera(dx, -dy);
-			}
-			if (!updateCounter)
-				display();
+
+	if (lb_down){
+		updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
+		if (rotation == MODEL){
+			scene->rotateCurrentModel(dx, -dy);
 		}
+		else if (rotation == WORLD){
+			scene->rotateCurrentModelWorld(dx, -dy);
+		}
+		else if (!camIsFocused){
+			scene->moveCurrentModel(dx, -dy);
+		}
+		else{
+			//scene->movecamera(dx, -dy);
+		}
+		if (!updateCounter)
+			display();
+	}
 }
 
 void mouse(int button, int state, int x, int y)
@@ -221,19 +241,23 @@ void cameraMenu(int id)
 
 void viewMenu(int id)
 {
-	CCmdXyzDialog dlg("inputDialog");
+	CFrustumDialog dlg;
+	std::pair<vec3, vec3> v;
 	switch (id)
 	{
 	case VIEW_ORTHOGONAL:
-		if (dlg.DoModal() == IDOK) {
-			string command = dlg.GetCmd();
-			vec3 v = dlg.GetXYZ();
+		if (dlg.DoModal() == IDOK){
+			v = dlg.GetXYZ();
+			cout << v.first << " --- " << v.second << endl;
 		}
-		scene->setOrthogonalView();
+		scene->setOrthogonalView(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z);
 		break;
 	case VIEW_PERSPECTIVE:
-		
-		scene->setPerspectiveView();
+		if (dlg.DoModal() == IDOK) {
+			v = dlg.GetXYZ();
+			cout << v.first << " --- " << v.second << endl;
+		}
+		scene->setPerspectiveView(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z);
 		break;
 	}
 }
@@ -304,7 +328,7 @@ int my_main( int argc, char **argv )
 	
 	renderer = new Renderer(512,512);
 	scene = new Scene(renderer);
-	scene->setOrthogonalView();
+	scene->setOrthogonalView(-1,1,-1,1,-1,1);
 
 
 	//Initialize Callbacks
