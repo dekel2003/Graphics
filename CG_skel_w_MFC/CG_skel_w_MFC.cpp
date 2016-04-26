@@ -106,21 +106,45 @@ void keyboard( unsigned char key, int x, int y )
 		break;
 		
 	case 'a':
+		if (rotation == MODEL){
+			scene->rotateCurrentCamera(t, 0);
+			cout << "Camera rotating Left" << endl;
+			display();
+			break;
+		}
 		scene->moveCamera(t, 0);
 		cout << "Camera moving Left" << endl;
 		display();
 		break;
 	case 's':
+		if (rotation == MODEL){
+			scene->rotateCurrentCamera(0, t);
+			cout << "Camera rotating Down" << endl;
+			display();
+			break;
+		}
 		cout << "Camera moving Down" << endl;
 		scene->moveCamera(0, t);
 		display();
 		break;
 	case 'd':
+		if (rotation == MODEL){
+			scene->rotateCurrentCamera(-t, 0);
+			cout << "Camera rotating Right" << endl;
+			display();
+			break;
+		}
 		cout << "Camera moving Right" << endl;
 		scene->moveCamera(-t, 0);
 		display();
 		break;
 	case 'w':
+		if (rotation == MODEL){
+			scene->rotateCurrentCamera(0, -t);
+			cout << "Camera rotating Up" << endl;
+			display();
+			break;
+		}
 		cout << "Camera moving up" << endl;
 		scene->moveCamera(0, -t);
 		display();

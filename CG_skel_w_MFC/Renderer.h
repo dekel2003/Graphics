@@ -29,7 +29,7 @@ class Renderer
 	void DrawLine(vec2, vec2);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
-
+	float R, G, B;
 
 
 
@@ -50,5 +50,6 @@ public:
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
 	void DrawLineBetween3Dvecs(vec4 a, vec4 b);
-	
+	void setColor(int red, int green, int blue); // 0..255
+	void Invalidate();
 };

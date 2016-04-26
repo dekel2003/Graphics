@@ -29,4 +29,6 @@ public:
 	void setModelTransformation(const mat4& T);
 	void setWorldTransformation(const mat4& T);
 	vec4 getOrigin(); // returns the origin of the model
+	vec4 massCenter;
+	void drawAxis(Renderer* renderer);
 };

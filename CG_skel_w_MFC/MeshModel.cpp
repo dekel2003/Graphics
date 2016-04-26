@@ -76,6 +76,7 @@ void MeshModel::loadFile(string fileName)
 	vector<vec3> vertices;
 	
 	// while not end of file
+	vec4 sum = vec4(0, 0, 0, 0);
 	while (!ifile.eof())
 	{
 		// get line
@@ -89,8 +90,10 @@ void MeshModel::loadFile(string fileName)
 		issLine >> std::ws >> lineType;
 
 		// based on the type parse data
-		if (lineType == "v")
+		if (lineType == "v"){
 			vertices.push_back(vec3fFromStream(issLine));
+			sum += vertices[vertices.size() - 1];
+		}
 		else if (lineType == "f")
 			faces.push_back(issLine);
 		else if (lineType == "vn")
@@ -104,6 +107,7 @@ void MeshModel::loadFile(string fileName)
 			cout<< "Found unknown line Type \"" << lineType << "\"";
 		}
 	}
+	massCenter = sum / vertices.size();
 	//Vertex_positions is an array of vec3. Every three elements define a triangle in 3D.
 	//If the face part of the obj is
 	//f 1 2 3
@@ -130,6 +134,19 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->DrawTriangles(&vertex_positions);
 }
 
+void MeshModel::drawAxis(Renderer* renderer)
+{
+	vec4 camera_massCenter = _world_transform * model_to_world_transform * massCenter;
+	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+	renderer->setColor(255, 0, 0);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x + 1, camera_massCenter.y, camera_massCenter.z, 1));
+	renderer->setColor(0, 255, 0);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x, camera_massCenter.y + 1, camera_massCenter.z, 1));
+	renderer->setColor(255, 0, 255);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z + 1, 1));
+	renderer->setColor(255, 255, 255);
+}
+
 void MeshModel::setModelTransformation(const mat4& T){
 	model_to_world_transform = T * model_to_world_transform;
 }
@@ -139,5 +156,5 @@ void MeshModel::setWorldTransformation(const mat4& T){
 }
 
 vec4 MeshModel::getOrigin(){
-	return vertex_positions[num_vertices/2];
+	return massCenter;
 }

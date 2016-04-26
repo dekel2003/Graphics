@@ -12,16 +12,29 @@ void Scene::loadOBJModel(string fileName)
 	models.push_back(model);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
-	cameras[activeCamera]->LookAt(vec4(0, 0, 5, 1), ((MeshModel*)(models[activeModel]))->getOrigin(), vec4(0, 1, 0, 1));
+	//cameras[activeCamera]->LookAt(vec4(1.0, 1.0, 1.0, 1.0), model->getOrigin());
+}
+
+void Scene::drawXY(){
+	float delta = 0.25;
+	m_renderer->setColor(0,100,100);
+	//m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
+	//m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
+	m_renderer->SetObjectMatrices(mat4(),mat3());
+	for (float i = -1; i <= 1; i += delta){
+		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, 0.0, 1.0), vec4(i, 1.0, 0.0, 1.0));
+		m_renderer->DrawLineBetween3Dvecs(vec4(-1.0, i, 0.0, 1.0), vec4(1.0, i, 0.0, 1.0));
+	}
 }
 
 void Scene::draw()
 {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
-	m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
+	//m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
+	m_renderer->Invalidate();
+	
 	if (m_renderer && cameras[activeCamera]){
-
 		// Draw coordinates System - not working for now
 		/*m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
@@ -32,9 +45,19 @@ void Scene::draw()
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
+	drawXY();
+	m_renderer->setColor(200, 200, 200);
 	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
+		if (*it == models[activeModel]){
+			m_renderer->setColor(256, 256, 256);
+			(*it)->draw(m_renderer);
+			m_renderer->setColor(200, 200, 200);
+			continue;
+		}
 		(*it)->draw(m_renderer);
 	}
+	if (activeModel!=-1)
+		models[activeModel]->drawAxis(m_renderer);
 	m_renderer->SwapBuffers();
 }
 
@@ -96,6 +119,10 @@ void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
 	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_width));
 }
 
+void Scene::rotateCurrentCamera(GLfloat dx, GLfloat dy){
+	cameras[activeCamera]->rotate((dx * 180) / (GLfloat)m_renderer->m_width, (dy * 180) / (GLfloat)m_renderer->m_width);
+}
+
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
 	cameras[activeCamera]->move(dx, dy);
 }
@@ -139,6 +166,11 @@ void Camera::zoomOut(){
 
 void Camera::move(GLfloat dx, GLfloat dy){
 	world_to_camera = Translate(dx / 512, dy / 512, 0) * world_to_camera;
+}
+
+void Camera::rotate(GLfloat dx, GLfloat dy){
+	world_to_camera = world_to_camera * (RotateY(dx));
+	world_to_camera = world_to_camera * (RotateX(dy));
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
@@ -204,7 +236,7 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
 	vec4 u = normalize(cross(up, n));
 	vec4 v = normalize(cross(n, u));
 	vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
-	mat4 c = mat4(u, v, n, t);
+	mat4 c = transpose(mat4(u, v, n, t));
 	world_to_camera = c * Translate(-eye);
 }
 

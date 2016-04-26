@@ -26,6 +26,8 @@ Renderer::~Renderer(void)
 
 void Renderer::Init(){
 	projectionMatrix[2][2] = 0;
+	R = B = G = 0.5;
+	Invalidate();
 }
 
 void Renderer::CreateBuffers(int width, int height)
@@ -34,6 +36,11 @@ void Renderer::CreateBuffers(int width, int height)
 	m_height=height;	
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3*m_width*m_height];
+}
+
+void Renderer::Invalidate(){
+	for (int i = 0; i < 3 * m_width*m_height; i++)
+		m_outBuffer[i] = 0.1;
 }
 
 void Renderer::SetDemoBuffer()
@@ -110,7 +117,9 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 			else{
 				errorInteger += deltaError;
 			}
-			m_outBuffer[INDEX(m_width, x, y, 0)] = 1;	m_outBuffer[INDEX(m_width, x, y, 1)] = 1;	m_outBuffer[INDEX(m_width, x, y, 2)] = 0.5;
+			if (x > 0 && y > 0 && x < m_width && y < m_height){
+				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			}
 		}
 	}
 	else{
@@ -126,9 +135,17 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 			else{
 				errorInteger += deltaError;
 			}
-			m_outBuffer[INDEX(m_width, x, y, 0)] = 1;	m_outBuffer[INDEX(m_width, x, y, 1)] = 1;	m_outBuffer[INDEX(m_width, x, y, 2)] = 0.5;
+			if (x > 0 && y > 0 && x < m_width && y < m_height){
+				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			}
 		}
 	}
+}
+
+void Renderer::setColor(int red, int green, int blue){
+	R = red / 256.0;
+	G = green / 256.0;
+	B = blue / 256.0;
 }
 
 void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
@@ -141,6 +158,15 @@ void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
 
 	vec2 a =  vec2(vecA.x, vecA.y);
 	vec2 b = vec2(vecB.x, vecB.y);
+
+	a.x = m_width*(a.x + 1) / 2;
+	a.y = m_height*(a.y + 1) / 2;
+
+	b.x = m_width*(b.x + 1) / 2;
+	b.y = m_height*(b.y + 1) / 2;
+
+	DrawLine(a, b);
+	/*
 	vec2 n = normalize(a - b);
 
 	//Check collision with sides
@@ -177,7 +203,7 @@ void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
 	if (count >= 2){
 		DrawLine(drawablePoints[0], drawablePoints[1]);
 	}
-
+	*/
 }
 
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
