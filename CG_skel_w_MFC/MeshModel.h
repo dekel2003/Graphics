@@ -12,6 +12,8 @@ protected :
 	MeshModel() {}
 	vector<vec4> vertex_positions;
 	vector<vec3> normals2vertices;
+	vector<pair<vec3, vec3>> normalsToFaces;
+
 	int num_vertices;
 	//add more attributes
 	mat4 model_to_world_transform; //the model transformation (Tm)

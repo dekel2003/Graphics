@@ -150,7 +150,7 @@ void Renderer::setColor(int red, int green, int blue){
 
 void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
 	//Function for Coordinate System for now
-	mat4 objectToClip = projectionMatrix * world_to_camera;
+	mat4 objectToClip = projectionMatrix * world_to_camera* object_to_world;
 	vecA = objectToClip * vecA;
 	vecB = objectToClip * vecB;
 	vecA /= vecA.w;
@@ -208,10 +208,7 @@ void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
 
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
-	if (objectToClip[3][3] != 0){
-		//objectToClip /= objectToClip[3][3]; // normalizing in accordance to it's weight.
-	}
-	// CreateBuffers(m_width, m_height);
+
 	vector<vec4> clipVertices;
 	int count = 0;
 	for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){

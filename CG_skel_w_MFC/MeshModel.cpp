@@ -121,6 +121,16 @@ void MeshModel::loadFile(string fileName)
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
+		//computer normal per face
+		vec3 xi = vertices[it->v[0] - 1];
+		vec3 xj = vertices[it->v[1] - 1];
+		vec3 xk = vertices[it->v[2] - 1];
+
+		vec3 normal = cross((xi - xk), (xj - xk)) / length(cross((xi - xk), (xj - xk)));
+		vec3 pointOne = vec3(xi.x + xk.x + xj.x / 20, xi.y + xk.y + xj.y / 20, xi.z + xk.z + xj.z / 20);
+		vec3 pointTwo = pointOne + normal/50;
+		normalsToFaces.push_back( pair<vec3,vec3>(pointOne, pointTwo));
+		//Done computer normal per face
 		for (int i = 0; i < 3; i++)
 		{
 			vertex_positions.push_back(vec4(vertices[it->v[i] - 1].x, vertices[it->v[i] - 1].y, vertices[it->v[i] - 1].z, 1));
@@ -132,12 +142,18 @@ void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->DrawTriangles(&vertex_positions);
+	renderer->setColor(200, 100, 50);
+	for (vector<pair<vec3, vec3>>::iterator it = normalsToFaces.begin(); it != normalsToFaces.end(); ++it){
+		renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+		renderer->DrawLineBetween3Dvecs(vec4((*it).first, 1), vec4((*it).second, 1));
+	}
+		
 }
 
 void MeshModel::drawAxis(Renderer* renderer)
 {
 	vec4 camera_massCenter = _world_transform * model_to_world_transform * massCenter;
-	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+	renderer->SetObjectMatrices(mat4(), _normal_transform); // For Some reason it did something bad so I changed
 	renderer->setColor(255, 0, 0);
 	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x + 1, camera_massCenter.y, camera_massCenter.z, 1));
 	renderer->setColor(0, 255, 0);
