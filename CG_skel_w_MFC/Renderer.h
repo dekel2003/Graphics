@@ -50,7 +50,7 @@ public:
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
 	void DrawLineBetween3Dvecs(vec4 a, vec4 b);
-	void DrawNormals(vec4 a, vec4 b);
+	//void DrawNormals(vec4 a, vec4 b); why is it in here?
 	void setColor(int red, int green, int blue); // 0..255
 	void Invalidate();
 };

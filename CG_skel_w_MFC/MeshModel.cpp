@@ -126,8 +126,8 @@ void MeshModel::loadFile(string fileName)
 		vec3 xj = vertices[it->v[1] - 1];
 		vec3 xk = vertices[it->v[2] - 1];
 
-		vec3 normal = cross((xi - xk), (xj - xk)) / length(cross((xi - xk), (xj - xk)));
-		vec3 pointOne = vec3(xi.x + xk.x + xj.x / 20, xi.y + xk.y + xj.y / 20, xi.z + xk.z + xj.z / 20);
+		vec3 normal = normalize(cross((xi - xj), (xj - xk)));
+		vec3 pointOne = vec3((xi.x + xk.x + xj.x) / 3, (xi.y + xk.y + xj.y) / 3, (xi.z + xk.z + xj.z) / 3);
 		vec3 pointTwo = pointOne + normal/50;
 		normalsToFaces.push_back( pair<vec3,vec3>(pointOne, pointTwo));
 		//Done computer normal per face
@@ -144,8 +144,8 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->DrawTriangles(&vertex_positions);
 	renderer->setColor(200, 100, 50);
 	for (vector<pair<vec3, vec3>>::iterator it = normalsToFaces.begin(); it != normalsToFaces.end(); ++it){
-		renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-		renderer->DrawLineBetween3Dvecs(vec4((*it).first, 1), vec4((*it).second, 1));
+		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
 	}
 		
 }

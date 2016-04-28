@@ -28,7 +28,7 @@ class Light {
 class Camera {
 	
 	mat4 projection; // camera to screen
-	float perspectiveD = 1;
+	float perspectiveD = 0.1;
 	float left, right, bottom, top, zNear, zFar;
 
 
@@ -37,8 +37,10 @@ public:
 
 	Camera();
 	mat4 world_to_camera; //Tc
-	mat4& normalizedProjection();
+	mat4 normalizedProjection();
 	mat4 ST;
+
+	vec4 cube[8];
 
 	void setTransformation(const mat4& transform);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up = vec4(0,0,1.1,1));
@@ -54,6 +56,7 @@ public:
 	void zoomOut();
 	void move(GLfloat dx, GLfloat dy);
 	void rotate(GLfloat dx, GLfloat dy);
+	void draw(Renderer* renderer);
 };
 
 

@@ -16,14 +16,17 @@ void Scene::loadOBJModel(string fileName)
 }
 
 void Scene::drawXY(){
-	float delta = 0.25;
+	float delta = 0.2;
 	m_renderer->setColor(0,100,100);
 	//m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 	//m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	m_renderer->SetObjectMatrices(mat4(),mat3());
+	//m_renderer->DrawNormals
 	for (float i = -1; i <= 1; i += delta){
-		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, 0.0, 1.0), vec4(i, 1.0, 0.0, 1.0));
-		m_renderer->DrawLineBetween3Dvecs(vec4(-1.0, i, 0.0, 1.0), vec4(1.0, i, 0.0, 1.0));
+		m_renderer->setColor(100 + int(35 * i), 50, 0);
+		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, 0.1, 1.0), vec4(i, 1.0, 0.1, 1.0));
+		m_renderer->setColor(0, 50, 100 + int(35*i));
+		m_renderer->DrawLineBetween3Dvecs(vec4(-1.0, i, 0.1, 1.0), vec4(1.0, i, 0.1, 1.0));
 	}
 }
 
@@ -35,13 +38,6 @@ void Scene::draw()
 	m_renderer->Invalidate();
 	
 	if (m_renderer && cameras[activeCamera]){
-		// Draw coordinates System - not working for now
-		/*m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
-		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
-		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(500, 0, 0, 1));
-		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(0, 500, 0, 1));
-		m_renderer->DrawLineBetween3Dvecs(vec4(0, 0, 0, 1), vec4(0, 0, 500, 1));*/
-
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
@@ -58,6 +54,7 @@ void Scene::draw()
 	}
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
+	cameras[activeCamera]->draw(m_renderer);
 	m_renderer->SwapBuffers();
 }
 
@@ -103,24 +100,27 @@ void Scene::setPerspectiveView(const float left, const float right, const float 
 }
 
 void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
-	//cameras[activeCamera]->move(dx/512.0, dy/512.0);
-	if (activeModel != -1)
-		models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
-
+	if (activeModel == -1)
+		return;
+	models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
 }
 
 void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
+	if (activeModel == -1)
+		return;
 	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
 	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_width));
 }
 
 void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
+	if (activeModel == -1)
+		return;
 	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->m_width));
 	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_width));
 }
 
 void Scene::rotateCurrentCamera(GLfloat dx, GLfloat dy){
-	cameras[activeCamera]->rotate((dx * 180) / (GLfloat)m_renderer->m_width, (dy * 180) / (GLfloat)m_renderer->m_width);
+	cameras[activeCamera]->rotate((dx * 180) / (GLfloat)m_renderer->m_width, (dy * 180) / (GLfloat)m_renderer->m_height);
 }
 
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
@@ -141,10 +141,11 @@ Camera::Camera(){
 	right = top = zFar = k;
 }
 
-mat4& Camera::normalizedProjection(){
-	mat4* tmp = new mat4();
-	tmp = &(ST * projection);
-	return *tmp;
+mat4 Camera::normalizedProjection(){
+	//mat4* tmp = new mat4();
+	//tmp = &(ST * projection);
+	//return *tmp;
+	return projection * ST;
 }
 
 void Camera::zoomIn(){
@@ -169,12 +170,22 @@ void Camera::move(GLfloat dx, GLfloat dy){
 }
 
 void Camera::rotate(GLfloat dx, GLfloat dy){
-	world_to_camera = world_to_camera * (RotateY(dx));
-	world_to_camera = world_to_camera * (RotateX(dy));
+	world_to_camera = RotateZ(dx) * world_to_camera;
+	world_to_camera = RotateX(-dy) * world_to_camera;
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
 	const float top, const float zNear , const float zFar){
+
+	cube[0] = vec3(left, bottom, zNear);
+	cube[1] = vec3(left, bottom, zFar);
+	cube[2] = vec3(left, top, zNear);
+	cube[3] = vec3(left, top, zFar);
+	cube[4] = vec3(right, bottom, zNear);
+	cube[5] = vec3(right, bottom, zFar);
+	cube[6] = vec3(right, top, zNear);
+	cube[7] = vec3(right, top, zFar);
+
 	mat4 normalized;
 	normalized[0][0] = 2.0 / (right - left);
 	normalized[1][1] = 2.0 / (top - bottom);
@@ -197,6 +208,25 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 	//Set projecion Matrix
 	projection = mat4();
 	projection[2][2] = 0; // projection Matrix
+}
+
+void Camera::draw(Renderer* renderer){
+	renderer->setColor(256, 256, 256);
+
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[1]);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[3]);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[5]);
+	renderer->DrawLineBetween3Dvecs(cube[6], cube[7]);
+
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[2]);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[3]);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[6]);
+	renderer->DrawLineBetween3Dvecs(cube[5], cube[7]);
+
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[4]);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[5]);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[6]);
+	renderer->DrawLineBetween3Dvecs(cube[3], cube[7]);
 }
 
 void Camera::Frustum(const float left, const float right,const float bottom,
@@ -224,7 +254,7 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 	normalized[3][2] = -1.0f;
 	normalized[3][3] = 0.0f;
 	ST = normalized;
-
+	//ST = mat4();
 	//Set projecion Matrix
 	projection = mat4();
 	projection[3][3] = 0;
