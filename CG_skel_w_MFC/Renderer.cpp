@@ -25,7 +25,6 @@ Renderer::~Renderer(void)
 }
 
 void Renderer::Init(){
-	projectionMatrix[2][2] = 0;
 	R = B = G = 0.5;
 	Invalidate();
 }
@@ -150,7 +149,7 @@ void Renderer::setColor(int red, int green, int blue){
 
 void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
 	//Function for Coordinate System for now
-	mat4 objectToClip = projectionMatrix * world_to_camera* object_to_world;
+	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 	vecA = objectToClip * vecA;
 	vecB = objectToClip * vecB;
 	vecA /= vecA.w;

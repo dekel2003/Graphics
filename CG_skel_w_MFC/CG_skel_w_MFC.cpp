@@ -28,8 +28,8 @@
 #define SELECT_MESH 1
 #define VIEW_ORTHOGONAL 1
 #define VIEW_PERSPECTIVE 2
-#define MAIN_DEMO 3
-#define MAIN_ABOUT 4
+#define MAIN_DEMO 5
+#define MAIN_ABOUT 6
 
 Scene *scene;
 Renderer *renderer;
@@ -58,98 +58,135 @@ void reshape( int width, int height )
 
 enum ROTATION{ NO_ROTATION, MODEL, WORLD };
 static ROTATION rotation = NO_ROTATION;
+enum SELECT_TYPE{SELECT_CAMERA, SELECT_MODEL };
+static SELECT_TYPE selection_type = SELECT_MODEL;
+enum AXIS_TYPE{ XY_AXIS, Z_AXIS };
+static AXIS_TYPE axis = XY_AXIS;
 void keyboard( unsigned char key, int x, int y )
 {
+	//cout << key << endl;
 	CFrustumDialog dlg;
 	std::pair<vec3, vec3> v;
-	float t = 50;
-	switch ( key ) {
+	float t = 20;
+	switch (key) {
 	case 033:
-		exit( EXIT_SUCCESS );
+		exit(EXIT_SUCCESS);
 		break;
+	case '`':
+		if (axis == XY_AXIS){
+			axis = Z_AXIS;
+			cout << "turn on Z-axis oporations" << endl;
+		}
+		else{
+		axis = XY_AXIS;
+		cout << "turn off Z-axis oporations" << endl;
+		}
+		rotation = NO_ROTATION;
+		return;
 	case 'z':
 		if (rotation == MODEL){
 			rotation = NO_ROTATION;
 			cout << "rotation OFF" << endl;
-			break;
+			return;
 		}
 		rotation = MODEL;
 		cout << "model rotation ON" << endl;
-		break;
+		return;
 	case 'Z':
 		if (rotation == WORLD){
 			rotation = NO_ROTATION;
 			cout << "rotation OFF" << endl;
-			break;
+			return;
 		}
 		rotation = WORLD;
 		cout << "model world rotation ON" << endl;
-		break;
-	case 'q':
-		
-		if (dlg.DoModal() == IDOK){
-			//string command = dlg.GetCmd();
-			v = dlg.GetXYZ();
-			cout << v.first << " --- " << v.second << endl;
-								//	left       right       bottom       top         near       far
-			//scene->setFrustum(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
+		return;
+	case 'c':
+		cout << "change selection using keyboard numbers to ";
+		if (selection_type == SELECT_MODEL){
+			selection_type = SELECT_CAMERA;
+			cout << "camera" << endl;
 		}
-		break;
-	case 'r':
-		if (dlg.DoModal() == IDOK) {
-			//string command = dlg.GetCmd();
-			v = dlg.GetXYZ();
-			cout << v.first << " --- " << v.second << endl;
-							//	left       right       bottom       top         near       far
-			//scene->setOrtho(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z)
+		else{
+			selection_type = SELECT_MODEL;
+			cout << "model" << endl;
 		}
-		break;
-		
+		return;
+
 	case 'a':
 		if (rotation == MODEL){
-			scene->rotateCurrentCamera(t, 0);
+			scene->rotateCurrentCamera(-t, 0);
 			cout << "Camera rotating Left" << endl;
-			display();
 			break;
 		}
-		scene->moveCamera(t, 0);
+		scene->moveCamera(-t, 0);
 		cout << "Camera moving Left" << endl;
-		display();
 		break;
 	case 's':
 		if (rotation == MODEL){
-			scene->rotateCurrentCamera(0, t);
+			if (axis == XY_AXIS)
+				scene->rotateCurrentCamera(0, -t);
+			else
+				scene->rotateCurrentCamera(-t);
 			cout << "Camera rotating Down" << endl;
-			display();
 			break;
 		}
 		cout << "Camera moving Down" << endl;
-		scene->moveCamera(0, t);
-		display();
+		if (axis == XY_AXIS)
+			scene->moveCamera(0, -t);
+		else
+			scene->moveCamera(-t);
 		break;
 	case 'd':
 		if (rotation == MODEL){
-			scene->rotateCurrentCamera(-t, 0);
+			scene->rotateCurrentCamera(t, 0);
 			cout << "Camera rotating Right" << endl;
-			display();
 			break;
 		}
 		cout << "Camera moving Right" << endl;
-		scene->moveCamera(-t, 0);
-		display();
+		scene->moveCamera(t, 0);
 		break;
 	case 'w':
 		if (rotation == MODEL){
-			scene->rotateCurrentCamera(0, -t);
+			if (axis == XY_AXIS)
+				scene->rotateCurrentCamera(0, t);
+			else
+				scene->rotateCurrentCamera(t);
 			cout << "Camera rotating Up" << endl;
-			display();
 			break;
 		}
 		cout << "Camera moving up" << endl;
-		scene->moveCamera(0, -t);
-		display();
+		if (axis == XY_AXIS)
+			scene->moveCamera(0, t);
+		else
+			scene->moveCamera(t);
 		break;
 	}
+	if (key >= '0' && key <= '9'){
+		if (selection_type == SELECT_MODEL){
+			int index = key - '0';
+			if (scene->numModels() <= index){
+				cout << "undefined model " << index << endl;
+				//cout << "num models " << scene->numModels() << endl;
+				return;
+			}
+			if (scene->activeModel == index)
+				scene->LookAt();
+			cout << "Change active model to " << index << endl;
+			scene->activeModel = index;
+		}
+		if (selection_type == SELECT_CAMERA){
+			int index = key - '0';
+			if (scene->numCameras() <= index){
+				cout << "undefined camera " << index << endl;
+				//cout << "num cameras " << scene->numCameras() << endl;
+				return;
+			}
+			cout << "Change active camera to " << index << endl;
+			scene->activeCamera = index;
+		}
+	}
+	display();
 }
 
 void motion(int x, int y)
@@ -166,15 +203,24 @@ void motion(int x, int y)
 	static int updateCounter = 0;
 
 	if (lb_down){
-		updateCounter = (++updateCounter) % 10; // updating screen every frame is too fast.
+		updateCounter = (++updateCounter) % 5; // updating screen every frame is too fast.
 		if (rotation == MODEL){
-			scene->rotateCurrentModel(dx, -dy);
+			if (axis == XY_AXIS)
+				scene->rotateCurrentModel(dx, -dy);
+			else
+				scene->rotateCurrentModel(dy);
 		}
 		else if (rotation == WORLD){
-			scene->rotateCurrentModelWorld(dx, -dy);
+			if (axis == XY_AXIS)
+				scene->rotateCurrentModelWorld(dx, -dy);
+			else
+				scene->rotateCurrentModelWorld(dy);
 		}
 		else if (!camIsFocused){
-			scene->moveCurrentModel(dx, -dy);
+			if (axis == XY_AXIS)
+				scene->moveCurrentModel(dx, -dy);
+			else
+				scene->moveCurrentModel(dy);
 		}
 		else{
 			//scene->movecamera(dx, -dy);
@@ -250,17 +296,19 @@ void mainMenu(int id)
 void meshMenu(int id)
 {
 	scene->activeModel = id;
+	display();
 }
 
 void cameraMenu(int id)
 {
 	if (id == 0){
-		//TODO: add new camera
+		scene->addCamera();
 	}
 	else
 	{
 		scene->activeCamera = id - 1;
 	}
+	display();
 }
 
 void viewMenu(int id)
@@ -284,6 +332,7 @@ void viewMenu(int id)
 		scene->setPerspectiveView(v.first.y, v.second.y, v.first.x, v.second.x, v.first.z, v.second.z);
 		break;
 	}
+	display();
 }
 
 void addMeshToMenu(){
@@ -298,18 +347,32 @@ void addMeshToMenu(){
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+void addCameraToMenu(){
+	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
+	static int numCameras = 1;
+	glutSetMenu(menuCamera);
+	sprintf(c, "%s", to_string(numCameras).c_str());
+	cout << to_string(numCameras) << endl << to_string(numCameras).c_str() << endl;
+	glutAddMenuEntry(c, numCameras+1);
+	glutSetMenu(mainMenuRef);
+	glutChangeToSubMenu(menuCamera, "Choose Camera", menuCamera);
+	numCameras++;
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
 void initMenu()
 {
 
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
 	menuMesh = glutCreateMenu(meshMenu);
-	menuView = glutCreateMenu(viewMenu);
-	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
-	glutAddMenuEntry("Perspective", VIEW_PERSPECTIVE);
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);
+	menuView = glutCreateMenu(viewMenu);
+	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
+	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
+	glutAddMenuEntry("Perspective", VIEW_PERSPECTIVE);
 	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddSubMenu("Choose Model", menuMesh);

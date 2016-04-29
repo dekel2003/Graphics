@@ -6,13 +6,42 @@
 using namespace std;
 
 
+int Scene::numModels(){
+	if (models.size() == 0)
+		return -1;
+	return models.size();
+}
+int Scene::numCameras(){
+	return cameras.size();
+}
+
 void Scene::loadOBJModel(string fileName)
 {
 	MeshModel *model = new MeshModel(fileName);
 	models.push_back(model);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
+	draw();
 	//cameras[activeCamera]->LookAt(vec4(1.0, 1.0, 1.0, 1.0), model->getOrigin());
+}
+
+void Scene::LookAt(){
+	if (orthogonalView)
+		return;
+	cout << cameras[activeCamera]->world_to_camera << endl;
+	vec4 camera_origin = cameras[activeCamera]->position;
+
+	//vec4 camera_origin = vec4(0, 0, 2, 1);
+
+	cameras[activeCamera]->LookAt(camera_origin, models[activeModel]->getOrigin());
+}
+
+void Scene::addCamera(){
+	Camera * camera = new Camera;
+	orthogonalView = true;
+	cameras.push_back(camera);
+	activeCamera = cameras.size() - 1;
+	addCameraToMenu();
 }
 
 void Scene::drawXY(){
@@ -23,10 +52,10 @@ void Scene::drawXY(){
 	m_renderer->SetObjectMatrices(mat4(),mat3());
 	//m_renderer->DrawNormals
 	for (float i = -1; i <= 1; i += delta){
-		m_renderer->setColor(100 + int(35 * i), 50, 0);
-		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, 0.1, 1.0), vec4(i, 1.0, 0.1, 1.0));
-		m_renderer->setColor(0, 50, 100 + int(35*i));
-		m_renderer->DrawLineBetween3Dvecs(vec4(-1.0, i, 0.1, 1.0), vec4(1.0, i, 0.1, 1.0));
+		m_renderer->setColor(60 + int(55 * i), 50, 0);
+		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, -1, 1.0), vec4(i, 1.0, -1, 1.0));
+		m_renderer->setColor(0, 50, 60 + int(55*i));
+		m_renderer->DrawLineBetween3Dvecs(vec4(-1.0, i, -1, 1.0), vec4(1.0, i, -1, 1.0));
 	}
 }
 
@@ -109,14 +138,14 @@ void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
 	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
-	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_height));
 }
 
 void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
 	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->m_width));
-	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_height));
 }
 
 void Scene::rotateCurrentCamera(GLfloat dx, GLfloat dy){
@@ -124,28 +153,47 @@ void Scene::rotateCurrentCamera(GLfloat dx, GLfloat dy){
 }
 
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
-	cameras[activeCamera]->move(dx, dy);
+	cameras[activeCamera]->move(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height);
 }
 
-void Scene::drawCoordinateSystem(){
-	
+void Scene::moveCurrentModel(GLfloat dz){
+	if (activeModel == -1)
+		return;
+	models[activeModel]->setWorldTransformation(Translate(0, 0, dz / (GLfloat)m_renderer->m_width));
+}
+void Scene::rotateCurrentModel(GLfloat dz){
+	if (activeModel == -1)
+		return;
+	models[activeModel]->setModelTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->m_width));
+}
+void Scene::rotateCurrentModelWorld(GLfloat dz){
+	if (activeModel == -1)
+		return;
+	models[activeModel]->setWorldTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->m_width));
+}
 
+void Scene::moveCamera(GLfloat dz){
+	cameras[activeCamera]->move(dz / (GLfloat)m_renderer->m_height);
+}
+void Scene::rotateCurrentCamera(GLfloat dz){
+	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->m_height);
 }
 
 //------------------------------Camera -----------------------------------------------------
 
 
 Camera::Camera(){
-	float k = 1;
-	left = bottom = zNear = -k;
-	right = top = zFar = k;
+	//float k = 1;
+	//left = bottom = zNear = -k;
+	//right = top = zFar = k;
+	Ortho();
 }
 
 mat4 Camera::normalizedProjection(){
 	//mat4* tmp = new mat4();
 	//tmp = &(ST * projection);
 	//return *tmp;
-	return projection * ST;
+	return ST * projection;
 }
 
 void Camera::zoomIn(){
@@ -166,12 +214,21 @@ void Camera::zoomOut(){
 }
 
 void Camera::move(GLfloat dx, GLfloat dy){
-	world_to_camera = Translate(dx / 512, dy / 512, 0) * world_to_camera;
+	world_to_camera = Translate(-dx, -dy, 0) * world_to_camera;
+	position += vec4(dx, dy, 0, 0);
 }
 
 void Camera::rotate(GLfloat dx, GLfloat dy){
-	world_to_camera = RotateZ(dx) * world_to_camera;
-	world_to_camera = RotateX(-dy) * world_to_camera;
+	world_to_camera = RotateZ(-dx) * world_to_camera;
+	world_to_camera = RotateX(dy) * world_to_camera;
+}
+
+void Camera::move(GLfloat dz){
+	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
+	position -= vec4(0, 0, dz, 0);
+}
+void Camera::rotate(GLfloat dz){
+	world_to_camera = RotateY(-dz) * world_to_camera;
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
@@ -236,38 +293,47 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 	const float dir = (right - left);
 	const float height = (top - bottom);
 	const float znear2 = 2 * zNear;
-	mat4 normalized;
-	normalized[0][0] = 2.0f*zNear / dir;
-	normalized[0][1] = 0.0f;
-	normalized[0][2] = (right + left) / dir;
-	normalized[0][3] = 0.0f;
-	normalized[1][0] = 0.0f;
-	normalized[1][1] = znear2 / height;
-	normalized[1][2] = (top + bottom) / height;
-	normalized[1][3] = 0.0f;
-	normalized[2][0] = 0.0f;
-	normalized[2][1] = 0.0f;
-	normalized[2][2] = -(zFar + zNear) / zdelta;
-	normalized[2][3] = -znear2*zFar / zdelta;
-	normalized[3][0] = 0.0f;
-	normalized[3][1] = 0.0f;
-	normalized[3][2] = -1.0f;
-	normalized[3][3] = 0.0f;
-	ST = normalized;
-	//ST = mat4();
+
+
+	ST = mat4();
+	ST[2][2] = - (zNear+zFar)/(zNear-zFar);
+	ST[2][3] = -(2 * zNear * zFar) / (zNear - zFar);
+	ST[3][2] = -1;
+	ST[3][3] = 0;
+
+
 	//Set projecion Matrix
 	projection = mat4();
 	projection[3][3] = 0;
-	projection[3][2] = projection[2][2]/perspectiveD;
+	projection[3][2] = 1.0/perspectiveD;
+
+	cube[0] = vec3(left, bottom, zNear);
+	cube[1] = vec3(left, bottom, zFar);
+	cube[2] = vec3(left, top, zNear);
+	cube[3] = vec3(left, top, zFar);
+	cube[4] = vec3(right, bottom, zNear);
+	cube[5] = vec3(right, bottom, zFar);
+	cube[6] = vec3(right, top, zNear);
+	cube[7] = vec3(right, top, zFar);
 }
 
 void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
-	vec4 n = normalize(eye - at);
-	vec4 u = normalize(cross(up, n));
-	vec4 v = normalize(cross(n, u));
+	vec4 n;
+	if (length(eye-at)<0.2)
+		n = normalize(eye + vec4(0.1,0.1,0.1,0) - at);
+	else 
+		n = normalize(eye - at);
+	//vec3 tmp1 = normalize(cross(up, n));
+	
+	vec4 u = vec4(normalize(cross(up, n)),0);
+
+	//vec3 tmp2 = normalize(cross(n, u));
+	vec4 v = vec4(normalize(cross(n, u)), 0);
 	vec4 t = vec4(0.0, 0.0, 0.0, 1.0);
 	mat4 c = transpose(mat4(u, v, n, t));
-	world_to_camera = c * Translate(-eye);
+	world_to_camera = /*Translate(-eye) * */ c * Translate(-eye);
+	cout << eye << "   at: " << at << endl;
+	cout << c << endl;
 }
 
 //

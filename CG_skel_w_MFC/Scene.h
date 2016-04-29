@@ -28,22 +28,24 @@ class Light {
 class Camera {
 	
 	mat4 projection; // camera to screen
-	float perspectiveD = 0.1;
-	float left, right, bottom, top, zNear, zFar;
-
+	mat4 ST;
+	float perspectiveD = -0.5;
+	
+	//float left, right, bottom, top, zNear, zFar;
+	vec4 cube[8];
 
 public:
-
+	vec4 position = vec4(0, 0, 0, 1);
 
 	Camera();
 	mat4 world_to_camera; //Tc
 	mat4 normalizedProjection();
-	mat4 ST;
+	
 
-	vec4 cube[8];
+	
 
 	void setTransformation(const mat4& transform);
-	void LookAt(const vec4& eye, const vec4& at, const vec4& up = vec4(0,0,1.1,1));
+	void LookAt(const vec4& eye, const vec4& at, const vec4& up = vec4(0,1,0,1));
 	void Ortho(const float left = -1, const float right = 1,
 		const float bottom = -1, const float top=1,
 		const float zNear = -1, const float zFar = 1);
@@ -56,6 +58,8 @@ public:
 	void zoomOut();
 	void move(GLfloat dx, GLfloat dy);
 	void rotate(GLfloat dx, GLfloat dy);
+	void move(GLfloat dz);
+	void rotate(GLfloat dz);
 	void draw(Renderer* renderer);
 };
 
@@ -87,7 +91,11 @@ public:
 		activeModel = -1;
 	};
 
+	int numModels();
+	int numCameras();
 	void loadOBJModel(string fileName);
+	void addCamera();
+	void LookAt();
 	void draw();
 	void drawXY();
 	
@@ -100,12 +108,23 @@ public:
 		const float top, const float zNear, const float zFar);
 	void setPerspectiveView(const float left, const float right, const float bottom,
 		const float top, const float zNear, const float zFar);
-	void moveCamera(GLfloat dx, GLfloat dy);
+
 	void moveWorld(GLfloat dx, GLfloat dy); //TODO: implement
-	void moveCurrentModel(GLfloat dx, GLfloat dy); //TODO: implement Better - Make sure that It is called from a right place in CG
-	void rotateCurrentCamera(GLfloat dx, GLfloat dy);
+
+	void moveCurrentModel(GLfloat dx, GLfloat dy);
 	void rotateCurrentModel(GLfloat dx, GLfloat dy);
 	void rotateCurrentModelWorld(GLfloat dx, GLfloat dy);
+
+	void moveCamera(GLfloat dx, GLfloat dy);
+	void rotateCurrentCamera(GLfloat dx, GLfloat dy);
+
+
+	void moveCurrentModel(GLfloat dz);
+	void rotateCurrentModel(GLfloat dz);
+	void rotateCurrentModelWorld(GLfloat dz);
+
+	void moveCamera(GLfloat dz);
+	void rotateCurrentCamera(GLfloat dz);
 
 	
 	Model*  getModel(int id); //returns the model

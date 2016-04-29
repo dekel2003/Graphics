@@ -76,7 +76,7 @@ void MeshModel::loadFile(string fileName)
 	vector<vec3> vertices;
 	
 	// while not end of file
-	vec4 sum = vec4(0, 0, 0, 0);
+	vec3 sum = vec3(0, 0, 0);
 	while (!ifile.eof())
 	{
 		// get line
@@ -147,19 +147,18 @@ void MeshModel::draw(Renderer* renderer)
 		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
 	}
-		
 }
 
 void MeshModel::drawAxis(Renderer* renderer)
 {
 	vec4 camera_massCenter = _world_transform * model_to_world_transform * massCenter;
 	renderer->SetObjectMatrices(mat4(), _normal_transform); // For Some reason it did something bad so I changed
-	renderer->setColor(255, 0, 0);
-	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x + 1, camera_massCenter.y, camera_massCenter.z, 1));
-	renderer->setColor(0, 255, 0);
-	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x, camera_massCenter.y + 1, camera_massCenter.z, 1));
-	renderer->setColor(255, 0, 255);
-	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1), vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z + 1, 1));
+	renderer->setColor(256, 0, 0);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1.0), vec4(camera_massCenter.x + 1, camera_massCenter.y, camera_massCenter.z, 1.0));
+	renderer->setColor(0, 256, 0);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1.0), vec4(camera_massCenter.x, camera_massCenter.y + 1, camera_massCenter.z, 1.0));
+	renderer->setColor(256, 0, 256);
+	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1.0), vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z + 1, 1.0));
 	renderer->setColor(255, 255, 255);
 }
 
@@ -172,5 +171,5 @@ void MeshModel::setWorldTransformation(const mat4& T){
 }
 
 vec4 MeshModel::getOrigin(){
-	return massCenter;
+	return _world_transform * model_to_world_transform * massCenter;
 }
