@@ -135,9 +135,21 @@ private:
 				vec4 v2 = (*it++);
 				vec4 v3 = (*it++);
 
+				
+
 				vec4 a = calculateMidPoint(v1, v2);
 				vec4 b = calculateMidPoint(v2, v3);
 				vec4 c = calculateMidPoint(v3, v1);
+				vec4 vecArr[6];
+				vecArr[0] = v1, vecArr[1] = v2, vecArr[2] = v3, vecArr[3] = a, vecArr[4] = b, vecArr[5] = c; 
+				for (int i = 0; i < 6; i++){
+					maxX = vecArr[i].x > maxX ? vecArr[i].x : maxX;
+					maxY = vecArr[i].y > maxY ? vecArr[i].y : maxY;
+					maxZ = vecArr[i].z > maxZ ? vecArr[i].z : maxZ;
+					minX = vecArr[i].x < minX ? vecArr[i].x : minX;
+					minY = vecArr[i].y < minY ? vecArr[i].y : minY;
+					minZ = vecArr[i].z < minZ ? vecArr[i].z : minZ;
+				}
 
 				//Pushing new triangles
 				newVertices.push_back(v1);
