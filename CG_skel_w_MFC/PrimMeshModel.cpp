@@ -125,7 +125,8 @@ private:
 
 	void tesselateIcosahedron(int tesselationLevel)
 	{
-
+		vec3 sum = vec3(0, 0, 0);
+		int size = 12;
 		for (int i = 0; i < tesselationLevel; i++)
 		{
 			vector<vec4> newVertices;
@@ -140,6 +141,7 @@ private:
 				vec4 a = calculateMidPoint(v1, v2);
 				vec4 b = calculateMidPoint(v2, v3);
 				vec4 c = calculateMidPoint(v3, v1);
+				size += 3;
 				vec4 vecArr[6];
 				vecArr[0] = v1, vecArr[1] = v2, vecArr[2] = v3, vecArr[3] = a, vecArr[4] = b, vecArr[5] = c; 
 				for (int i = 0; i < 6; i++){
@@ -149,6 +151,7 @@ private:
 					minX = vecArr[i].x < minX ? vecArr[i].x : minX;
 					minY = vecArr[i].y < minY ? vecArr[i].y : minY;
 					minZ = vecArr[i].z < minZ ? vecArr[i].z : minZ;
+					sum += vec3(vecArr[i].x, vecArr[i].y, vecArr[i].z);
 				}
 
 				//Pushing new triangles
@@ -170,7 +173,7 @@ private:
 			}
 			vertex_positions = newVertices;
 		}
-
+		massCenter = sum / size;
 	}
 
 	vec4 refineVector(vec4 p)
