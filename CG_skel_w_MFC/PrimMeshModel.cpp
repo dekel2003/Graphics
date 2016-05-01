@@ -1,0 +1,170 @@
+#include "StdAfx.h"
+#include "MeshModel.h"
+#include "vec.h"
+#include <string>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+
+class PrimMeshModel : public MeshModel {
+public:
+	void setSphere(){
+		generateIcosahedronVertices();
+		tesselateIcosahedron(2);
+		computeNormalsPerFace();
+	}
+
+private:
+
+	void generateIcosahedronVertices(){
+		float t = (1.0f + sqrt(5.0f)) / 2.0f;
+		vector<vec4> vertices;
+
+		vertices.push_back(refineVector(vec4(-1, t, 0, 1)));
+		vertices.push_back(refineVector(vec4(1, t, 0, 1)));
+		vertices.push_back(refineVector(vec4(-1, -t, 0, 1)));
+		vertices.push_back(refineVector(vec4(1, -t, 0, 1)));
+
+		vertices.push_back(refineVector(vec4(0, -1, t, 1)));
+		vertices.push_back(refineVector(vec4(0, 1, t, 1)));
+		vertices.push_back(refineVector(vec4(0, -1, -t, 1)));
+		vertices.push_back(refineVector(vec4(0, 1, -t, 1)));
+
+		vertices.push_back(refineVector(vec4(t, 0, -1, 1)));
+		vertices.push_back(refineVector(vec4(t, 0, 1, 1)));
+		vertices.push_back(refineVector(vec4(-t, 0, -1, 1)));
+		vertices.push_back(refineVector(vec4(-t, 0, 1, 1)));
+
+		//inserting to vertex_positions
+		vertex_positions.push_back(vertices[0]);
+		vertex_positions.push_back(vertices[5]);
+		vertex_positions.push_back(vertices[11]);
+
+		vertex_positions.push_back(vertices[0]);
+		vertex_positions.push_back(vertices[5]);
+		vertex_positions.push_back(vertices[1]);
+
+		vertex_positions.push_back(vertices[0]);
+		vertex_positions.push_back(vertices[1]);
+		vertex_positions.push_back(vertices[7]);
+
+		vertex_positions.push_back(vertices[0]);
+		vertex_positions.push_back(vertices[7]);
+		vertex_positions.push_back(vertices[10]);
+
+		vertex_positions.push_back(vertices[0]);
+		vertex_positions.push_back(vertices[10]);
+		vertex_positions.push_back(vertices[11]);
+
+		vertex_positions.push_back(vertices[1]);
+		vertex_positions.push_back(vertices[5]);
+		vertex_positions.push_back(vertices[9]);
+
+		vertex_positions.push_back(vertices[5]);
+		vertex_positions.push_back(vertices[11]);
+		vertex_positions.push_back(vertices[4]);
+
+		vertex_positions.push_back(vertices[11]);
+		vertex_positions.push_back(vertices[10]);
+		vertex_positions.push_back(vertices[2]);
+
+		vertex_positions.push_back(vertices[10]);
+		vertex_positions.push_back(vertices[7]);
+		vertex_positions.push_back(vertices[6]);
+
+		vertex_positions.push_back(vertices[7]);
+		vertex_positions.push_back(vertices[1]);
+		vertex_positions.push_back(vertices[8]);
+
+		vertex_positions.push_back(vertices[3]);
+		vertex_positions.push_back(vertices[9]);
+		vertex_positions.push_back(vertices[4]);
+
+		vertex_positions.push_back(vertices[3]);
+		vertex_positions.push_back(vertices[4]);
+		vertex_positions.push_back(vertices[2]);
+
+		vertex_positions.push_back(vertices[3]);
+		vertex_positions.push_back(vertices[2]);
+		vertex_positions.push_back(vertices[6]);
+
+		vertex_positions.push_back(vertices[3]);
+		vertex_positions.push_back(vertices[6]);
+		vertex_positions.push_back(vertices[8]);
+
+		vertex_positions.push_back(vertices[3]);
+		vertex_positions.push_back(vertices[8]);
+		vertex_positions.push_back(vertices[9]);
+
+		vertex_positions.push_back(vertices[4]);
+		vertex_positions.push_back(vertices[9]);
+		vertex_positions.push_back(vertices[5]);
+
+		vertex_positions.push_back(vertices[2]);
+		vertex_positions.push_back(vertices[4]);
+		vertex_positions.push_back(vertices[11]);
+
+		vertex_positions.push_back(vertices[6]);
+		vertex_positions.push_back(vertices[2]);
+		vertex_positions.push_back(vertices[10]);
+
+		vertex_positions.push_back(vertices[8]);
+		vertex_positions.push_back(vertices[6]);
+		vertex_positions.push_back(vertices[7]);
+
+		vertex_positions.push_back(vertices[9]);
+		vertex_positions.push_back(vertices[8]);
+		vertex_positions.push_back(vertices[1]);
+	}
+
+	vec4  calculateMidPoint(vec4 vec1, vec4 vec2){
+		vec4 ret= vec4((vec1.x + vec2.x) / 2, (vec1.y + vec2.y) / 2, (vec1.z + vec2.z) / 2, 1);
+		return refineVector(ret);
+	}
+
+	void tesselateIcosahedron(int tesselationLevel)
+	{
+
+		for (int i = 0; i < tesselationLevel; i++)
+		{
+			vector<vec4> newVertices;
+			for (vector<vec4>::iterator it = vertex_positions.begin(); it != vertex_positions.end();)
+			{
+				vec4 v1 = (*it++);
+				vec4 v2 = (*it++);
+				vec4 v3 = (*it++);
+
+				vec4 a = calculateMidPoint(v1, v2);
+				vec4 b = calculateMidPoint(v2, v3);
+				vec4 c = calculateMidPoint(v3, v1);
+
+				//Pushing new triangles
+				newVertices.push_back(v1);
+				newVertices.push_back(a);
+				newVertices.push_back(c);
+
+				newVertices.push_back(v2);
+				newVertices.push_back(a);
+				newVertices.push_back(b);
+
+				newVertices.push_back(v3);
+				newVertices.push_back(b);
+				newVertices.push_back(c);
+
+				newVertices.push_back(a);
+				newVertices.push_back(b);
+				newVertices.push_back(c);
+			}
+			vertex_positions = newVertices;
+		}
+
+	}
+
+	vec4 refineVector(vec4 p)
+	{
+		double length = sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+		return vec4(p.x / length, p.y / length, p.z / length, 1);
+	}
+
+};
