@@ -22,9 +22,8 @@ protected :
 	mat4 model_to_world_transform; //the model transformation (Tm)
 	mat4 _world_transform; //What the heck (Tw)
 	mat3 _normal_transform; //Pending question
-	GLfloat minX = -MAXUINT, minY = -MAXUINT, minZ = -MAXUINT,
-		maxX = MAXUINT, maxY = MAXUINT, maxZ = MAXUINT;
-
+	GLfloat minX, minY, minZ ,maxX , maxY, maxZ;
+	vec4 cube[8];
 	void computeNormalsPerFace();
 public:
 
@@ -41,4 +40,5 @@ public:
 	vec3 getBottomLeftNear();
 	vec4 getOrigin(); // returns the origin of the model
 	void drawAxis(Renderer* renderer);
+	void MeshModel::drawBoundingBox(Renderer* renderer);
 };

@@ -31,9 +31,9 @@ void Scene::LookAt(){
 	if (orthogonalView)
 		return;
 	cout << cameras[activeCamera]->world_to_camera << endl;
-	vec4 camera_origin = cameras[activeCamera]->position;
+	//vec4 camera_origin = cameras[activeCamera]->position;
 
-	//vec4 camera_origin = vec4(0, 0, 2, 1);
+	vec4 camera_origin = vec4(1, 1, 1, 1);
 
 	cameras[activeCamera]->LookAt(camera_origin, models[activeModel]->getOrigin());
 }
@@ -88,10 +88,14 @@ void Scene::draw()
 			m_renderer->setColor(256, 256, 256);
 			(*it)->draw(m_renderer);
 			if (shouldDrawNormalsPerFace){
-				((MeshModel*)*it)->drawFaceNormals(m_renderer);
+				(*it)->drawFaceNormals(m_renderer);
 			}
 			if (shouldDrawNormalsPerVertex){
-				((MeshModel*)*it)->drawVertexNormals(m_renderer);
+				(*it)->drawVertexNormals(m_renderer);
+			}
+			if (shouldDrawBoundingBox){
+				m_renderer->setColor(80, 50, 230);
+				(*it)->drawBoundingBox(m_renderer);
 			}
 			m_renderer->setColor(200, 200, 200);
 			continue;
@@ -176,6 +180,7 @@ void Scene::moveCurrentModel(GLfloat dz){
 void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
+
 	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
 	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_height));
 }
@@ -231,7 +236,13 @@ void Scene::setNormalsPerVertexOff(){
 	shouldDrawNormalsPerVertex = false;
 }
 
+void Scene::setDrawBoundingBoxOn(){
+	shouldDrawBoundingBox = true;
+}
 
+void Scene::setDrawBoundingBoxOff(){
+	shouldDrawBoundingBox = false;
+}
 
 
 //------------------------------Camera -----------------------------------------------------

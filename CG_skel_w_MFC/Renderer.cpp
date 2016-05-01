@@ -147,11 +147,12 @@ void Renderer::setColor(int red, int green, int blue){
 	B = blue / 256.0;
 }
 
-void Renderer::DrawLineBetween3Dvecs(vec4 vecA, vec4 vecB){
+void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	//Function for Coordinate System for now
+	vec4 vecA, vecB;
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
-	vecA = objectToClip * vecA;
-	vecB = objectToClip * vecB;
+	vecA = objectToClip * _vecA;
+	vecB = objectToClip * _vecB;
 	vecA /= vecA.w;
 	vecB /= vecB.w;
 

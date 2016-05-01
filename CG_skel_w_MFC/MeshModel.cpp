@@ -63,6 +63,8 @@ vec2 vec2fFromStream(std::istream & aStream)
 
 MeshModel::MeshModel(string fileName)
 {
+	minX = MAXINT, minY = MAXINT, minZ = MAXINT,
+		maxX = MININT, maxY = MININT, maxZ = MININT;
 	loadFile(fileName);
 }
 
@@ -140,6 +142,14 @@ void MeshModel::loadFile(string fileName)
 			minZ = vertices[it->v[i] - 1].z < minZ ? vertices[it->v[i] - 1].z : minZ;
 		}
 	}
+	cube[0] = vec4(minX, minY, minZ, 1.0);
+	cube[1] = vec4(minX, minY, maxZ, 1.0);
+	cube[2] = vec4(minX, maxY, minZ, 1.0);
+	cube[3] = vec4(minX, maxY, maxZ, 1.0);
+	cube[4] = vec4(maxX, minY, minZ, 1.0);
+	cube[5] = vec4(maxX, minY, maxZ, 1.0);
+	cube[6] = vec4(maxX, maxY, minZ, 1.0);
+	cube[7] = vec4(maxX, maxY, maxZ, 1.0);
 	computeNormalsPerFace();
 }
 
@@ -214,4 +224,30 @@ vec3 MeshModel::getTopRightFar(){
 
 vec3 MeshModel::getBottomLeftNear(){
 	return vec3(minX, minY, minZ);
+}
+
+void MeshModel::drawBoundingBox(Renderer* renderer){
+	/*
+	mat4 T = _world_transform * model_to_world_transform;
+	mat4 T = mat4();
+	vec4 _cube[8];
+	
+	for (int i = 0; i < 8; i++){
+		cout << cube[i] << endl;
+	}
+	*/
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[1]);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[3]);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[5]);
+	renderer->DrawLineBetween3Dvecs(cube[6], cube[7]);
+
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[2]);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[3]);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[6]);
+	renderer->DrawLineBetween3Dvecs(cube[5], cube[7]);
+
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[4]);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[5]);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[6]);
+	renderer->DrawLineBetween3Dvecs(cube[3], cube[7]);
 }

@@ -6,10 +6,11 @@
 #include <fstream>
 #include <sstream>
 
-
 class PrimMeshModel : public MeshModel {
 public:
 	void setSphere(){
+		minX = MAXINT, minY = MAXINT, minZ = MAXINT,
+			maxX = MININT, maxY = MININT, maxZ = MININT;
 		generateIcosahedronVertices();
 		tesselateIcosahedron(2);
 		computeNormalsPerFace();
@@ -174,6 +175,15 @@ private:
 			vertex_positions = newVertices;
 		}
 		massCenter = sum / size;
+
+		cube[0] = vec4(minX, minY, minZ, 1.0);
+		cube[1] = vec4(minX, minY, maxZ, 1.0);
+		cube[2] = vec4(minX, maxY, minZ, 1.0);
+		cube[3] = vec4(minX, maxY, maxZ, 1.0);
+		cube[4] = vec4(maxX, minY, minZ, 1.0);
+		cube[5] = vec4(maxX, minY, maxZ, 1.0);
+		cube[6] = vec4(maxX, maxY, minZ, 1.0);
+		cube[7] = vec4(maxX, maxY, maxZ, 1.0);
 	}
 
 	vec4 refineVector(vec4 p)

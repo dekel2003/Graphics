@@ -30,13 +30,13 @@
 #define VIEW_PERSPECTIVE 2
 #define NORMAL_ON 1
 #define NORMAL_OFF 2
-#define MAIN_DEMO 5
-#define MAIN_ABOUT 6
+#define MAIN_DEMO 9
+#define MAIN_ABOUT 10
 #define ADD_SPHERE 7
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuView, menuVertexNormals, menuFaceNormals;
+int menuMesh, mainMenuRef, menuCamera, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -365,6 +365,18 @@ void normalsPerVertexMenu(int id){
 	display();
 }
 
+void boundingBoxMenu(int id){
+	switch (id)
+	{
+	case NORMAL_OFF:
+		scene->setDrawBoundingBoxOff();
+		break;
+	case NORMAL_ON:
+		scene->setDrawBoundingBoxOn();
+	}
+	display();
+}
+
 void addMeshToMenu(){
 	static int numMeshes = 0;
 	glutSetMenu(menuMesh);
@@ -407,6 +419,9 @@ void initMenu()
 	menuVertexNormals = glutCreateMenu(normalsPerVertexMenu);
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);
+	menuBoundingBox = glutCreateMenu(boundingBoxMenu);
+	glutAddMenuEntry("On", NORMAL_ON);
+	glutAddMenuEntry("Off", NORMAL_OFF);
 	menuView = glutCreateMenu(viewMenu);
 	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
 	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
@@ -418,6 +433,7 @@ void initMenu()
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
 	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);
+	glutAddSubMenu("Show Bounding Box", menuBoundingBox);
 	glutAddMenuEntry("Add Sphere", ADD_SPHERE);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);

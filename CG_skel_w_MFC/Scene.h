@@ -15,6 +15,9 @@ public:
 	void virtual setWorldTransformation(const mat4& T) = 0;
 	vec4 virtual getOrigin() = 0;
 	void virtual drawAxis(Renderer* renderer)=0;
+	void virtual drawBoundingBox(Renderer* renderer)=0;
+	void virtual drawFaceNormals(Renderer* renderer)=0;
+	void virtual drawVertexNormals(Renderer* renderer)=0;
 protected:
 	virtual ~Model() {}
 	
@@ -73,6 +76,7 @@ class Scene {
 	bool modelIsFocused = false;
 	bool shouldDrawNormalsPerFace = false;
 	bool shouldDrawNormalsPerVertex = false;
+	bool shouldDrawBoundingBox = false;
 	void drawCoordinateSystem();
 
 
@@ -124,6 +128,9 @@ public:
 
 	void setNormalsPerVertexOn();
 	void setNormalsPerVertexOff();
+
+	void setDrawBoundingBoxOn();
+	void setDrawBoundingBoxOff();
 
 	void moveCurrentModel(GLfloat dz);
 	void rotateCurrentModel(GLfloat dz);
