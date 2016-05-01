@@ -100,6 +100,7 @@
     <ClCompile Include="InitShader.cpp" />
     <ClCompile Include="InputDialog.cpp" />
     <ClCompile Include="MeshModel.cpp" />
+    <ClCompile Include="PrimMeshModel.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="stdafx.cpp">

@@ -28,12 +28,15 @@
 #define SELECT_MESH 1
 #define VIEW_ORTHOGONAL 1
 #define VIEW_PERSPECTIVE 2
+#define NORMAL_ON 1
+#define NORMAL_OFF 2
 #define MAIN_DEMO 5
 #define MAIN_ABOUT 6
+#define ADD_SPHERE 7
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuView;
+int menuMesh, mainMenuRef, menuCamera, menuView, menuVertexNormals, menuFaceNormals;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -290,6 +293,9 @@ void mainMenu(int id)
 	case MAIN_ABOUT:
 		AfxMessageBox(_T("Computer Graphics"));
 		break;
+
+	case ADD_SPHERE:
+		scene->addPrimModel();
 	}
 }
 
@@ -335,6 +341,30 @@ void viewMenu(int id)
 	display();
 }
 
+void normalsPerFaceMenu(int id){
+	switch (id)
+	{
+	case NORMAL_OFF:
+		scene->setNormalsPerFaceOff();
+		break;
+	case NORMAL_ON:
+		scene->setNormalsPerFaceOn();
+	}
+	display();
+}
+
+void normalsPerVertexMenu(int id){
+	switch (id)
+	{
+	case NORMAL_OFF:
+		scene->setNormalsPerVertexOff();
+		break;
+	case NORMAL_ON:
+		scene->setNormalsPerVertexOn();
+	}
+	display();
+}
+
 void addMeshToMenu(){
 	static int numMeshes = 0;
 	glutSetMenu(menuMesh);
@@ -360,6 +390,8 @@ void addCameraToMenu(){
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
+
+
 void initMenu()
 {
 
@@ -369,6 +401,12 @@ void initMenu()
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);
+	menuFaceNormals = glutCreateMenu(normalsPerFaceMenu);
+	glutAddMenuEntry("On", NORMAL_ON);
+	glutAddMenuEntry("Off", NORMAL_OFF);
+	menuVertexNormals = glutCreateMenu(normalsPerVertexMenu);
+	glutAddMenuEntry("On", NORMAL_ON);
+	glutAddMenuEntry("Off", NORMAL_OFF);
 	menuView = glutCreateMenu(viewMenu);
 	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
 	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
@@ -378,6 +416,9 @@ void initMenu()
 	glutAddSubMenu("Choose Model", menuMesh);
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose View", menuView);
+	glutAddSubMenu("Set Face Normals", menuFaceNormals);
+	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);
+	glutAddMenuEntry("Add Sphere", ADD_SPHERE);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);

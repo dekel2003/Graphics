@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 
+
 using namespace std;
 
 struct FaceIdcs
@@ -108,46 +109,67 @@ void MeshModel::loadFile(string fileName)
 		}
 	}
 	massCenter = sum / vertices.size();
-	//Vertex_positions is an array of vec3. Every three elements define a triangle in 3D.
-	//If the face part of the obj is
-	//f 1 2 3
-	//f 1 3 4
-	//Then vertex_positions should contain:
-	//vertex_positions={v1,v2,v3,v1,v3,v4}
 
 	num_vertices = 3 * faces.size();
-	// vertex_positions = new vec3[num_vertices];
 	// iterate through all stored faces and create triangles
+
 	int k=0;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
-		//computer normal per face
-		vec3 xi = vertices[it->v[0] - 1];
-		vec3 xj = vertices[it->v[1] - 1];
-		vec3 xk = vertices[it->v[2] - 1];
+		vec3 normal1 = normals2vertices[it->vn[0]-1];
+		vec3 normal2 = normals2vertices[it->vn[1]-1];
+		vec3 normal3 = normals2vertices[it->vn[2]-1];
+		vec3 point1 = vertices[it->v[0] - 1];
+		vec3 point2 = vertices[it->v[1] - 1];
+		vec3 point3 = vertices[it->v[2] - 1];
+		vec3 point1Two = point1 + normalize(normal1)*normalVectorsSize;
+		vec3 point2Two = point2 + normalize(normal1)*normalVectorsSize;
+		vec3 point3Two = point3 + normalize(normal1)*normalVectorsSize;
+		normalsToVertices.push_back(pair<vec3, vec3>(point1, point1Two));
+		normalsToVertices.push_back(pair<vec3, vec3>(point2, point2Two));
+		normalsToVertices.push_back(pair<vec3, vec3>(point3, point3Two));
 
-		vec3 normal = normalize(cross((xi - xj), (xj - xk)));
-		vec3 pointOne = vec3((xi.x + xk.x + xj.x) / 3, (xi.y + xk.y + xj.y) / 3, (xi.z + xk.z + xj.z) / 3);
-		vec3 pointTwo = pointOne + normal/50;
-		normalsToFaces.push_back( pair<vec3,vec3>(pointOne, pointTwo));
-		//Done computer normal per face
 		for (int i = 0; i < 3; i++)
 		{
 			vertex_positions.push_back(vec4(vertices[it->v[i] - 1].x, vertices[it->v[i] - 1].y, vertices[it->v[i] - 1].z, 1));
+			maxX = vertices[it->v[i] - 1].x > maxX ? vertices[it->v[i] - 1].x : maxX;
+			maxY = vertices[it->v[i] - 1].y > maxY ? vertices[it->v[i] - 1].y : maxY;
+			maxZ = vertices[it->v[i] - 1].z > maxZ ? vertices[it->v[i] - 1].z : maxZ;
+			minX = vertices[it->v[i] - 1].x < minX ? vertices[it->v[i] - 1].x : minX;
+			minY = vertices[it->v[i] - 1].y < minY ? vertices[it->v[i] - 1].y : minY;
+			minZ = vertices[it->v[i] - 1].z < minZ ? vertices[it->v[i] - 1].z : minZ;
 		}
 	}
+	computeNormalsPerFace();
 }
 
 void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->DrawTriangles(&vertex_positions);
+}
+
+void MeshModel::drawFaceNormals(Renderer* renderer)
+{
+	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->setColor(200, 100, 50);
 	for (vector<pair<vec3, vec3>>::iterator it = normalsToFaces.begin(); it != normalsToFaces.end(); ++it){
 		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
 	}
 }
+
+
+void MeshModel::drawVertexNormals(Renderer* renderer)
+{
+	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+	renderer->setColor(200, 50, 100);
+	for (vector<pair<vec3, vec3>>::iterator it = normalsToVertices.begin(); it != normalsToVertices.end(); ++it){
+		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
+	}
+}
+
 
 void MeshModel::drawAxis(Renderer* renderer)
 {
@@ -170,6 +192,26 @@ void MeshModel::setWorldTransformation(const mat4& T){
 	_world_transform = T * _world_transform;
 }
 
+void MeshModel::computeNormalsPerFace(){
+	for (vector<vec4>::iterator it = vertex_positions.begin(); it != vertex_positions.end(); ++it){
+		vec4 xi = (*it++);
+		vec4 xj = (*it++);
+		vec4 xk = (*it);
+		vec3 normal = normalize(cross((xi - xj), (xj - xk)));
+		vec3 pointOne = vec3((xi.x + xk.x + xj.x) / 3, (xi.y + xk.y + xj.y) / 3, (xi.z + xk.z + xj.z) / 3);
+		vec3 pointTwo = pointOne + normalize(normal) * normalVectorsSize;
+		normalsToFaces.push_back(pair<vec3, vec3>(pointOne, pointTwo));
+	}
+}
+
 vec4 MeshModel::getOrigin(){
 	return _world_transform * model_to_world_transform * massCenter;
+}
+
+vec3 MeshModel::getTopRightFar(){
+	return vec3(maxX, maxY, maxZ);
+}
+
+vec3 MeshModel::getBottomLeftNear(){
+	return vec3(minX, minY, minZ);
 }

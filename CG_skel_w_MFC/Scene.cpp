@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Scene.h"
 #include "MeshModel.h"
+#include "PrimMeshModel.cpp"
 #include <string>
 
 using namespace std;
@@ -11,6 +12,7 @@ int Scene::numModels(){
 		return -1;
 	return models.size();
 }
+
 int Scene::numCameras(){
 	return cameras.size();
 }
@@ -59,6 +61,15 @@ void Scene::drawXY(){
 	}
 }
 
+void Scene::addPrimModel(){
+	PrimMeshModel* primModel= new PrimMeshModel();
+	primModel->setSphere();
+	models.push_back(primModel);
+	activeModel = models.size() - 1;
+	addMeshToMenu();
+	draw();
+}
+
 void Scene::draw()
 {
 	// 1. Send the renderer the current camera transform and the projection
@@ -76,6 +87,12 @@ void Scene::draw()
 		if (*it == models[activeModel]){
 			m_renderer->setColor(256, 256, 256);
 			(*it)->draw(m_renderer);
+			if (shouldDrawNormalsPerFace){
+				((MeshModel*)*it)->drawFaceNormals(m_renderer);
+			}
+			if (shouldDrawNormalsPerVertex){
+				((MeshModel*)*it)->drawVertexNormals(m_renderer);
+			}
 			m_renderer->setColor(200, 200, 200);
 			continue;
 		}
@@ -131,7 +148,29 @@ void Scene::setPerspectiveView(const float left, const float right, const float 
 void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
-	models[activeModel]->setWorldTransformation(Translate(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0));
+	mat4 tmp = mat4(1, 1, 1, 0,
+		1, 1, 1, 0,
+		1, 1, 1, 0,
+		0, 0, 0, 1
+		);
+	mat4 toCameraMat = (matrixCompMult(cameras[activeCamera]->world_to_camera, tmp));
+	vec4 camCor = transpose(toCameraMat) * vec4(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0, 1);
+	camCor /= camCor.w;
+	models[activeModel]->setWorldTransformation(Translate(camCor.x, camCor.y, camCor.z));
+}
+
+void Scene::moveCurrentModel(GLfloat dz){
+	if (activeModel == -1)
+		return;
+	mat4 tmp = mat4(1, 1, 1, 0,
+		1, 1, 1, 0,
+		1, 1, 1, 0,
+		0, 0, 0, 1
+		);
+	mat4 toCameraMat = (matrixCompMult(cameras[activeCamera]->world_to_camera, tmp));
+	vec4 camCor = transpose(toCameraMat) * vec4(0, 0, dz / (GLfloat)m_renderer->m_height, 1);
+	camCor /= camCor.w;
+	models[activeModel]->setWorldTransformation(Translate(camCor.x, camCor.y, camCor.z));
 }
 
 void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
@@ -156,16 +195,12 @@ void Scene::moveCamera(GLfloat dx, GLfloat dy){
 	cameras[activeCamera]->move(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height);
 }
 
-void Scene::moveCurrentModel(GLfloat dz){
-	if (activeModel == -1)
-		return;
-	models[activeModel]->setWorldTransformation(Translate(0, 0, dz / (GLfloat)m_renderer->m_width));
-}
 void Scene::rotateCurrentModel(GLfloat dz){
 	if (activeModel == -1)
 		return;
 	models[activeModel]->setModelTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->m_width));
 }
+
 void Scene::rotateCurrentModelWorld(GLfloat dz){
 	if (activeModel == -1)
 		return;
@@ -175,9 +210,29 @@ void Scene::rotateCurrentModelWorld(GLfloat dz){
 void Scene::moveCamera(GLfloat dz){
 	cameras[activeCamera]->move(dz / (GLfloat)m_renderer->m_height);
 }
+
 void Scene::rotateCurrentCamera(GLfloat dz){
 	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->m_height);
 }
+
+void Scene::setNormalsPerFaceOn(){
+	shouldDrawNormalsPerFace = true;
+}
+
+void Scene::setNormalsPerFaceOff(){
+	shouldDrawNormalsPerFace = false;
+}
+
+void Scene::setNormalsPerVertexOn(){
+	shouldDrawNormalsPerVertex = true;
+}
+
+void Scene::setNormalsPerVertexOff(){
+	shouldDrawNormalsPerVertex = false;
+}
+
+
+
 
 //------------------------------Camera -----------------------------------------------------
 
@@ -227,6 +282,7 @@ void Camera::move(GLfloat dz){
 	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
 	position -= vec4(0, 0, dz, 0);
 }
+
 void Camera::rotate(GLfloat dz){
 	world_to_camera = RotateY(-dz) * world_to_camera;
 }
@@ -335,6 +391,8 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
 	cout << eye << "   at: " << at << endl;
 	cout << c << endl;
 }
+
+
 
 //
 //void perspective(t fovy, t aspectratio, t znear, t zfar)

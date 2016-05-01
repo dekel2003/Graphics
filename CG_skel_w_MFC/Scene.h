@@ -71,8 +71,8 @@ class Scene {
 	Renderer *m_renderer;
 	bool orthogonalView = true;
 	bool modelIsFocused = false;
-	
-
+	bool shouldDrawNormalsPerFace = false;
+	bool shouldDrawNormalsPerVertex = false;
 	void drawCoordinateSystem();
 
 
@@ -94,6 +94,7 @@ public:
 	int numModels();
 	int numCameras();
 	void loadOBJModel(string fileName);
+	void addPrimModel();
 	void addCamera();
 	void LookAt();
 	void draw();
@@ -118,6 +119,11 @@ public:
 	void moveCamera(GLfloat dx, GLfloat dy);
 	void rotateCurrentCamera(GLfloat dx, GLfloat dy);
 
+	void setNormalsPerFaceOn();
+	void setNormalsPerFaceOff();
+
+	void setNormalsPerVertexOn();
+	void setNormalsPerVertexOff();
 
 	void moveCurrentModel(GLfloat dz);
 	void rotateCurrentModel(GLfloat dz);
