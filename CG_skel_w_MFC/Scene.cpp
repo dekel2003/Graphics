@@ -33,7 +33,7 @@ void Scene::LookAt(){
 	cout << cameras[activeCamera]->world_to_camera << endl;
 	//vec4 camera_origin = cameras[activeCamera]->position;
 
-	vec4 camera_origin = vec4(1, 1, 1, 1);
+	vec4 camera_origin = vec4(0, 0, 0, 1);
 
 	cameras[activeCamera]->LookAt(camera_origin, models[activeModel]->getOrigin());
 }

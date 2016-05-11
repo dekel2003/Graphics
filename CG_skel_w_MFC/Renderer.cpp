@@ -206,14 +206,21 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	*/
 }
 
+
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 
 	vector<vec4> clipVertices;
 	int count = 0;
-	for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
+	/*for(vector<vec4>::const_iterator it = vertices->begin(); it != vertices->end(); ++it){
 		vec4 v = objectToClip *(*it);
 		v /= v.w; // normalizing in accordance to it's weight.
+		clipVertices.push_back(v);
+	}*/
+	vec4 v;
+	clipVertices.reserve(vertices->size());
+	for (int i = 0; i < vertices->size(); ++i){
+		objectToClip.MultiplyVec((*vertices)[i], v);
 		clipVertices.push_back(v);
 	}
 
