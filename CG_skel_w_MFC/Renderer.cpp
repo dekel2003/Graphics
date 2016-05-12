@@ -218,8 +218,9 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		clipVertices.push_back(v);
 	}*/
 	vec4 v;
-	clipVertices.reserve(vertices->size());
-	for (int i = 0; i < vertices->size(); ++i){
+	int numberOfVertices = vertices->size();
+	clipVertices.reserve(numberOfVertices);
+	for (int i = 0; i < numberOfVertices; ++i){
 		objectToClip.MultiplyVec((*vertices)[i], v);
 		clipVertices.push_back(v);
 	}
@@ -227,13 +228,13 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 	count = clipVertices.size();
 
 	//Now resizing according to screen
-	for(int i = 0; i < count; i++){
+	for(int i = 0; i < count; ++i){
 		clipVertices[i].x = m_width*(clipVertices[i].x + 1) / 2;
 		clipVertices[i].y = m_height*(clipVertices[i].y + 1) / 2;
 	}
 
 	//Now Drawing
-	for (int i = 0; i < count; i++){
+	for (int i = 0; i < count; ++i){
 		vec2 a, b, c;
 		a = vec4toVec2(clipVertices[i++]);
 		b = vec4toVec2(clipVertices[i++]);
