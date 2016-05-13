@@ -267,19 +267,24 @@ void mouse(int button, int state, int x, int y)
 
 //----------------------- Menus ------------------------------------
 
+bool fileMenuBeingUsed = false;
 
 void fileMenu(int id)
 {
-	switch (id)
-	{
+	if (fileMenuBeingUsed == false) {
+		fileMenuBeingUsed = true;
+		switch (id)
+		{
 		case FILE_OPEN:
-			CFileDialog dlg(TRUE,_T(".obj"),NULL,NULL,_T("*.obj|*.*"));
-			if(dlg.DoModal()==IDOK)
+			CFileDialog dlg(TRUE, _T(".obj"), NULL, NULL, _T("*.obj|*.*"));
+			if (dlg.DoModal() == IDOK)
 			{
 				std::string s((LPCTSTR)dlg.GetPathName());
 				scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
 			}
 			break;
+		}
+		fileMenuBeingUsed = false;
 	}
 }
 
