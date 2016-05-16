@@ -102,6 +102,7 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
+	m_renderer->ScanLineZBuffer();
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);

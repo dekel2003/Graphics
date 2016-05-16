@@ -156,7 +156,8 @@ void MeshModel::loadFile(string fileName)
 void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	renderer->DrawTriangles(&vertex_positions);
+	//renderer->DrawTriangles(&vertex_positions);
+	renderer->AddTriangles(&vertex_positions);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)

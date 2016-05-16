@@ -7,6 +7,93 @@
 
 using namespace std;
 
+class Polygon3{
+public:
+	vec3 a, b, c;
+	Polygon3(){}
+	Polygon3(vec3 _a, vec3 _b, vec3 _c):a(_a),b(_b),c(_c){
+		/*if (a.x > b.x)
+			swap(a, b);
+		if (a.x > c.x)
+			swap(a, c);
+		if (b.x > c.x)
+			swap(b, c);*/
+	}
+	inline float minY() const{
+		return min(a.y, min(b.y, c.y));
+	}
+	inline float maxY() const{
+		return max(a.y, max(b.y, c.y));
+	}
+	inline float minX() const{
+		return min(a.x, min(b.x, c.x));
+	}
+	inline float maxX() const{
+		return max(a.x, max(b.x, c.x));
+	}
+	inline static bool Ysorting(Polygon3 s, Polygon3 t){
+		return s.minY() < t.minY();
+	}
+	inline void getXrange(float currY, int& xStart, int& xEnd) const{
+		/*const vec3 *minP, *maxP, *midP;
+		if (a.y == minY())
+			minP = &a;
+		if (b.y == minY())
+			minP = &b;
+		if (c.y == minY())
+			minP = &c;
+
+		if (a.y == maxY())
+			maxP = &a;
+		if (b.y == maxY())
+			maxP = &b;
+		if (c.y == maxY())
+			maxP = &c;
+
+		if (a != *minP && a != *maxP)
+			midP = &a;
+		if (b != *minP && b != *maxP)
+			midP = &b;
+		if (c != *minP && c != *maxP)
+			midP = &c;
+
+		if (currY < midP->y){
+			float t1 = abs(currY - minP->y) / abs(maxP->y - minP->y);
+			float t2 = abs(currY - minP->y) / abs(midP->y - minP->y);
+
+			if (t1>1 || t2>1)
+				return;
+
+			int x1 = round(abs(maxP->x - minP->x) * t1 + minP->x);
+			int x2 = round(abs(midP->x - minP->x) * t2 + minP->x);
+
+			xStart = min(x1, x2);
+			xEnd = max(x1, x2);
+		}
+		else{
+			float t1 = abs(currY - maxP->y) / abs(minP->y - maxP->y);
+			float t2 = abs(currY - maxP->y) / abs(midP->y - maxP->y);
+
+			if (t1>1 || t2>1)
+				return;
+
+			int x1 = round(abs(minP->x - maxP->x) * t1 + maxP->x);
+			int x2 = round(abs(midP->x - maxP->x) * t2 + maxP->x);
+
+			xStart = min(x1, x2);
+			xEnd = max(x1, x2);
+		}*/
+		float A, B, C;
+		A = b.y - a.y;
+		B = a.x - b.x;
+		C = b.x * a.y - a.x * b.y;
+	}
+
+	bool operator< (const Polygon3& p) const {
+		return minY() < p.minY();
+	}
+};
+
 class Renderer
 {
 	//////////////////////////////
@@ -23,6 +110,8 @@ class Renderer
 	int m_height;
 	int m_TotalNumberOfPixels;
 
+	vector<Polygon3> globalClippedVertices;
+
 	mat4 projectionMatrix; //(P)
 	mat4 world_to_camera; //  (Tc)
 	mat4 object_to_world; //  (Tw*Tm)
@@ -34,17 +123,23 @@ class Renderer
 	float R, G, B;
 	//int GetRange(double y1, double y2, int& maxY);
 	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
-	float sign(vec2 p1, vec4 p2, vec4 p3);
-	bool PointInTriangle(vec2 pt, vec4 v1, vec4 v2, vec4 v3);
+	inline float sign(vec2& p1, vec3& p2, vec3& p3) const;
+	inline bool PointInTriangle(const vec2& pt, const  vec3& a, const  vec3& b, const  vec3& c) const;
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 
+	
+	void putColor(int x, int y, Polygon3* P);
+
 public:
+	void ScanLineZBuffer();
+
 	void CreateBuffers(int width, int height); // initially private
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
 	void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
+	void AddTriangles(const vector<vec4>* vertices, const vector<vec3>* normals = NULL);
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform); //only The Active Model - ask Itay about nTransform
