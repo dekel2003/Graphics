@@ -351,7 +351,7 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		for (int t = 0, numberOfPointsInsideTriangle = pointsInsideTriangle.size(); t < numberOfPointsInsideTriangle; ++t) {
 			currentPoint = pointsInsideTriangle[t];
 			currentZ = ((getZ(vec4toVec2(pointA), vec4toVec2(pointB), vec4toVec2(pointC), currentPoint, cameraVertices[i], cameraVertices[i + 1], cameraVertices[i + 2]) + 1.0f) / 2.0f);
-			m_zbufferIndex = ((int) INDEXZ(m_width, currentPoint.x, currentPoint.y));
+			m_zbufferIndex = (INDEXZ(m_width, currentPoint.x, currentPoint.y));
 			if (m_zbuffer[m_zbufferIndex] < currentZ) {
 				//putColor(x, y, col(P)) ///////////////////// USE THIS TO DISPLAY ONLY THE VISIBLE PARTS OF THE MODELS
 				m_zbuffer[m_zbufferIndex] = currentZ;
@@ -363,7 +363,7 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 	// Z-buffer drawing
 	for (int i = 0; i < m_height; ++i) {
 		for (int j = 0; j < m_width; ++j) {
-			m_outBuffer[INDEX(m_width, j, i, 1)] = m_zbuffer[(int)INDEXZ(m_width, j, i)];	
+			m_outBuffer[INDEX(m_width, j, i, 1)] = m_zbuffer[INDEXZ(m_width, j, i)];	
 		}
 	}
 	// Normal colors drawing
