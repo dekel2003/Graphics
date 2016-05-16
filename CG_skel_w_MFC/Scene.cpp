@@ -137,8 +137,7 @@ void Scene::zoomOut(){
 		models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
 }
 
-void Scene::setOrthogonalView(const float left, const float right, const float bottom,
-	const float top, const float zNear, const float zFar){
+void Scene::setOrthogonalView(const float left, const float right, const float bottom, const float top, const float zNear, const float zFar){
 	cameras[activeCamera]->Ortho(left, right, bottom, top, zNear, zFar);
 	this->orthogonalView = true;
 }
@@ -158,7 +157,7 @@ void Scene::moveCurrentModel(GLfloat dx, GLfloat dy){
 		0, 0, 0, 1
 		);
 	mat4 toCameraMat = (matrixCompMult(cameras[activeCamera]->world_to_camera, tmp));
-	vec4 camCor = transpose(toCameraMat) * vec4(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height, 0, 1);
+	vec4 camCor = transpose(toCameraMat) * vec4(dx / (GLfloat)m_renderer->GetWidth(), dy / (GLfloat)m_renderer->GetHeight(), 0, 1);
 	camCor /= camCor.w;
 	models[activeModel]->setWorldTransformation(Translate(camCor.x, camCor.y, camCor.z));
 }
@@ -172,7 +171,7 @@ void Scene::moveCurrentModel(GLfloat dz){
 		0, 0, 0, 1
 		);
 	mat4 toCameraMat = (matrixCompMult(cameras[activeCamera]->world_to_camera, tmp));
-	vec4 camCor = transpose(toCameraMat) * vec4(0, 0, dz / (GLfloat)m_renderer->m_height, 1);
+	vec4 camCor = transpose(toCameraMat) * vec4(0, 0, dz / (GLfloat)m_renderer->GetHeight(), 1);
 	camCor /= camCor.w;
 	models[activeModel]->setWorldTransformation(Translate(camCor.x, camCor.y, camCor.z));
 }
@@ -181,43 +180,43 @@ void Scene::rotateCurrentModel(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
 
-	models[activeModel]->setModelTransformation(RotateY((dx*180) / (GLfloat)m_renderer->m_width));
-	models[activeModel]->setModelTransformation(RotateX((dy*180) / (GLfloat)m_renderer->m_height));
+	models[activeModel]->setModelTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->GetWidth()));
+	models[activeModel]->setModelTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->GetHeight()));
 }
 
 void Scene::rotateCurrentModelWorld(GLfloat dx, GLfloat dy){
 	if (activeModel == -1)
 		return;
-	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->m_width));
-	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->m_height));
+	models[activeModel]->setWorldTransformation(RotateY((dx * 180) / (GLfloat)m_renderer->GetWidth()));
+	models[activeModel]->setWorldTransformation(RotateX((dy * 180) / (GLfloat)m_renderer->GetHeight()));
 }
 
 void Scene::rotateCurrentCamera(GLfloat dx, GLfloat dy){
-	cameras[activeCamera]->rotate((dx * 180) / (GLfloat)m_renderer->m_width, (dy * 180) / (GLfloat)m_renderer->m_height);
+	cameras[activeCamera]->rotate((dx * 180) / (GLfloat)m_renderer->GetWidth(), (dy * 180) / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::moveCamera(GLfloat dx, GLfloat dy){
-	cameras[activeCamera]->move(dx / (GLfloat)m_renderer->m_width, dy / (GLfloat)m_renderer->m_height);
+	cameras[activeCamera]->move(dx / (GLfloat)m_renderer->GetWidth(), dy / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::rotateCurrentModel(GLfloat dz){
 	if (activeModel == -1)
 		return;
-	models[activeModel]->setModelTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setModelTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->GetWidth()));
 }
 
 void Scene::rotateCurrentModelWorld(GLfloat dz){
 	if (activeModel == -1)
 		return;
-	models[activeModel]->setWorldTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->m_width));
+	models[activeModel]->setWorldTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->GetWidth()));
 }
 
 void Scene::moveCamera(GLfloat dz){
-	cameras[activeCamera]->move(dz / (GLfloat)m_renderer->m_height);
+	cameras[activeCamera]->move(dz / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::rotateCurrentCamera(GLfloat dz){
-	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->m_height);
+	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::setNormalsPerFaceOn(){

@@ -44,9 +44,6 @@ public:
 	mat4 world_to_camera; //Tc
 	mat4 normalizedProjection();
 	
-
-	
-
 	void setTransformation(const mat4& transform);
 	void LookAt(const vec4& eye, const vec4& at, const vec4& up = vec4(0,1,0,1));
 	void Ortho(const float left = -1, const float right = 1,

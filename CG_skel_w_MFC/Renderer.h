@@ -6,6 +6,7 @@
 #include "GL/glew.h"
 
 using namespace std;
+
 class Renderer
 {
 	//////////////////////////////
@@ -16,11 +17,12 @@ class Renderer
 	void InitOpenGLRendering();
 	//////////////////////////////
 
-
-
 	float *m_outBuffer; // 3*width*height
 	float *m_zbuffer; // width*height
-	
+	int m_width;
+	int m_height;
+	int m_TotalNumberOfPixels;
+
 	mat4 projectionMatrix; //(P)
 	mat4 world_to_camera; //  (Tc)
 	mat4 object_to_world; //  (Tw*Tm)
@@ -30,12 +32,13 @@ class Renderer
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;
-
-
+	//int GetRange(double y1, double y2, int& maxY);
+	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
+	float sign(vec2 p1, vec4 p2, vec4 p3);
+	bool PointInTriangle(vec2 pt, vec4 v1, vec4 v2, vec4 v3);
+	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 
 public:
-
-	int m_width, m_height;
 	void CreateBuffers(int width, int height); // initially private
 	Renderer();
 	Renderer(int width, int height);
@@ -50,7 +53,9 @@ public:
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
 	void DrawLineBetween3Dvecs(const vec4& a, const vec4& b);
-	//void DrawNormals(vec4 a, vec4 b); why is it in here?
-	void setColor(int red, int green, int blue); // 0..255
+	void setColor(float red, float green, float blue); // 0..255
 	void Invalidate();
+	int GetWidth();
+	int GetHeight();
+	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
 };
