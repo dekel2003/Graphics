@@ -201,7 +201,7 @@ void motion(int x, int y)
 	last_x = x;
 	last_y = y;
 
-	cout << '(' << dx << ',' << dy << ')' << endl;
+	//cout << '(' << dx << ',' << dy << ')' << endl;
 
 	static int updateCounter = 0;
 
@@ -238,6 +238,8 @@ void mouse(int button, int state, int x, int y)
 	//button = {GLUT_LEFT_BUTTON, GLUT_MIDDLE_BUTTON, GLUT_RIGHT_BUTTON}
 	//state = {GLUT_DOWN,GLUT_UP}
 	
+	//renderer->testPointInTriangle(x, y);
+
 	motion(x, y);
 	//set down flags
 	switch(button) {

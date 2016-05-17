@@ -32,7 +32,7 @@ class Camera {
 	
 	mat4 projection; // camera to screen
 	mat4 ST;
-	float perspectiveD = -0.5;
+	float perspectiveD = 0.1;
 	
 	//float left, right, bottom, top, zNear, zFar;
 	vec4 cube[8];

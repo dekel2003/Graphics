@@ -9,14 +9,18 @@ using namespace std;
 
 class Polygon3{
 public:
-	vec3 a, b, c;
+	vec4 a, b, c;
 	Polygon3(){}
-	Polygon3(vec3 _a, vec3 _b, vec3 _c):a(_a),b(_b),c(_c){
-		/*if (a.x > b.x)
+	Polygon3(vec4 _a, vec4 _b, vec4 _c) :a(_a), b(_b), c(_c){
+		/*a /= a.w;
+		b /= b.w;
+		c /= c.w;*/
+
+		/*if (a.y > b.y)
 			swap(a, b);
-		if (a.x > c.x)
+		if (a.y > c.y)
 			swap(a, c);
-		if (b.x > c.x)
+		if (b.y > c.y)
 			swap(b, c);*/
 	}
 	inline float minY() const{
@@ -124,7 +128,9 @@ class Renderer
 	//int GetRange(double y1, double y2, int& maxY);
 	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
 	inline float sign(vec2& p1, vec3& p2, vec3& p3) const;
-	inline bool PointInTriangle(const vec2& pt, const  vec3& a, const  vec3& b, const  vec3& c) const;
+	//inline bool PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const;
+	void PointInTriangle(vec2& pt, Polygon3* P);
+	//bool PointInTriangle(const vec2& pt, Polygon3& P);
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 
 	
@@ -153,4 +159,8 @@ public:
 	int GetWidth();
 	int GetHeight();
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
+
+
+
+	void testPointInTriangle(int x, int y);
 };

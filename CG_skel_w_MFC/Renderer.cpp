@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <set>
+#include <list>
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
@@ -155,37 +156,90 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	DrawLine(a, b);
 }
 
-inline void Barycentric(const vec2& p, const vec3& a, const vec3& b, const vec3& c, float &a1, float &a2, float &a3)
+vec4 v0, v1, v2;
+float mag;
+float a1, a2, a3;
+void Barycentric(const vec2& p, const vec4& a, const vec4& b, const vec4& c)
 {
-	vec3 v0 = b - a, v1 = c - a, v2 = vec3(p.x - a.x, p.y-a.y,0);
-	float mag = v0.x * v1.y - v1.x * v0.y;
+	v0.x = b.x - a.x;
+	v0.y = b.y - a.y;
+	v1.x = c.x - a.x;
+	v1.y = c.y - a.y;
+	v2.x = p.x - a.x;
+	v2.y = p.y - a.y;
+
+	mag = v0.x * v1.y - v1.x * v0.y;
 	a1 = (v2.x * v1.y - v1.x * v2.y) / mag;
 	a2 = (v0.x * v2.y - v2.x * v0.y) / mag;
 	a3 = 1.0f - a1 - a2;
 }
 
-bool Renderer::PointInTriangle(const vec2& pt, const  vec3& a, const  vec3& b, const  vec3& c) const{
-	/*bool b1, b2, b3;
+/*
+inline bool Renderer::PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const{
 
-	b1 = sign(pt, p.a, p.b) < 0.0f;
-	b2 = sign(pt, p.b, p.c) < 0.0f;
-	b3 = sign(pt, p.c, p.a) < 0.0f;
+	Barycentric(pt, a, b, c);
+	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
+}
+*/
 
-	return ((b1 == b2) && (b2 == b3));*/
+bool result;
+vec4 a, b, c;
+void Renderer::PointInTriangle(vec2& pt, Polygon3* P) {
+	a = P->a;
+	b = P->b;
+	c = P->c;
+	v0.x = b.x - a.x;
+	v0.y = b.y - a.y;
+	v1.x = c.x - a.x;
+	v1.y = c.y - a.y;
+	v2.x = pt.x - a.x;
+	v2.y = pt.y - a.y;
 
-	float test_a1, test_a2, test_a3;
-	test_a1 = test_a2 = test_a3 = 0;
-
-	Barycentric(pt, a, b, c, test_a1, test_a2, test_a3);
-
-	return (test_a1 > 0 && test_a2 > 0 && test_a3 > 0/* && test_a1 + test_a2 + test_a3 <= 1*/);
+	mag = v0.x * v1.y - v1.x * v0.y;
+	a1 = (v2.x * v1.y - v1.x * v2.y) / mag;
+	a2 = (v0.x * v2.y - v2.x * v0.y) / mag;
+	a3 = 1.0f - a1 - a2;
+	result = (a1 >= 0 && a2 >= 0 && a3 >= 0/* && test_a1 + test_a2 + test_a3 <= 1*/);
 }
 
-inline GLfloat Depth(vec3 p1, vec3 p2, vec3 p3, vec2 p){
-	float a1, a2, a3;
-	a1 = a2 = a3 = 0.0;
-	Barycentric(p, p1, p2, p3, a1, a2, a3);
-	return a1 * p1.z + a2 * p2.z + a3 * p3.z;
+/*
+bool Renderer::PointInTriangle(const vec2& pt, Polygon3& P) {
+
+	Barycentric(pt, P.a, P.b, P.c);
+	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
+}
+*/
+
+vec2 vec3TOvec2(vec4 v){
+	return vec2(v.x, v.y);
+}
+
+void Renderer::testPointInTriangle(int x, int y){
+	//Polygon3 p;
+	/*vector<Polygon3>::iterator i = globalClippedVertices.begin();
+	while (i != globalClippedVertices.end()){
+		if PointInTriangle(vec2(x, y), it->a, it->b, it->c)){
+
+		}
+	}*/
+	/*for (int i = 0; i < globalClippedVertices.size(); ++i){
+		if (PointInTriangle(vec2(x, y), globalClippedVertices[i].a, globalClippedVertices[i].b, globalClippedVertices[i].c)){
+			cout << i << endl;
+			setColor(0, 233, 244);
+			DrawLine(vec3TOvec2(globalClippedVertices[i].a+0.1), vec3TOvec2(globalClippedVertices[i].b+0.1));
+			setColor(256, 233, 244);
+		}
+			
+
+	}*/
+}
+
+
+
+
+inline GLfloat Depth(Polygon3* P, vec2& p){
+	Barycentric(p, P->a, P->b, P->c);
+	return a1 * P->a.z + a2 * P->b.z + a3 *P->c.z;
 }
 
 
@@ -196,35 +250,43 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vector<vec3>* no
 	vec4 currentVertice, currentVerticeZ;
 
 
-	// Transfermations for the Z-Buffer
 	vector<vec4> cameraVertices;
 	vector<vec4> clippedVertices;
 	clippedVertices.reserve(numberOfVertices);
 	cameraVertices.reserve(numberOfVertices);
-	vec3 a, b, c;
+	globalClippedVertices.reserve(1 + numberOfVertices / 3);
+	vec4 aa, bb, cc;
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
 		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
-		a.x = m_width*(currentVertice.x + 1) / 2;
-		a.y = m_height*(currentVertice.y + 1) / 2;
-		a.z = currentVerticeZ.z;
+		//currentVertice /= currentVertice.w;
+		aa.x = m_width*(currentVertice.x + 1) / 2;
+		aa.y = m_height*(currentVertice.y + 1) / 2;
+		aa.z = currentVerticeZ.z;
+		aa.w = 1;
 		++i;
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
 		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
-		b.x = m_width*(currentVertice.x + 1) / 2;
-		b.y = m_height*(currentVertice.y + 1) / 2;
-		b.z = currentVerticeZ.z;
+		//currentVertice /= currentVertice.w;
+		bb.x = m_width*(currentVertice.x + 1) / 2;
+		bb.y = m_height*(currentVertice.y + 1) / 2;
+		bb.z = currentVerticeZ.z;
+		bb.w = 1;
 		++i;
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
 		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
-		c.x = m_width*(currentVertice.x + 1) / 2;
-		c.y = m_height*(currentVertice.y + 1) / 2;
-		c.z = currentVerticeZ.z;
-		globalClippedVertices.push_back(Polygon3(a, b, c));
+		//currentVertice /= currentVertice.w;
+		cc.x = m_width*(currentVertice.x + 1) / 2;
+		cc.y = m_height*(currentVertice.y + 1) / 2;
+		cc.z = currentVerticeZ.z;
+		cc.w = 1;
+		globalClippedVertices.push_back(Polygon3(aa, bb, cc));
+
 
 		DrawLine(vec2(a.x, a.y), vec2(b.x, b.y));
 		DrawLine(vec2(b.x, b.y), vec2(c.x, c.y));
 		DrawLine(vec2(c.x, c.y), vec2(a.x, a.y));
+
 	}
 
 }
@@ -237,48 +299,48 @@ void Renderer::ScanLineZBuffer(){
 	if (globalClippedVertices.empty())
 		return;
 	sort(globalClippedVertices.begin(), globalClippedVertices.end(), Polygon3::Ysorting);
-	set<Polygon3> A;
+	list<Polygon3> A;
+
 	int lastI = 0;
-	for (int y = floor(globalClippedVertices[0].minY()); y < m_height; ++y){
-		if (y < 0)
-			continue;
-		if (y >= m_height)
-			break;
-		set<Polygon3>::iterator it = A.begin();
+	int minX, maxX;
+	int Asize;
+	vec2 pt;
+	int minY = max(0, floor(globalClippedVertices[0].minY()));
+	for (int y = minY; y < m_height; ++y){
+		list<Polygon3>::iterator it = A.begin();
 		while (it != A.end()){
-			if (round(it->maxY()) < y)
+			if (floor(it->maxY()) < y){
 				A.erase(it++);
+			}
 			else
 				++it;
 		}
 		for (int i = lastI; i < globalClippedVertices.size(); ++i){
-			if ((int)round(globalClippedVertices[i].minY()) == y){
-				A.insert(globalClippedVertices[i]);
+			if (round(globalClippedVertices[i].minY()) == y){
+				A.push_back(globalClippedVertices[i]);
 				lastI = i;
 			}
-			else if ((int)round(globalClippedVertices[i].minY()) > y){
+			else if (round(globalClippedVertices[i].minY()) > y){
 				break;
 			}
 		}
-
-		it = A.begin();
-		while (it != A.end()){
-			for (int x = floor(it->minX()); x <= round(it->maxX()); ++x)
-			if (x<0 || x>m_width)
-				continue;
-			else if (PointInTriangle(vec2(x, y), it->a, it->b, it->c)){
-				GLfloat z = Depth(it->a, it->b, it->c, vec2(x, y));
-				if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
-					m_zbuffer[INDEXZ(m_width, x, y)] = z;
-					putColor(x, y, NULL);
+		Asize = A.size();
+		pt.y = y;
+		for (it = A.begin(); it != A.end();++it){
+			minX = max(0, floor(it->minX()));
+			maxX = min(m_width, floor(it->maxX()));
+			for (int x = minX; x <= maxX; ++x){
+				pt.x = x;
+				PointInTriangle(pt, &it._Ptr->_Myval);
+				if (result){
+					GLfloat z = Depth(&it._Ptr->_Myval, pt);
+					if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
+						m_zbuffer[INDEXZ(m_width, x, y)] = z;
+						putColor(x, y, NULL);
+					}
 				}
 			}
-			else{
-				//m_outBuffer[INDEX(m_width, x, y, 0)] = 0;	m_outBuffer[INDEX(m_width, x, y, 1)] = 1;	m_outBuffer[INDEX(m_width, x, y, 2)] = 0.5;
-			}
-			++it;
 		}
-
 	}
 }
 
