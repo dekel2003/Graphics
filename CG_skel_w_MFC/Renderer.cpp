@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+﻿#include "StdAfx.h"
 #include "Renderer.h"
 #include "CG_skel_w_MFC.h"
 #include "InitShader.h"
@@ -76,49 +76,91 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 	this->object_to_world = oTransform;
 }
 
-void Renderer::DrawLine(vec2 a, vec2 b){
-	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
-	int xCounter = a.x < b.x ? 1 : -1;
-	int yCounter = a.y < b.y ? 1 : -1;
-	int deltaY = abs((int)a.y - (int)b.y) << 1;
-	int deltaX = abs((int)a.x - (int)b.x) << 1;
+void Renderer::draw_line_antialias(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, color_component r, color_component g, color_component b) {
+	double dx = (double)x2 - (double)x1;
+	double dy = (double)y2 - (double)y1;
+	if (fabs(dx) > fabs(dy)) {
+		if (x2 < x1) {
+			swap_(x1, x2);
+			swap_(y1, y2);
+		}
+		double gradient = dy / dx;
+		double xend = round_(x1);
+		double yend = y1 + gradient*(xend - x1);
+		double xgap = rfpart_(x1 + 0.5);
+		int xpxl1 = xend;
+		int ypxl1 = ipart_(yend);
+		plot_(xpxl1, ypxl1, rfpart_(yend)*xgap);
+		plot_(xpxl1, ypxl1 + 1, fpart_(yend)*xgap);
+		double intery = yend + gradient;
 
-	if (deltaX >= deltaY){	//slope<1
-		int errorInteger = deltaY - deltaX >> 1;
-		int deltaError = deltaY;
-		int deltaErrorNegation = deltaY - deltaX;
-		int y = a.y;
-		for (int x = a.x; xCounter*x <= xCounter*b.x; x = x + xCounter){
-			if (errorInteger > 0 && (errorInteger || (xCounter > 0))){
-				errorInteger += deltaErrorNegation;
-				y += yCounter;
-			}
-			else{
-				errorInteger += deltaError;
-			}
-			if (x > 0 && y > 0 && x < m_width && y < m_height){
-				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
-			}
+		xend = round_(x2);
+		yend = y2 + gradient*(xend - x2);
+		xgap = fpart_(x2 + 0.5);
+		int xpxl2 = xend;
+		int ypxl2 = ipart_(yend);
+		plot_(xpxl2, ypxl2, rfpart_(yend) * xgap);
+		plot_(xpxl2, ypxl2 + 1, fpart_(yend) * xgap);
+
+		int x;
+		for (x = xpxl1 + 1; x <= (xpxl2 - 1); x++) {
+			plot_(x, ipart_(intery), rfpart_(intery));
+			plot_(x, ipart_(intery) + 1, fpart_(intery));
+			intery += gradient;
 		}
 	}
-	else{
-		int errorInteger = deltaX - deltaY>>1;
-		int deltaError = deltaX;
-		int deltaErrorNegation = deltaX - deltaY;
-		int x = a.x;
-		for (int y = a.y; yCounter*y <= yCounter*b.y; y = y + yCounter){
-			if (errorInteger > 0 && (errorInteger || (yCounter > 0))){
-				errorInteger += deltaErrorNegation;
-				x = x + xCounter;
-			}
-			else{
-				errorInteger += deltaError;
-			}
-			if (x > 0 && y > 0 && x < m_width && y < m_height){
-				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
-			}
+	else {
+		if (y2 < y1) {
+			swap_(x1, x2);
+			swap_(y1, y2);
+		}
+		double gradient = dx / dy;
+		double yend = round_(y1);
+		double xend = x1 + gradient*(yend - y1);
+		double ygap = rfpart_(y1 + 0.5);
+		int ypxl1 = yend;
+		int xpxl1 = ipart_(xend);
+		plot_(xpxl1, ypxl1, rfpart_(xend)*ygap);
+		plot_(xpxl1, ypxl1 + 1, fpart_(xend)*ygap);
+		double interx = xend + gradient;
+
+		yend = round_(y2);
+		xend = x2 + gradient*(yend - y2);
+		ygap = fpart_(y2 + 0.5);
+		int ypxl2 = yend;
+		int xpxl2 = ipart_(xend);
+		plot_(xpxl2, ypxl2, rfpart_(xend) * ygap);
+		plot_(xpxl2, ypxl2 + 1, fpart_(xend) * ygap);
+
+		int y;
+		for (y = ypxl1 + 1; y <= (ypxl2 - 1); y++) {
+			plot_(ipart_(interx), y, rfpart_(interx));
+			plot_(ipart_(interx) + 1, y, fpart_(interx));
+			interx += gradient;
 		}
 	}
+}
+#undef swap_
+#undef plot_
+#undef ipart_
+#undef fpart_
+#undef round_
+#undef rfpart_
+
+void Renderer::DrawLine(vec2 a, vec2 b) {
+	draw_line_antialias(a.x, a.y, b.x, b.y, R, G, B);
+}
+
+void Renderer::drawPoint(int x, int y, GLfloat intensity) {
+	/*m_outBuffer[INDEX(m_width, x, y, 0)] = R;
+	m_outBuffer[INDEX(m_width, x, y, 1)] = G;
+	m_outBuffer[INDEX(m_width, x, y, 2)] = B;*/
+	/*m_outBuffer[INDEX(m_width, x, y, 0)] = ((m_outBuffer[INDEX(m_width, x, y, 0)] * intensity) + (R * (1.0f - intensity)));
+	m_outBuffer[INDEX(m_width, x, y, 1)] = ((m_outBuffer[INDEX(m_width, x, y, 1)] * intensity) + (G * (1.0f - intensity)));
+	m_outBuffer[INDEX(m_width, x, y, 2)] = ((m_outBuffer[INDEX(m_width, x, y, 2)] * intensity) + (B * (1.0f - intensity)));*/
+	m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 255);
+	m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 255);
+	m_outBuffer[INDEX(m_width, x, y, 2)] = min(m_outBuffer[INDEX(m_width, x, y, 2)] + B, 255);
 }
 
 void Renderer::setColor(float red, float green, float blue){
@@ -232,8 +274,11 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 			m_outBuffer[INDEX(m_width, j, i, 1)] = m_zbuffer[INDEXZ(m_width, j, i)];	
 		}
 	}
+	GLfloat tempR = R * 255;
+	GLfloat tempG = G * 255;
+	GLfloat tempB = B * 255;
 	// Normal colors drawing
-	for (int i = 0; i < numberOfVertices; ++i){
+	for (int i = 0; i < numberOfVertices; ++i) {
 		vec2 a, b, c;
 		a = vec4toVec2(clippedVertices[i++]);
 		b = vec4toVec2(clippedVertices[i++]);
@@ -242,8 +287,11 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 			a.x > m_width || b.x >= m_width || c.x >= m_width || a.y >= m_height || b.y >= m_height || c.y >= m_height){
 			continue;
 		}
+		setColor(tempR, tempG, tempB);
 		DrawLine(a, b);
+		setColor(tempR, tempG, tempB);
 		DrawLine(b, c);
+		setColor(tempR, tempG, tempB);
 		DrawLine(c, a);
 	}
 }

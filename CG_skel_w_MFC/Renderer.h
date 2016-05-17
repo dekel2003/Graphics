@@ -7,6 +7,16 @@
 
 using namespace std;
 
+#define color_component float
+#define plot_(X,Y,D) do{ rgb_color f_;				\
+	f_.red = r; f_.green = g; f_.blue = b;			\
+	_dla_plot((X), (Y), &f_, (D)); }while (0)
+#define ipart_(X) ((int)(X))
+#define round_(X) ((int)(((double)(X))+0.5))
+#define fpart_(X) (((double)(X))-(double)ipart_(X))
+#define rfpart_(X) (1.0-fpart_(X))
+#define swap_(a, b) do{ decltype(a) tmp;  tmp = a; a = b; b = tmp; }while(0)
+
 class Renderer
 {
 	//////////////////////////////
@@ -22,6 +32,7 @@ class Renderer
 	int m_width;
 	int m_height;
 	int m_TotalNumberOfPixels;
+	float R, G, B;
 
 	mat4 projectionMatrix; //(P)
 	mat4 world_to_camera; //  (Tc)
@@ -29,9 +40,34 @@ class Renderer
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2);
+	inline
+	bool isInside(GLfloat x, GLfloat y) {
+		return (x >= 0 && m_width > x) && (y >= 0 && m_height > y);
+	}
+	void drawPoint(int x, int y, GLfloat intensity = 0.5f);
+	struct rgb_color {
+		float red;
+		float green;
+		float blue;
+	};
+	inline void _dla_changebrightness(rgb_color* from, rgb_color* to, float br)	{
+		if (br > 1.0) br = 1.0;
+		to->red = br * (float)from->red;
+		to->green = br * (float)from->green;
+		to->blue = br * (float)from->blue;
+	}
+	inline void _dla_plot(int x, int y, rgb_color* col, float br) {
+		rgb_color oc;
+		_dla_changebrightness(col, &oc, br);
+		if (isInside(x, y)) {
+			setColor(oc.red * 255, oc.green * 255, oc.blue * 255);
+			drawPoint(x, y);
+		}
+	}
+	void draw_line_antialias(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, color_component r, color_component g, color_component b);
+	void IntensifyPixel(int x, int y, GLfloat distance);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
-	float R, G, B;
 	//int GetRange(double y1, double y2, int& maxY);
 	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
 	float sign(vec2 p1, vec4 p2, vec4 p3);
