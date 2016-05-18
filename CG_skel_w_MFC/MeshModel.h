@@ -11,7 +11,7 @@ class MeshModel : public Model
 protected :
 	MeshModel() {}
 	vector<vec4> vertex_positions;
-	vector<vec3> normals2vertices;
+	vector<vec3> normals2vertices, normalsToFacesGeneralForm;
 	vector<pair<vec3, vec3>> normalsToFaces;
 	vector<pair<vec3, vec3>> normalsToVertices;
 	vec4 massCenter;
@@ -25,6 +25,9 @@ protected :
 	GLfloat minX, minY, minZ ,maxX , maxY, maxZ;
 	vec4 cube[8];
 	void computeNormalsPerFace();
+
+	vec3 baseColor = vec3(256, 50, 50);
+
 public:
 
 	MeshModel(string fileName);

@@ -157,7 +157,7 @@ void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	//renderer->DrawTriangles(&vertex_positions);
-	renderer->AddTriangles(&vertex_positions, vec3(256,256,256));
+	renderer->AddTriangles(&vertex_positions, vec3(0, 50, 50), &normalsToFacesGeneralForm);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)
@@ -212,6 +212,7 @@ void MeshModel::computeNormalsPerFace(){
 		vec3 pointOne = vec3((xi.x + xk.x + xj.x) / 3, (xi.y + xk.y + xj.y) / 3, (xi.z + xk.z + xj.z) / 3);
 		vec3 pointTwo = pointOne + normalize(normal) * normalVectorsSize;
 		normalsToFaces.push_back(pair<vec3, vec3>(pointOne, pointTwo));
+		normalsToFacesGeneralForm.push_back(normalize(pointTwo - pointOne));
 	}
 }
 

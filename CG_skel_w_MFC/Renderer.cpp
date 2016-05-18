@@ -242,13 +242,18 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 	return a1 * P->a.z + a2 * P->b.z + a3 *P->c.z;
 }
 
+inline vec3 vec4TOvec3(vec4 v){
+	return vec3(v.x,v.y,v.z);
+}
 
-void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color){
+
+void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals){
 	mat4 objectToCamera = world_to_camera * object_to_world;
 	mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
-	vec4 currentVertice, currentVerticeZ;
-
+	vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
+	vec4 eye = vec3(0.5, 0.5, 0), l,n,r,e;
+	float teta;
 
 	vector<vec4> cameraVertices;
 	vector<vec4> clippedVertices;
@@ -257,30 +262,47 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color){
 	globalClippedVertices.reserve(numberOfVertices + globalClippedVertices.size());
 	vec4 aa, bb, cc;
 	for (int i = 0; i < numberOfVertices; ++i){
-		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
-		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_A);
+		projectionMatrix.MultiplyVec(currentVerticeZ_A, currentVertice);
 		//currentVertice /= currentVertice.w;
 		aa.x = m_width*(currentVertice.x + 1) / 2;
 		aa.y = m_height*(currentVertice.y + 1) / 2;
-		aa.z = currentVerticeZ.z;
+		aa.z = currentVerticeZ_A.z;
 		aa.w = 1;
 		++i;
-		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
-		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_B);
+		projectionMatrix.MultiplyVec(currentVerticeZ_B, currentVertice);
 		//currentVertice /= currentVertice.w;
 		bb.x = m_width*(currentVertice.x + 1) / 2;
 		bb.y = m_height*(currentVertice.y + 1) / 2;
-		bb.z = currentVerticeZ.z;
+		bb.z = currentVerticeZ_B.z;
 		bb.w = 1;
 		++i;
-		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
-		projectionMatrix.MultiplyVec(currentVerticeZ, currentVertice);
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_C);
+		projectionMatrix.MultiplyVec(currentVerticeZ_C, currentVertice);
 		//currentVertice /= currentVertice.w;
 		cc.x = m_width*(currentVertice.x + 1) / 2;
 		cc.y = m_height*(currentVertice.y + 1) / 2;
-		cc.z = currentVerticeZ.z;
+		cc.z = currentVerticeZ_C.z;
 		cc.w = 1;
-		globalClippedVertices.push_back(Polygon3(aa, bb, cc));
+
+		vec3 polygonColor = (color / 500 + vec3(0.01))*AmbientIntensity;
+
+		for (int j = 0; j < lights->size(); ++j){
+			//(*lights)[i]->location
+			world_to_camera.MultiplyVec(-(*lights)[j]->location, currentVertice); 
+			objectToCamera.MultiplyVec(normals->at(i / 3), currentNormal);
+			
+			n = normalize(vec4TOvec3(currentNormal));
+			l = normalize((vec4TOvec3((currentVerticeZ_A + currentVerticeZ_B + currentVerticeZ_C) / 3 - currentVertice)));
+			teta = dot(l, n);
+			r = normalize((2 * teta * n) + l);
+			e = -normalize(eye - vec4TOvec3((currentVerticeZ_A + currentVerticeZ_B + currentVerticeZ_C) / 3));
+			polygonColor += polygonColor *  max(1, 1 / AmbientIntensity) * max(0, teta);
+			polygonColor += polygonColor * max(1, 100 / AmbientIntensity) * pow(max(0, dot(r,e)), 10);
+		}
+
+		globalClippedVertices.push_back(Polygon3(aa, bb, cc, polygonColor, normals->at(i / 3)));
 
 
 		DrawLine(vec2(a.x, a.y), vec2(b.x, b.y));
@@ -288,11 +310,16 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color){
 		DrawLine(vec2(c.x, c.y), vec2(a.x, a.y));
 
 	}
-
 }
 
+
 void Renderer::putColor(int x, int y, Polygon3* P){
-	m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+
+	//m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 1);
+	//m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 1);
+	//m_outBuffer[INDEX(m_width, x, y, 2)] = min(m_outBuffer[INDEX(m_width, x, y, 2)] + B, 1);
+
+	m_outBuffer[INDEX(m_width, x, y, 0)] = P->baseColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = P->baseColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = P->baseColor.z;
 }
 
 void Renderer::drawZBuffer(){
@@ -327,7 +354,7 @@ void Renderer::drawZBuffer(){
 	}
 }
 
-
+/*
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToCamera = world_to_camera * object_to_world;
 	mat4 objectToClip = projectionMatrix * objectToCamera;
@@ -426,6 +453,7 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		DrawLine(c, a);
 	}
 }
+*/
 
 GLfloat Renderer::getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1) {
 	GLfloat aOne;
@@ -467,7 +495,13 @@ int Renderer::GetHeight() {
 	return m_height;
 }
 
+void Renderer::SetLights(vector<Light*>* l){
+	lights = l;
+}
 
+void Renderer::setAmbientLight(float intensity){
+	AmbientIntensity = intensity;
+}
 
 
 

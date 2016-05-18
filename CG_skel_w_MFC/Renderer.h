@@ -1,16 +1,20 @@
 #pragma once
 #include <vector>
+#include "stdafx.h"
 #include "CG_skel_w_MFC.h"
 #include "vec.h"
 #include "mat.h"
 #include "GL/glew.h"
+#include "Light.h"
+
 
 using namespace std;
 
 class Polygon3{
 public:
 	vec4 a, b, c;
-	vec3 baseColor = vec3(256, 256, 256);
+	vec3 baseColor;
+	vec3 normal;
 	Polygon3(){}
 	Polygon3(vec4 _a, vec4 _b, vec4 _c) :a(_a), b(_b), c(_c){
 		/*a /= a.w;
@@ -18,15 +22,14 @@ public:
 		c /= c.w;*/
 
 		/*if (a.y > b.y)
-			swap(a, b);
+		swap(a, b);
 		if (a.y > c.y)
-			swap(a, c);
+		swap(a, c);
 		if (b.y > c.y)
-			swap(b, c);*/
+		swap(b, c);*/
 	}
-	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color) :a(_a), b(_b), c(_c), baseColor(color){
-
-	}
+	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color) :a(_a), b(_b), c(_c), baseColor(color){}
+	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec3 _normal) :a(_a), b(_b), c(_c), baseColor(color), normal(_normal){}
 	inline float minY() const{
 		return min(a.y, min(b.y, c.y));
 	}
@@ -43,10 +46,10 @@ public:
 		return s.minY() < t.minY();
 	}
 	/*inline void getXrange(float currY, int& xStart, int& xEnd) const{
-		float A, B, C;
-		A = b.y - a.y;
-		B = a.x - b.x;
-		C = b.x * a.y - a.x * b.y;
+	float A, B, C;
+	A = b.y - a.y;
+	B = a.x - b.x;
+	C = b.x * a.y - a.x * b.y;
 	}*/
 
 	bool operator< (const Polygon3& p) const {
@@ -71,6 +74,7 @@ class Renderer
 	int m_TotalNumberOfPixels;
 
 	vector<Polygon3> globalClippedVertices;
+	vector<Light*>* lights = NULL;
 
 	mat4 projectionMatrix; //(P)
 	mat4 world_to_camera; //  (Tc)
@@ -91,9 +95,10 @@ class Renderer
 	void putColor(int x, int y, Polygon3* P);
 
 
-
+	float AmbientIntensity = 1.0f;
 
 public:
+	void setAmbientLight(float intensity);
 	void drawZBuffer();
 
 	void CreateBuffers(int width, int height); // initially private
@@ -101,10 +106,12 @@ public:
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
-	void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
-	void AddTriangles(const vector<vec4>* vertices, const vec3 color);
+	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
+	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
+
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
+	void SetLights(vector<Light*>* lights);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform); //only The Active Model - ask Itay about nTransform
 	void SwapBuffers();
 	void ClearColorBuffer();

@@ -329,9 +329,16 @@ void lightMenu(int id)
 	if (id == 0){
 		scene->addLight();
 	}
-	else
+	else if (id == 1){
+		CCmdDialog dlg;
+		if (dlg.DoModal() == IDOK){
+			renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
+		}
+
+	}
+	else 
 	{
-		scene->activeLight = id - 1;
+		scene->activeLight = id - 2;
 	}
 	display();
 }
@@ -423,10 +430,9 @@ void addCameraToMenu(){
 
 void addLightToMenu(){
 	cout << "menu:   view=" << menuView << " light=" << menuLight << endl;
-	static int numLights = 1;
+	static int numLights = 2;
 	glutSetMenu(menuLight);
-	sprintf(c, "%s", to_string(numLights).c_str());
-	cout << to_string(numLights) << endl << to_string(numLights).c_str() << endl;
+	sprintf(c, "%s", to_string(numLights-1).c_str());
 	glutAddMenuEntry(c, numLights);
 	glutSetMenu(mainMenuRef);
 	glutChangeToSubMenu(menuLight, "Choose Light", menuLight);
@@ -447,6 +453,7 @@ void initMenu()
 	glutAddMenuEntry("0", 1);
 	menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("Add light", 0);
+	glutAddMenuEntry("Change Ambient Light", 1);
 	menuFaceNormals = glutCreateMenu(normalsPerFaceMenu);
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);

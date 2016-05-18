@@ -20,22 +20,8 @@ public:
 	void virtual drawVertexNormals(Renderer* renderer)=0;
 protected:
 	virtual ~Model() {}
-	
 };
 
-
-class Light {
-
-	vec4 location;
-public:
-	Light(){
-		location = vec4(-1, 1, -1, 1);
-	}
-	void move(GLfloat dx, GLfloat dy);
-	void rotate(GLfloat dx, GLfloat dy);
-	void move(GLfloat dz);
-	void rotate(GLfloat dz);
-};
 
 class Camera {
 	
@@ -70,6 +56,8 @@ public:
 	void move(GLfloat dz);
 	void rotate(GLfloat dz);
 	void draw(Renderer* renderer);
+
+	
 };
 
 
@@ -101,6 +89,7 @@ public:
 		activeCamera = 0;
 		activeModel = -1;
 		activeLight = -1;
+		m_renderer->SetLights(&lights);
 	};
 
 	int numModels();
@@ -109,6 +98,7 @@ public:
 	void addPrimModel();
 	void addCamera();
 	void addLight();
+
 	void LookAt();
 	void draw();
 	void drawXY();

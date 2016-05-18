@@ -224,7 +224,7 @@ void Scene::moveCamera(GLfloat dz){
 }
 
 void Scene::rotateCurrentCamera(GLfloat dz){
-	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->GetHeight());
+	cameras[activeCamera]->rotate((dz) / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::setNormalsPerFaceOn(){
@@ -266,7 +266,7 @@ mat4 Camera::normalizedProjection(){
 	//mat4* tmp = new mat4();
 	//tmp = &(ST * projection);
 	//return *tmp;
-	return projection * ST;
+	return ST * projection;
 }
 
 void Camera::zoomIn(){
@@ -292,7 +292,7 @@ void Camera::move(GLfloat dx, GLfloat dy){
 }
 
 void Camera::rotate(GLfloat dx, GLfloat dy){
-	world_to_camera = RotateZ(-dx) * world_to_camera;
+	world_to_camera = RotateY(-dx) * world_to_camera;
 	world_to_camera = RotateX(dy) * world_to_camera;
 }
 
@@ -302,7 +302,8 @@ void Camera::move(GLfloat dz){
 }
 
 void Camera::rotate(GLfloat dz){
-	world_to_camera = RotateY(-dz) * world_to_camera;
+	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
+	position -= vec4(0, 0, dz, 0);
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
@@ -371,8 +372,8 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 
 	ST = mat4();
 	ST[2][2] = - (zNear+zFar)/(zNear-zFar);
-	ST[2][3] = -(2 * zNear * zFar) / (zNear - zFar);
-	ST[3][2] = -1;
+	ST[3][2] = -(2 * zNear * zFar) / (zNear - zFar);
+	ST[2][3] = -1;
 	ST[3][3] = 0;
 
 
@@ -423,17 +424,3 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
 //	frustum(xmin, xmax, ymin, ymax, znear, zfar);
 //}
 
-
-
-
-void Light::move(GLfloat dx, GLfloat dy){
-	location.x += dx;
-	location.y += dy;
-}
-	
-void Light::move(GLfloat dz){
-	location.z += dz;
-}
-
-//void Light::rotate(GLfloat dx, GLfloat dy);
-//void Light::rotate(GLfloat dz);
