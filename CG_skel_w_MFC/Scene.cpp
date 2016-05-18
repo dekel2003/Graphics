@@ -224,7 +224,7 @@ void Scene::moveCamera(GLfloat dz){
 }
 
 void Scene::rotateCurrentCamera(GLfloat dz){
-	cameras[activeCamera]->rotate((dz) / (GLfloat)m_renderer->GetHeight());
+	cameras[activeCamera]->rotate(-dz / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::setNormalsPerFaceOn(){
@@ -266,7 +266,7 @@ mat4 Camera::normalizedProjection(){
 	//mat4* tmp = new mat4();
 	//tmp = &(ST * projection);
 	//return *tmp;
-	return ST * projection;
+	return  projection * ST;
 }
 
 void Camera::zoomIn(){
@@ -371,16 +371,18 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 
 
 	ST = mat4();
-	ST[2][2] = - (zNear+zFar)/(zNear-zFar);
-	ST[3][2] = -(2 * zNear * zFar) / (zNear - zFar);
-	ST[2][3] = -1;
+	ST[0][0] = -zNear;
+	ST[1][1] = -zNear;
+	ST[2][2] = -(zNear+zFar)/(zNear-zFar);
+	ST[2][3] = -(2 * zNear * zFar) / (zNear - zFar);
+	ST[3][2] = 1;
 	ST[3][3] = 0;
 
 
 	//Set projecion Matrix
 	projection = mat4();
-	projection[3][3] = 0;
-	projection[3][2] = 1.0/perspectiveD;
+	/*projection[3][3] = 0;
+	projection[3][2] = 1.0/perspectiveD;*/
 
 	cube[0] = vec3(left, bottom, zNear);
 	cube[1] = vec3(left, bottom, zFar);

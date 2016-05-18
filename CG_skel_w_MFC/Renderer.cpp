@@ -85,6 +85,8 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 }
 
 void Renderer::DrawLine(vec2 a, vec2 b){
+	if (a.x > 1000 || a.x < -1000 || b.x>1000 || b.x>1000)
+		return;
 	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
 	int xCounter = a.x < b.x ? 1 : -1;
 	int yCounter = a.y < b.y ? 1 : -1;
@@ -141,6 +143,7 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 	vecA = objectToClip * _vecA;
 	vecB = objectToClip * _vecB;
+
 	vecA /= vecA.w;
 	vecB /= vecB.w;
 
@@ -264,7 +267,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_A);
 		projectionMatrix.MultiplyVec(currentVerticeZ_A, currentVertice);
-		//currentVertice /= currentVertice.w;
+		currentVertice /= currentVertice.w;
 		aa.x = m_width*(currentVertice.x + 1) / 2;
 		aa.y = m_height*(currentVertice.y + 1) / 2;
 		aa.z = currentVerticeZ_A.z;
@@ -272,7 +275,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		++i;
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_B);
 		projectionMatrix.MultiplyVec(currentVerticeZ_B, currentVertice);
-		//currentVertice /= currentVertice.w;
+		currentVertice /= currentVertice.w;
 		bb.x = m_width*(currentVertice.x + 1) / 2;
 		bb.y = m_height*(currentVertice.y + 1) / 2;
 		bb.z = currentVerticeZ_B.z;
@@ -280,7 +283,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		++i;
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_C);
 		projectionMatrix.MultiplyVec(currentVerticeZ_C, currentVertice);
-		//currentVertice /= currentVertice.w;
+		currentVertice /= currentVertice.w;
 		cc.x = m_width*(currentVertice.x + 1) / 2;
 		cc.y = m_height*(currentVertice.y + 1) / 2;
 		cc.z = currentVerticeZ_C.z;
@@ -305,9 +308,9 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		globalClippedVertices.push_back(Polygon3(aa, bb, cc, polygonColor, normals->at(i / 3)));
 
 
-		DrawLine(vec2(a.x, a.y), vec2(b.x, b.y));
-		DrawLine(vec2(b.x, b.y), vec2(c.x, c.y));
-		DrawLine(vec2(c.x, c.y), vec2(a.x, a.y));
+		DrawLine(vec2(aa.x, aa.y), vec2(bb.x, bb.y));
+		DrawLine(vec2(bb.x, bb.y), vec2(cc.x, cc.y));
+		DrawLine(vec2(cc.x, cc.y), vec2(aa.x, aa.y));
 
 	}
 }
