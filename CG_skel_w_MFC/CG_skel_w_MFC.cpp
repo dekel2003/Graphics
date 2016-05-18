@@ -30,13 +30,13 @@
 #define VIEW_PERSPECTIVE 2
 #define NORMAL_ON 1
 #define NORMAL_OFF 2
-#define MAIN_DEMO 9
-#define MAIN_ABOUT 10
+#define MAIN_DEMO 10
+#define MAIN_ABOUT 11
 #define ADD_SPHERE 7
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, mainMenuRef, menuCamera, menuLight, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -324,6 +324,19 @@ void cameraMenu(int id)
 	display();
 }
 
+void lightMenu(int id)
+{
+	if (id == 0){
+		scene->addLight();
+	}
+	else
+	{
+		scene->activeLight = id - 1;
+	}
+	display();
+}
+
+
 void viewMenu(int id)
 {
 	CFrustumDialog dlg;
@@ -397,7 +410,6 @@ void addMeshToMenu(){
 }
 
 void addCameraToMenu(){
-	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
 	static int numCameras = 1;
 	glutSetMenu(menuCamera);
 	sprintf(c, "%s", to_string(numCameras).c_str());
@@ -406,6 +418,19 @@ void addCameraToMenu(){
 	glutSetMenu(mainMenuRef);
 	glutChangeToSubMenu(menuCamera, "Choose Camera", menuCamera);
 	numCameras++;
+	glutAttachMenu(GLUT_RIGHT_BUTTON);
+}
+
+void addLightToMenu(){
+	cout << "menu:   view=" << menuView << " light=" << menuLight << endl;
+	static int numLights = 1;
+	glutSetMenu(menuLight);
+	sprintf(c, "%s", to_string(numLights).c_str());
+	cout << to_string(numLights) << endl << to_string(numLights).c_str() << endl;
+	glutAddMenuEntry(c, numLights);
+	glutSetMenu(mainMenuRef);
+	glutChangeToSubMenu(menuLight, "Choose Light", menuLight);
+	numLights++;
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
 }
 
@@ -420,6 +445,8 @@ void initMenu()
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);
+	menuLight = glutCreateMenu(lightMenu);
+	glutAddMenuEntry("Add light", 0);
 	menuFaceNormals = glutCreateMenu(normalsPerFaceMenu);
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);
@@ -430,13 +457,14 @@ void initMenu()
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);
 	menuView = glutCreateMenu(viewMenu);
-	cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
+	//cout << "menu:   view=" << menuView << " cam=" << menuCamera << endl;
 	glutAddMenuEntry("Orthogonal", VIEW_ORTHOGONAL);
 	glutAddMenuEntry("Perspective", VIEW_PERSPECTIVE);
 	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddSubMenu("Choose Model", menuMesh);
 	glutAddSubMenu("Choose Camera", menuCamera);
+	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
 	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);

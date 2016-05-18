@@ -243,7 +243,7 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 }
 
 
-void Renderer::AddTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
+void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color){
 	mat4 objectToCamera = world_to_camera * object_to_world;
 	mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
@@ -254,7 +254,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vector<vec3>* no
 	vector<vec4> clippedVertices;
 	clippedVertices.reserve(numberOfVertices);
 	cameraVertices.reserve(numberOfVertices);
-	globalClippedVertices.reserve(1 + numberOfVertices / 3);
+	globalClippedVertices.reserve(numberOfVertices + globalClippedVertices.size());
 	vec4 aa, bb, cc;
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ);
@@ -295,48 +295,31 @@ void Renderer::putColor(int x, int y, Polygon3* P){
 	m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
 }
 
-void Renderer::ScanLineZBuffer(){
+void Renderer::drawZBuffer(){
 	if (globalClippedVertices.empty())
 		return;
-	sort(globalClippedVertices.begin(), globalClippedVertices.end(), Polygon3::Ysorting);
-	list<Polygon3> A;
-
-	int lastI = 0;
+	int x, y;
 	int minX, maxX;
-	int Asize;
+	int minY, maxY;
 	vec2 pt;
-	int minY = max(0, floor(globalClippedVertices[0].minY()));
-	for (int y = minY; y < m_height; ++y){
-		list<Polygon3>::iterator it = A.begin();
-		while (it != A.end()){
-			if (floor(it->maxY()) < y){
-				A.erase(it++);
-			}
-			else
-				++it;
-		}
-		for (int i = lastI; i < globalClippedVertices.size(); ++i){
-			if (round(globalClippedVertices[i].minY()) == y){
-				A.push_back(globalClippedVertices[i]);
-				lastI = i;
-			}
-			else if (round(globalClippedVertices[i].minY()) > y){
-				break;
-			}
-		}
-		Asize = A.size();
-		pt.y = y;
-		for (it = A.begin(); it != A.end();++it){
-			minX = max(0, floor(it->minX()));
-			maxX = min(m_width, floor(it->maxX()));
+	int globalClippedVerticesSize = globalClippedVertices.size();
+	Polygon3* currentPolygon;
+	for (int i = 0; i < globalClippedVerticesSize; ++i){
+		currentPolygon = &globalClippedVertices[i];
+		minY = max(0, floor(currentPolygon->minY()));
+		maxY = min(m_height, ceil(currentPolygon->maxY()));
+		minX = max(0, floor(currentPolygon->minX()));
+		maxX = min(m_width, ceil(currentPolygon->maxX()));
+		for (y = minY; y < maxY; ++y){
+			pt.y = y;
 			for (int x = minX; x <= maxX; ++x){
 				pt.x = x;
-				PointInTriangle(pt, &it._Ptr->_Myval);
+				PointInTriangle(pt, currentPolygon); //set "result" for the next line instead of instantiating a new variable.
 				if (result){
-					GLfloat z = Depth(&it._Ptr->_Myval, pt);
+					GLfloat z = Depth(currentPolygon, pt);
 					if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
 						m_zbuffer[INDEXZ(m_width, x, y)] = z;
-						putColor(x, y, NULL);
+						putColor(x, y, currentPolygon);
 					}
 				}
 			}
@@ -484,6 +467,10 @@ int Renderer::GetHeight() {
 	return m_height;
 }
 
+
+
+
+
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.
 
@@ -560,3 +547,9 @@ void Renderer::SwapBuffers()
 	glutSwapBuffers();
 	a = glGetError();
 }
+
+
+
+
+
+

@@ -17,6 +17,13 @@ int Scene::numCameras(){
 	return cameras.size();
 }
 
+void Scene::addLight(){
+	Light * light = new Light;
+	lights.push_back(light);
+	activeLight = lights.size() - 1;
+	addLightToMenu();
+}
+
 void Scene::loadOBJModel(string fileName)
 {
 	MeshModel *model = new MeshModel(fileName);
@@ -102,7 +109,7 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
-	m_renderer->ScanLineZBuffer();
+	m_renderer->drawZBuffer();
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
@@ -259,7 +266,7 @@ mat4 Camera::normalizedProjection(){
 	//mat4* tmp = new mat4();
 	//tmp = &(ST * projection);
 	//return *tmp;
-	return ST * projection;
+	return projection * ST;
 }
 
 void Camera::zoomIn(){
@@ -415,3 +422,18 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
 //	xmax = ymax*aspectratio;
 //	frustum(xmin, xmax, ymin, ymax, znear, zfar);
 //}
+
+
+
+
+void Light::move(GLfloat dx, GLfloat dy){
+	location.x += dx;
+	location.y += dy;
+}
+	
+void Light::move(GLfloat dz){
+	location.z += dz;
+}
+
+//void Light::rotate(GLfloat dx, GLfloat dy);
+//void Light::rotate(GLfloat dz);
