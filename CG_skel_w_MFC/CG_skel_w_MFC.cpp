@@ -36,7 +36,7 @@
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuLight, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -325,7 +325,6 @@ void cameraMenu(int id)
 }
 
 bool lightMenuBeingUsed = false;
-
 void lightMenu(int id)
 {
 	if (lightMenuBeingUsed == false) {
@@ -349,6 +348,46 @@ void lightMenu(int id)
 	}
 }
 
+vector<GLfloat> split(const string &text, char sep) {
+	vector<string> tokens;
+	size_t start = 0, end = 0;
+	while ((end = text.find(sep, start)) != string::npos) {
+		tokens.push_back(text.substr(start, end - start));
+		start = end + 1;
+	}
+	tokens.push_back(text.substr(start));
+	vector<GLfloat> result;
+	result.push_back(stoi(tokens[0]));
+	result.push_back(stoi(tokens[1]));
+	result.push_back(stoi(tokens[2]));
+	return result;
+}
+
+bool fogMenuBeingUsed = false;
+void fogMenu(int id)
+{
+	if (fogMenuBeingUsed == false) {
+		fogMenuBeingUsed = true;
+		if (id == 0){
+			scene->EnableFog();
+		} 
+		else  if (id == 1) {
+			scene->DisableFog();
+		} else if (id == 2) {
+			CCmdDialog dlg;
+			if (dlg.DoModal() == IDOK){
+				vector<GLfloat> input = split(dlg.GetCmd(), ',');
+				scene->setFogColor(input[0], input[1], input[2]);
+			}
+		}
+		else
+		{
+			scene->activeLight = id - 2;
+		}
+		display();
+		fogMenuBeingUsed = false;
+	}
+}
 
 void viewMenu(int id)
 {
@@ -450,7 +489,6 @@ void addLightToMenu(){
 
 void initMenu()
 {
-
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
 	menuMesh = glutCreateMenu(meshMenu);
@@ -460,6 +498,10 @@ void initMenu()
 	menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("Add light", 0);
 	glutAddMenuEntry("Change Ambient Light", 1);
+	menuFog = glutCreateMenu(fogMenu);
+	glutAddMenuEntry("On", 0);
+	glutAddMenuEntry("Off", 1);
+	glutAddMenuEntry("Set Color", 2);
 	menuFaceNormals = glutCreateMenu(normalsPerFaceMenu);
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);
@@ -478,6 +520,7 @@ void initMenu()
 	glutAddSubMenu("Choose Model", menuMesh);
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
+	glutAddSubMenu("Choose Fog", menuFog);
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
 	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);
@@ -534,7 +577,7 @@ int my_main( int argc, char **argv )
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS
-	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
+	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\dolphin.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\cow.obj"); // DELETE THIS
 
