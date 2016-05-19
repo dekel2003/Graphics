@@ -20,19 +20,14 @@ public:
 	void virtual drawVertexNormals(Renderer* renderer)=0;
 protected:
 	virtual ~Model() {}
-	
 };
 
-
-class Light {
-
-};
 
 class Camera {
 	
 	mat4 projection; // camera to screen
 	mat4 ST;
-	float perspectiveD = -0.5;
+	float perspectiveD = 0.1;
 	
 	//float left, right, bottom, top, zNear, zFar;
 	vec4 cube[8];
@@ -61,6 +56,8 @@ public:
 	void move(GLfloat dz);
 	void rotate(GLfloat dz);
 	void draw(Renderer* renderer);
+
+	
 };
 
 
@@ -84,12 +81,15 @@ public:
 		cameras.push_back(camera);
 		activeCamera = 0;
 		activeModel = -1;
+		activeLight = -1;
 	};
 	Scene(Renderer *renderer) : m_renderer(renderer) {
 		Camera * camera = new Camera;
 		cameras.push_back(camera);
 		activeCamera = 0;
 		activeModel = -1;
+		activeLight = -1;
+		m_renderer->SetLights(&lights);
 	};
 
 	int numModels();
@@ -97,6 +97,8 @@ public:
 	void loadOBJModel(string fileName);
 	void addPrimModel();
 	void addCamera();
+	void addLight();
+
 	void LookAt();
 	void draw();
 	void drawXY();

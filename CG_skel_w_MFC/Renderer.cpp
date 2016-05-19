@@ -1,8 +1,12 @@
-﻿#include "StdAfx.h"
+#include "StdAfx.h"
 #include "Renderer.h"
 #include "CG_skel_w_MFC.h"
 #include "InitShader.h"
 #include "GL\freeglut.h"
+
+#include <algorithm>
+#include <set>
+#include <list>
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
@@ -43,6 +47,10 @@ void Renderer::CreateBuffers(int width, int height)
 void Renderer::Invalidate(){
 	for (int i = 0; i < 3 * m_width*m_height; ++i)
 		m_outBuffer[i] = 0.1;
+	globalClippedVertices.clear();
+	for (int y = 0; y < m_height; ++y)
+		for (int x = 0; x < m_width; ++x)
+			m_zbuffer[INDEXZ(m_width, x, y)] = 5000; //TODO: max-z as back of the world...
 }
 
 void Renderer::SetDemoBuffer()
@@ -76,91 +84,51 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform)
 	this->object_to_world = oTransform;
 }
 
-void Renderer::draw_line_antialias(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, color_component r, color_component g, color_component b) {
-	double dx = (double)x2 - (double)x1;
-	double dy = (double)y2 - (double)y1;
-	if (fabs(dx) > fabs(dy)) {
-		if (x2 < x1) {
-			swap_(x1, x2);
-			swap_(y1, y2);
-		}
-		double gradient = dy / dx;
-		double xend = round_(x1);
-		double yend = y1 + gradient*(xend - x1);
-		double xgap = rfpart_(x1 + 0.5);
-		int xpxl1 = xend;
-		int ypxl1 = ipart_(yend);
-		plot_(xpxl1, ypxl1, rfpart_(yend)*xgap);
-		plot_(xpxl1, ypxl1 + 1, fpart_(yend)*xgap);
-		double intery = yend + gradient;
+void Renderer::DrawLine(vec2 a, vec2 b){
+	if (a.x > 1000 || a.x < -1000 || b.x>1000 || b.x>1000)
+		return;
+	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
+	int xCounter = a.x < b.x ? 1 : -1;
+	int yCounter = a.y < b.y ? 1 : -1;
+	int deltaY = abs((int)a.y - (int)b.y) << 1;
+	int deltaX = abs((int)a.x - (int)b.x) << 1;
 
-		xend = round_(x2);
-		yend = y2 + gradient*(xend - x2);
-		xgap = fpart_(x2 + 0.5);
-		int xpxl2 = xend;
-		int ypxl2 = ipart_(yend);
-		plot_(xpxl2, ypxl2, rfpart_(yend) * xgap);
-		plot_(xpxl2, ypxl2 + 1, fpart_(yend) * xgap);
-
-		int x;
-		for (x = xpxl1 + 1; x <= (xpxl2 - 1); x++) {
-			plot_(x, ipart_(intery), rfpart_(intery));
-			plot_(x, ipart_(intery) + 1, fpart_(intery));
-			intery += gradient;
+	if (deltaX >= deltaY){	//slope<1
+		int errorInteger = deltaY - deltaX >> 1;
+		int deltaError = deltaY;
+		int deltaErrorNegation = deltaY - deltaX;
+		int y = a.y;
+		for (int x = a.x; xCounter*x <= xCounter*b.x; x = x + xCounter){
+			if (errorInteger > 0 && (errorInteger || (xCounter > 0))){
+				errorInteger += deltaErrorNegation;
+				y += yCounter;
+			}
+			else{
+				errorInteger += deltaError;
+			}
+			if (x > 0 && y > 0 && x < m_width && y < m_height){
+				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			}
 		}
 	}
-	else {
-		if (y2 < y1) {
-			swap_(x1, x2);
-			swap_(y1, y2);
-		}
-		double gradient = dx / dy;
-		double yend = round_(y1);
-		double xend = x1 + gradient*(yend - y1);
-		double ygap = rfpart_(y1 + 0.5);
-		int ypxl1 = yend;
-		int xpxl1 = ipart_(xend);
-		plot_(xpxl1, ypxl1, rfpart_(xend)*ygap);
-		plot_(xpxl1, ypxl1 + 1, fpart_(xend)*ygap);
-		double interx = xend + gradient;
-
-		yend = round_(y2);
-		xend = x2 + gradient*(yend - y2);
-		ygap = fpart_(y2 + 0.5);
-		int ypxl2 = yend;
-		int xpxl2 = ipart_(xend);
-		plot_(xpxl2, ypxl2, rfpart_(xend) * ygap);
-		plot_(xpxl2, ypxl2 + 1, fpart_(xend) * ygap);
-
-		int y;
-		for (y = ypxl1 + 1; y <= (ypxl2 - 1); y++) {
-			plot_(ipart_(interx), y, rfpart_(interx));
-			plot_(ipart_(interx) + 1, y, fpart_(interx));
-			interx += gradient;
+	else{
+		int errorInteger = deltaX - deltaY>>1;
+		int deltaError = deltaX;
+		int deltaErrorNegation = deltaX - deltaY;
+		int x = a.x;
+		for (int y = a.y; yCounter*y <= yCounter*b.y; y = y + yCounter){
+			if (errorInteger > 0 && (errorInteger || (yCounter > 0))){
+				errorInteger += deltaErrorNegation;
+				x = x + xCounter;
+			}
+			else{
+				errorInteger += deltaError;
+			}
+			if (x > 0 && y > 0 && x < m_width && y < m_height){
+				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			}
 		}
 	}
-}
-#undef swap_
-#undef plot_
-#undef ipart_
-#undef fpart_
-#undef round_
-#undef rfpart_
-
-void Renderer::DrawLine(vec2 a, vec2 b) {
-	draw_line_antialias(a.x, a.y, b.x, b.y, R, G, B);
-}
-
-void Renderer::drawPoint(int x, int y, GLfloat intensity) {
-	/*m_outBuffer[INDEX(m_width, x, y, 0)] = R;
-	m_outBuffer[INDEX(m_width, x, y, 1)] = G;
-	m_outBuffer[INDEX(m_width, x, y, 2)] = B;*/
-	/*m_outBuffer[INDEX(m_width, x, y, 0)] = ((m_outBuffer[INDEX(m_width, x, y, 0)] * intensity) + (R * (1.0f - intensity)));
-	m_outBuffer[INDEX(m_width, x, y, 1)] = ((m_outBuffer[INDEX(m_width, x, y, 1)] * intensity) + (G * (1.0f - intensity)));
-	m_outBuffer[INDEX(m_width, x, y, 2)] = ((m_outBuffer[INDEX(m_width, x, y, 2)] * intensity) + (B * (1.0f - intensity)));*/
-	m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 255);
-	m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 255);
-	m_outBuffer[INDEX(m_width, x, y, 2)] = min(m_outBuffer[INDEX(m_width, x, y, 2)] + B, 255);
 }
 
 void Renderer::setColor(float red, float green, float blue){
@@ -175,6 +143,7 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 	vecA = objectToClip * _vecA;
 	vecB = objectToClip * _vecB;
+
 	vecA /= vecA.w;
 	vecB /= vecB.w;
 
@@ -190,30 +159,228 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	DrawLine(a, b);
 }
 
+vec4 v0, v1, v2;
+float mag;
+float a1, a2, a3;
+void Barycentric(const vec2& p, const vec4& a, const vec4& b, const vec4& c)
+{
+	v0.x = b.x - a.x;
+	v0.y = b.y - a.y;
+	v1.x = c.x - a.x;
+	v1.y = c.y - a.y;
+	v2.x = p.x - a.x;
+	v2.y = p.y - a.y;
 
+	mag = v0.x * v1.y - v1.x * v0.y;
+	a1 = (v2.x * v1.y - v1.x * v2.y) / mag;
+	a2 = (v0.x * v2.y - v2.x * v0.y) / mag;
+	a3 = 1.0f - a1 - a2;
+}
+
+/*
+inline bool Renderer::PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const{
+
+	Barycentric(pt, a, b, c);
+	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
+}
+*/
+
+bool result;
+vec4 a, b, c;
+void Renderer::PointInTriangle(vec2& pt, Polygon3* P) {
+	a = P->a;
+	b = P->b;
+	c = P->c;
+	v0.x = b.x - a.x;
+	v0.y = b.y - a.y;
+	v1.x = c.x - a.x;
+	v1.y = c.y - a.y;
+	v2.x = pt.x - a.x;
+	v2.y = pt.y - a.y;
+
+	mag = v0.x * v1.y - v1.x * v0.y;
+	a1 = (v2.x * v1.y - v1.x * v2.y) / mag;
+	a2 = (v0.x * v2.y - v2.x * v0.y) / mag;
+	a3 = 1.0f - a1 - a2;
+	result = (a1 >= 0 && a2 >= 0 && a3 >= 0/* && test_a1 + test_a2 + test_a3 <= 1*/);
+}
+
+/*
+bool Renderer::PointInTriangle(const vec2& pt, Polygon3& P) {
+
+	Barycentric(pt, P.a, P.b, P.c);
+	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
+}
+*/
+
+vec2 vec3TOvec2(vec4 v){
+	return vec2(v.x, v.y);
+}
+
+void Renderer::testPointInTriangle(int x, int y){
+	//Polygon3 p;
+	/*vector<Polygon3>::iterator i = globalClippedVertices.begin();
+	while (i != globalClippedVertices.end()){
+		if PointInTriangle(vec2(x, y), it->a, it->b, it->c)){
+
+		}
+	}*/
+	/*for (int i = 0; i < globalClippedVertices.size(); ++i){
+		if (PointInTriangle(vec2(x, y), globalClippedVertices[i].a, globalClippedVertices[i].b, globalClippedVertices[i].c)){
+			cout << i << endl;
+			setColor(0, 233, 244);
+			DrawLine(vec3TOvec2(globalClippedVertices[i].a+0.1), vec3TOvec2(globalClippedVertices[i].b+0.1));
+			setColor(256, 233, 244);
+		}
+			
+
+	}*/
+}
+
+
+
+
+inline GLfloat Depth(Polygon3* P, vec2& p){
+	Barycentric(p, P->a, P->b, P->c);
+	return a1 * P->a.z + a2 * P->b.z + a3 *P->c.z;
+}
+
+inline vec3 vec4TOvec3(vec4 v){
+	return vec3(v.x,v.y,v.z);
+}
+
+
+void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals){
+	mat4 objectToCamera = world_to_camera * object_to_world;
+	mat4 objectToClip = projectionMatrix * objectToCamera;
+	int numberOfVertices = vertices->size();
+	vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
+	vec4 eye = vec3(0.5, 0.5, 0), l,n,r,e;
+	float teta;
+
+	vector<vec4> cameraVertices;
+	vector<vec4> clippedVertices;
+	clippedVertices.reserve(numberOfVertices);
+	cameraVertices.reserve(numberOfVertices);
+	globalClippedVertices.reserve(numberOfVertices + globalClippedVertices.size());
+	vec4 aa, bb, cc;
+	for (int i = 0; i < numberOfVertices; ++i){
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_A);
+		projectionMatrix.MultiplyVec(currentVerticeZ_A, currentVertice);
+		currentVertice /= currentVertice.w;
+		aa.x = m_width*(currentVertice.x + 1) / 2;
+		aa.y = m_height*(currentVertice.y + 1) / 2;
+		aa.z = currentVerticeZ_A.z;
+		aa.w = 1;
+		++i;
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_B);
+		projectionMatrix.MultiplyVec(currentVerticeZ_B, currentVertice);
+		currentVertice /= currentVertice.w;
+		bb.x = m_width*(currentVertice.x + 1) / 2;
+		bb.y = m_height*(currentVertice.y + 1) / 2;
+		bb.z = currentVerticeZ_B.z;
+		bb.w = 1;
+		++i;
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_C);
+		projectionMatrix.MultiplyVec(currentVerticeZ_C, currentVertice);
+		currentVertice /= currentVertice.w;
+		cc.x = m_width*(currentVertice.x + 1) / 2;
+		cc.y = m_height*(currentVertice.y + 1) / 2;
+		cc.z = currentVerticeZ_C.z;
+		cc.w = 1;
+
+		vec3 polygonColor = (color / 500 + vec3(0.01))*AmbientIntensity;
+
+		for (int j = 0; j < lights->size(); ++j){
+			//(*lights)[i]->location
+			world_to_camera.MultiplyVec(-(*lights)[j]->location, currentVertice); 
+			objectToCamera.MultiplyVec(normals->at(i / 3), currentNormal);
+			
+			n = normalize(vec4TOvec3(currentNormal));
+			l = normalize((vec4TOvec3((currentVerticeZ_A + currentVerticeZ_B + currentVerticeZ_C) / 3 - currentVertice)));
+			teta = dot(l, n);
+			r = normalize((2 * teta * n) + l);
+			e = -normalize(eye - vec4TOvec3((currentVerticeZ_A + currentVerticeZ_B + currentVerticeZ_C) / 3));
+			polygonColor += polygonColor *  max(1, 1 / AmbientIntensity) * max(0, teta);
+			polygonColor += polygonColor * max(1, 100 / AmbientIntensity) * pow(max(0, dot(r,e)), 10);
+		}
+
+		globalClippedVertices.push_back(Polygon3(aa, bb, cc, polygonColor, normals->at(i / 3)));
+
+
+		DrawLine(vec2(aa.x, aa.y), vec2(bb.x, bb.y));
+		DrawLine(vec2(bb.x, bb.y), vec2(cc.x, cc.y));
+		DrawLine(vec2(cc.x, cc.y), vec2(aa.x, aa.y));
+
+	}
+}
+
+
+void Renderer::putColor(int x, int y, Polygon3* P){
+
+	//m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 1);
+	//m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 1);
+	//m_outBuffer[INDEX(m_width, x, y, 2)] = min(m_outBuffer[INDEX(m_width, x, y, 2)] + B, 1);
+
+	m_outBuffer[INDEX(m_width, x, y, 0)] = P->baseColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = P->baseColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = P->baseColor.z;
+}
+
+void Renderer::drawZBuffer(){
+	if (globalClippedVertices.empty())
+		return;
+	int x, y;
+	int minX, maxX;
+	int minY, maxY;
+	vec2 pt;
+	int globalClippedVerticesSize = globalClippedVertices.size();
+	Polygon3* currentPolygon;
+	for (int i = 0; i < globalClippedVerticesSize; ++i){
+		currentPolygon = &globalClippedVertices[i];
+		minY = max(0, floor(currentPolygon->minY()));
+		maxY = min(m_height, ceil(currentPolygon->maxY()));
+		minX = max(0, floor(currentPolygon->minX()));
+		maxX = min(m_width, ceil(currentPolygon->maxX()));
+		for (y = minY; y < maxY; ++y){
+			pt.y = y;
+			for (int x = minX; x <= maxX; ++x){
+				pt.x = x;
+				PointInTriangle(pt, currentPolygon); //set "result" for the next line instead of instantiating a new variable.
+				if (result){
+					GLfloat z = Depth(currentPolygon, pt);
+					if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
+						m_zbuffer[INDEXZ(m_width, x, y)] = z;
+						putColor(x, y, currentPolygon);
+					}
+				}
+			}
+		}
+	}
+}
+
+/*
 void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals){
 	mat4 objectToCamera = world_to_camera * object_to_world;
 	mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	vec4 currentVertice;
 
-	// Transfermations for the Normal colors
-	vector<vec4> clippedVertices;
-	clippedVertices.reserve(numberOfVertices);
-	for (int i = 0; i < numberOfVertices; ++i){
-		objectToClip.MultiplyVec((*vertices)[i], currentVertice);
-		currentVertice.x = m_width*(currentVertice.x + 1) / 2;
-		currentVertice.y = m_width*(currentVertice.y + 1) / 2;
-		clippedVertices.push_back(currentVertice);
-	}
 
 	// Transfermations for the Z-Buffer
 	vector<vec4> cameraVertices;
+	vector<vec4> clippedVertices;
+	clippedVertices.reserve(numberOfVertices);
 	cameraVertices.reserve(numberOfVertices);
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i], currentVertice);
 		cameraVertices.push_back(currentVertice);
+
+		// Transfermations for the Normal colors
+		projectionMatrix.MultiplyVec(currentVertice, currentVertice);
+		currentVertice.x = m_width*(currentVertice.x + 1) / 2;
+		currentVertice.y = m_height*(currentVertice.y + 1) / 2;
+		clippedVertices.push_back(currentVertice);
 	}
+
 	// Init all the Z-buffer to 0
 	for (int i = 0, end = (m_width * m_height); i < end; ++i) {
 		m_zbuffer[i] = 0.0f;
@@ -251,9 +418,9 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 		for (int j = 0; j < triangleWidth; ++j) {
 			for (int k = 0; k < triangleHeight; ++k) {
 				currentPoint = vec2((triangleMinX + j), (triangleMinY + k));
-				if (PointInTriangle(currentPoint, pointA, pointB, pointC)) {
-					pointsInsideTriangle.push_back(currentPoint);
-				}
+				//if (PointInTriangle(currentPoint, pointA, pointB, pointC)) {
+				//	pointsInsideTriangle.push_back(currentPoint);
+				//}
 			}
 		}
 		for (int t = 0, numberOfPointsInsideTriangle = pointsInsideTriangle.size(); t < numberOfPointsInsideTriangle; ++t) {
@@ -274,11 +441,8 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 			m_outBuffer[INDEX(m_width, j, i, 1)] = m_zbuffer[INDEXZ(m_width, j, i)];	
 		}
 	}
-	GLfloat tempR = R * 255;
-	GLfloat tempG = G * 255;
-	GLfloat tempB = B * 255;
 	// Normal colors drawing
-	for (int i = 0; i < numberOfVertices; ++i) {
+	for (int i = 0; i < numberOfVertices; ++i){
 		vec2 a, b, c;
 		a = vec4toVec2(clippedVertices[i++]);
 		b = vec4toVec2(clippedVertices[i++]);
@@ -287,14 +451,12 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 			a.x > m_width || b.x >= m_width || c.x >= m_width || a.y >= m_height || b.y >= m_height || c.y >= m_height){
 			continue;
 		}
-		setColor(tempR, tempG, tempB);
 		DrawLine(a, b);
-		setColor(tempR, tempG, tempB);
 		DrawLine(b, c);
-		setColor(tempR, tempG, tempB);
 		DrawLine(c, a);
 	}
 }
+*/
 
 GLfloat Renderer::getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1) {
 	GLfloat aOne;
@@ -319,17 +481,8 @@ GLfloat Renderer::getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec
 	return zp.z;
 }
 
-bool Renderer::PointInTriangle(vec2 pt, vec4 v1, vec4 v2, vec4 v3) {
-	bool b1, b2, b3;
 
-	b1 = sign(pt, v1, v2) < 0.0f;
-	b2 = sign(pt, v2, v3) < 0.0f;
-	b3 = sign(pt, v3, v1) < 0.0f;
-
-	return ((b1 == b2) && (b2 == b3));
-}
-
-float Renderer::sign(vec2 p1, vec4 p2, vec4 p3) {
+float Renderer::sign(vec2& p1, vec3& p2, vec3& p3) const{
 	return (p1.x - p3.x) * (p2.y - p3.y) - (p2.x - p3.x) * (p1.y - p3.y);
 }
 
@@ -344,6 +497,16 @@ int Renderer::GetWidth() {
 int Renderer::GetHeight() {
 	return m_height;
 }
+
+void Renderer::SetLights(vector<Light*>* l){
+	lights = l;
+}
+
+void Renderer::setAmbientLight(float intensity){
+	AmbientIntensity = intensity;
+}
+
+
 
 /////////////////////////////////////////////////////
 //OpenGL stuff. Don't touch.
@@ -421,3 +584,9 @@ void Renderer::SwapBuffers()
 	glutSwapBuffers();
 	a = glGetError();
 }
+
+
+
+
+
+

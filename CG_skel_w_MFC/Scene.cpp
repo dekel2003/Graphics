@@ -17,6 +17,13 @@ int Scene::numCameras(){
 	return cameras.size();
 }
 
+void Scene::addLight(){
+	Light * light = new Light;
+	lights.push_back(light);
+	activeLight = lights.size() - 1;
+	addLightToMenu();
+}
+
 void Scene::loadOBJModel(string fileName)
 {
 	MeshModel *model = new MeshModel(fileName);
@@ -102,6 +109,7 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
+	m_renderer->drawZBuffer();
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
@@ -216,7 +224,7 @@ void Scene::moveCamera(GLfloat dz){
 }
 
 void Scene::rotateCurrentCamera(GLfloat dz){
-	cameras[activeCamera]->rotate((dz * 180) / (GLfloat)m_renderer->GetHeight());
+	cameras[activeCamera]->rotate(-dz / (GLfloat)m_renderer->GetHeight());
 }
 
 void Scene::setNormalsPerFaceOn(){
@@ -258,7 +266,7 @@ mat4 Camera::normalizedProjection(){
 	//mat4* tmp = new mat4();
 	//tmp = &(ST * projection);
 	//return *tmp;
-	return ST * projection;
+	return  projection * ST;
 }
 
 void Camera::zoomIn(){
@@ -284,7 +292,7 @@ void Camera::move(GLfloat dx, GLfloat dy){
 }
 
 void Camera::rotate(GLfloat dx, GLfloat dy){
-	world_to_camera = RotateZ(-dx) * world_to_camera;
+	world_to_camera = RotateY(-dx) * world_to_camera;
 	world_to_camera = RotateX(dy) * world_to_camera;
 }
 
@@ -294,7 +302,8 @@ void Camera::move(GLfloat dz){
 }
 
 void Camera::rotate(GLfloat dz){
-	world_to_camera = RotateY(-dz) * world_to_camera;
+	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
+	position -= vec4(0, 0, dz, 0);
 }
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
@@ -362,16 +371,18 @@ void Camera::Frustum(const float left, const float right,const float bottom,
 
 
 	ST = mat4();
-	ST[2][2] = - (zNear+zFar)/(zNear-zFar);
+	ST[0][0] = -zNear;
+	ST[1][1] = -zNear;
+	ST[2][2] = -(zNear+zFar)/(zNear-zFar);
 	ST[2][3] = -(2 * zNear * zFar) / (zNear - zFar);
-	ST[3][2] = -1;
+	ST[3][2] = 1;
 	ST[3][3] = 0;
 
 
 	//Set projecion Matrix
 	projection = mat4();
-	projection[3][3] = 0;
-	projection[3][2] = 1.0/perspectiveD;
+	/*projection[3][3] = 0;
+	projection[3][2] = 1.0/perspectiveD;*/
 
 	cube[0] = vec3(left, bottom, zNear);
 	cube[1] = vec3(left, bottom, zFar);
@@ -414,3 +425,4 @@ void Camera::LookAt(const vec4& eye, const vec4& at, const vec4& up){
 //	xmax = ymax*aspectratio;
 //	frustum(xmin, xmax, ymin, ymax, znear, zfar);
 //}
+

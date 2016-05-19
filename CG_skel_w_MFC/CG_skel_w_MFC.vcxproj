@@ -112,6 +112,7 @@
     <ClInclude Include="CG_skel_w_MFC.h" />
     <ClInclude Include="InitShader.h" />
     <ClInclude Include="InputDialog.h" />
+    <ClInclude Include="Light.h" />
     <ClInclude Include="mat.h" />
     <ClInclude Include="MeshModel.h" />
     <ClInclude Include="Renderer.h" />

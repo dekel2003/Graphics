@@ -1,21 +1,61 @@
 #pragma once
 #include <vector>
+#include "stdafx.h"
 #include "CG_skel_w_MFC.h"
 #include "vec.h"
 #include "mat.h"
 #include "GL/glew.h"
+#include "Light.h"
+
 
 using namespace std;
 
-#define color_component float
-#define plot_(X,Y,D) do{ rgb_color f_;				\
-	f_.red = r; f_.green = g; f_.blue = b;			\
-	_dla_plot((X), (Y), &f_, (D)); }while (0)
-#define ipart_(X) ((int)(X))
-#define round_(X) ((int)(((double)(X))+0.5))
-#define fpart_(X) (((double)(X))-(double)ipart_(X))
-#define rfpart_(X) (1.0-fpart_(X))
-#define swap_(a, b) do{ decltype(a) tmp;  tmp = a; a = b; b = tmp; }while(0)
+class Polygon3{
+public:
+	vec4 a, b, c;
+	vec3 baseColor;
+	vec3 normal;
+	Polygon3(){}
+	Polygon3(vec4 _a, vec4 _b, vec4 _c) :a(_a), b(_b), c(_c){
+		/*a /= a.w;
+		b /= b.w;
+		c /= c.w;*/
+
+		/*if (a.y > b.y)
+		swap(a, b);
+		if (a.y > c.y)
+		swap(a, c);
+		if (b.y > c.y)
+		swap(b, c);*/
+	}
+	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color) :a(_a), b(_b), c(_c), baseColor(color){}
+	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec3 _normal) :a(_a), b(_b), c(_c), baseColor(color), normal(_normal){}
+	inline float minY() const{
+		return min(a.y, min(b.y, c.y));
+	}
+	inline float maxY() const{
+		return max(a.y, max(b.y, c.y));
+	}
+	inline float minX() const{
+		return min(a.x, min(b.x, c.x));
+	}
+	inline float maxX() const{
+		return max(a.x, max(b.x, c.x));
+	}
+	inline static bool Ysorting(Polygon3 s, Polygon3 t){
+		return s.minY() < t.minY();
+	}
+	/*inline void getXrange(float currY, int& xStart, int& xEnd) const{
+	float A, B, C;
+	A = b.y - a.y;
+	B = a.x - b.x;
+	C = b.x * a.y - a.x * b.y;
+	}*/
+
+	bool operator< (const Polygon3& p) const {
+		return minY() < p.minY();
+	}
+};
 
 class Renderer
 {
@@ -32,7 +72,9 @@ class Renderer
 	int m_width;
 	int m_height;
 	int m_TotalNumberOfPixels;
-	float R, G, B;
+
+	vector<Polygon3> globalClippedVertices;
+	vector<Light*>* lights = NULL;
 
 	mat4 projectionMatrix; //(P)
 	mat4 world_to_camera; //  (Tc)
@@ -40,49 +82,36 @@ class Renderer
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2);
-	inline
-	bool isInside(GLfloat x, GLfloat y) {
-		return (x >= 0 && m_width > x) && (y >= 0 && m_height > y);
-	}
-	void drawPoint(int x, int y, GLfloat intensity = 0.5f);
-	struct rgb_color {
-		float red;
-		float green;
-		float blue;
-	};
-	inline void _dla_changebrightness(rgb_color* from, rgb_color* to, float br)	{
-		if (br > 1.0) br = 1.0;
-		to->red = br * (float)from->red;
-		to->green = br * (float)from->green;
-		to->blue = br * (float)from->blue;
-	}
-	inline void _dla_plot(int x, int y, rgb_color* col, float br) {
-		rgb_color oc;
-		_dla_changebrightness(col, &oc, br);
-		if (isInside(x, y)) {
-			setColor(oc.red * 255, oc.green * 255, oc.blue * 255);
-			drawPoint(x, y);
-		}
-	}
-	void draw_line_antialias(unsigned int x1, unsigned int y1, unsigned int x2, unsigned int y2, color_component r, color_component g, color_component b);
-	void IntensifyPixel(int x, int y, GLfloat distance);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
+	float R, G, B;
 	//int GetRange(double y1, double y2, int& maxY);
 	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
-	float sign(vec2 p1, vec4 p2, vec4 p3);
-	bool PointInTriangle(vec2 pt, vec4 v1, vec4 v2, vec4 v3);
+	inline float sign(vec2& p1, vec3& p2, vec3& p3) const;
+	//inline bool PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const;
+	void PointInTriangle(vec2& pt, Polygon3* P);
+	//bool PointInTriangle(const vec2& pt, Polygon3& P);
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
+	void putColor(int x, int y, Polygon3* P);
+
+
+	float AmbientIntensity = 1.0f;
 
 public:
+	void setAmbientLight(float intensity);
+	void drawZBuffer();
+
 	void CreateBuffers(int width, int height); // initially private
 	Renderer();
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
-	void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
+	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
+	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
+
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
+	void SetLights(vector<Light*>* lights);
 	void SetObjectMatrices(const mat4& oTransform, const mat3& nTransform); //only The Active Model - ask Itay about nTransform
 	void SwapBuffers();
 	void ClearColorBuffer();
@@ -94,4 +123,8 @@ public:
 	int GetWidth();
 	int GetHeight();
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
+
+
+
+	void testPointInTriangle(int x, int y);
 };

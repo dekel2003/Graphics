@@ -11,5 +11,6 @@ void mainMenu(int id);
 void meshMenu(int id);
 void addMeshToMenu();
 void addCameraToMenu();
+void addLightToMenu();
 void initMenu();
 
