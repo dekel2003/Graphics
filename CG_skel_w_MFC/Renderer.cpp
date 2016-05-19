@@ -80,8 +80,9 @@ void Renderer::SetCameraTransform(const mat4& world_to_camera){
 	this->world_to_camera = world_to_camera;
 }
 
-void Renderer::SetObjectMatrices(const mat4& oTransform, const mat3& nTransform){
+void Renderer::SetObjectMatrices(const mat4& oTransform, const mat4& nTransform){
 	this->object_to_world = oTransform;
+	this->normalTransform = nTransform;
 }
 
 void Renderer::DrawLine(vec2 a, vec2 b){
@@ -188,9 +189,9 @@ inline bool Renderer::PointInTriangle(const vec2& pt, const  vec4 a, const  vec4
 bool result;
 vec4 a, b, c;
 void Renderer::PointInTriangle(vec2& pt, Polygon3* P) {
-	a = P->a;
-	b = P->b;
-	c = P->c;
+	a = P->ma;
+	b = P->mb;
+	c = P->mc;
 	v0.x = b.x - a.x;
 	v0.y = b.y - a.y;
 	v1.x = c.x - a.x;
@@ -241,22 +242,16 @@ void Renderer::testPointInTriangle(int x, int y){
 
 
 inline GLfloat Depth(Polygon3* P, vec2& p){
-	Barycentric(p, P->a, P->b, P->c);
+	Barycentric(p, P->ma, P->mb, P->mc);
 	return a1 * P->a.z + a2 * P->b.z + a3 *P->c.z;
-}
-
-inline vec3 vec4TOvec3(vec4 v){
-	return vec3(v.x,v.y,v.z);
 }
 
 
 void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals){
-	mat4 objectToCamera = world_to_camera * object_to_world;
+	objectToCamera = world_to_camera * object_to_world;
 	mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
-	vec4 eye = vec3(0.5, 0.5, 0), l,n,r,e;
-	float teta;
 
 	vector<vec4> cameraVertices;
 	vector<vec4> clippedVertices;
@@ -264,6 +259,17 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 	cameraVertices.reserve(numberOfVertices);
 	globalClippedVertices.reserve(numberOfVertices + globalClippedVertices.size());
 	vec4 aa, bb, cc;
+	
+	for (int i = 0; i < numberOfVertices; ++i){
+		objectToCamera.MultiplyVec((*vertices)[i++], currentVerticeZ_A);
+		objectToCamera.MultiplyVec((*vertices)[i++], currentVerticeZ_B);
+		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_C);
+		vec3 polygonColor = (color / 512 + vec3(0.01))*AmbientIntensity;
+
+		normalTransform.MultiplyVec(normals->at(i / 3), currentNormal);
+		globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_width, m_height));
+	}
+	/*
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i], currentVerticeZ_A);
 		projectionMatrix.MultiplyVec(currentVerticeZ_A, currentVertice);
@@ -292,9 +298,9 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		vec3 polygonColor = (color / 500 + vec3(0.01))*AmbientIntensity;
 
 		for (int j = 0; j < lights->size(); ++j){
-			//(*lights)[i]->location
+			//(*lights)[j]->location
 			world_to_camera.MultiplyVec(-(*lights)[j]->location, currentVertice); 
-			objectToCamera.MultiplyVec(normals->at(i / 3), currentNormal);
+			
 			
 			n = normalize(vec4TOvec3(currentNormal));
 			l = normalize((vec4TOvec3((currentVerticeZ_A + currentVerticeZ_B + currentVerticeZ_C) / 3 - currentVertice)));
@@ -304,28 +310,47 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 			polygonColor += polygonColor *  max(1, 1 / AmbientIntensity) * max(0, teta);
 			polygonColor += polygonColor * max(1, 100 / AmbientIntensity) * pow(max(0, dot(r,e)), 10);
 		}
-
+		
 		globalClippedVertices.push_back(Polygon3(aa, bb, cc, polygonColor, normals->at(i / 3)));
 
 
 		DrawLine(vec2(aa.x, aa.y), vec2(bb.x, bb.y));
 		DrawLine(vec2(bb.x, bb.y), vec2(cc.x, cc.y));
 		DrawLine(vec2(cc.x, cc.y), vec2(aa.x, aa.y));
-
-	}
+		
+	}*/
 }
 
 
+
+
+
+
+vec2 pixel;
+vec3 polygonColor;
+
 void Renderer::putColor(int x, int y, Polygon3* P){
+
+	//pixel = vec2(x, y);
+	//Barycentric(pixel * pixleToScreen, P->pa, P->pb, P->pc); //use now a1, a2, a3 - global barycentric coordinates.
+
+	polygonColor = P->calculateFaceColor(lights, world_to_camera, AmbientIntensity);
+
+
+	m_outBuffer[INDEX(m_width, x, y, 0)] = polygonColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = polygonColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = polygonColor.z;
 
 	//m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 1);
 	//m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 1);
 	//m_outBuffer[INDEX(m_width, x, y, 2)] = min(m_outBuffer[INDEX(m_width, x, y, 2)] + B, 1);
 
-	m_outBuffer[INDEX(m_width, x, y, 0)] = P->baseColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = P->baseColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = P->baseColor.z;
 }
 
-void Renderer::drawZBuffer(){
+
+
+
+
+
+void Renderer::drawZBuffer(vec3& fog){
 	if (globalClippedVertices.empty())
 		return;
 	int x, y;
@@ -354,6 +379,30 @@ void Renderer::drawZBuffer(){
 				}
 			}
 		}
+	}
+
+	if (fog) {
+		GLfloat fogR = (fog.x / 256.0f);
+		GLfloat fogG = (fog.y / 256.0f);
+		GLfloat fogB = (fog.z / 256.0f);
+		int indexA;
+		int indexB;
+		int indexC;
+		GLfloat zValue;
+		for (int x = 0; x < m_width; ++x) {
+			for (int y = 0; y < m_width; ++y) {
+				indexA = INDEX(m_width, x, y, 0);
+				indexB = INDEX(m_width, x, y, 1);
+				indexC = INDEX(m_width, x, y, 2);
+				zValue = ((m_zbuffer[INDEXZ(m_width, x, y)] + 1.0f) / 2.0f);
+				m_outBuffer[indexA] = min(m_outBuffer[indexA] + (zValue * fogR), 1.0f);
+				m_outBuffer[indexB] = min(m_outBuffer[indexB] + (zValue * fogG), 1.0f);
+				m_outBuffer[indexC] = min(m_outBuffer[indexC] + (zValue * fogB), 1.0f);
+				
+			}
+			
+		}
+		
 	}
 }
 
@@ -590,3 +639,31 @@ void Renderer::SwapBuffers()
 
 
 
+
+
+
+
+
+
+
+
+
+
+vec3& Polygon3::calculateFaceColor(vector<Light*>* lights, mat4& world_to_camera, float AmbientIntensity){
+	if (faceColorWasAlreadyCalculated)
+		return facecolor;
+	for (int j = 0; j < lights->size(); ++j){
+		//(*lights)[j]->location
+
+		world_to_camera.MultiplyVec(-(*lights)[j]->location, temVec);
+		temVec /= temVec.w;
+		l = normalize(vec4TOvec3((a + b + c) / 3 - temVec));
+		teta = dot(l, n);
+		r = normalize((2 * teta * n) + l);
+		e = -normalize(eye - vec4TOvec3((a + b + c) / 3));
+		facecolor += facecolor *  max(1, 1 / AmbientIntensity) * max(0, teta);
+		facecolor += facecolor * max(1, 100 / AmbientIntensity) * pow(max(0, dot(r, e)), 10);
+	}
+	faceColorWasAlreadyCalculated = true;
+	return facecolor;
+}

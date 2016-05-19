@@ -58,7 +58,7 @@ void Scene::drawXY(){
 	m_renderer->setColor(0,100,100);
 	//m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 	//m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
-	m_renderer->SetObjectMatrices(mat4(),mat3());
+	m_renderer->SetObjectMatrices(mat4(),mat4());
 	//m_renderer->DrawNormals
 	for (float i = -1; i <= 1; i += delta){
 		m_renderer->setColor(60 + int(55 * i), 50, 0);
@@ -114,6 +114,19 @@ void Scene::draw()
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
 	m_renderer->SwapBuffers();
+}
+
+void Scene::EnableFog() {
+	m_FogEnabled = true;
+	
+}
+
+void Scene::DisableFog() {
+	m_FogEnabled = false;
+}
+
+void Scene::setFogColor(GLfloat R, GLfloat G, GLfloat B) {
+	fogColor = vec3(R, G, B);
 }
 
 void Scene::drawDemo()

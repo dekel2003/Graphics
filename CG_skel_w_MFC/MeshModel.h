@@ -21,7 +21,7 @@ protected :
 	//add more attributes
 	mat4 model_to_world_transform; //the model transformation (Tm)
 	mat4 _world_transform; //What the heck (Tw)
-	mat3 _normal_transform; //Pending question
+	mat4 _normal_transform;
 	GLfloat minX, minY, minZ ,maxX , maxY, maxZ;
 	vec4 cube[8];
 	void computeNormalsPerFace();
