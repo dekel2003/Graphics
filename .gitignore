@@ -40,6 +40,8 @@ CG_skel.v12.suo
 *.log
 *.tlog
 CG_skel.opensdf
-CG_skel_w_MFC/
-!CG_skel_w_MFC/*.cpp
-!CG_skel_w_MFC/*.h
+*.psess
+*.vspx
+*.glsl
+CG_skel.sln
+*.rar

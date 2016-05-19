@@ -324,29 +324,23 @@ void cameraMenu(int id)
 	display();
 }
 
-bool lightMenuBeingUsed = false;
-
 void lightMenu(int id)
 {
-	if (lightMenuBeingUsed == false) {
-		lightMenuBeingUsed = true;
-		if (id == 0){
-			scene->addLight();
-		}
-		else if (id == 1){
-			CCmdDialog dlg;
-			if (dlg.DoModal() == IDOK){
-				renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
-			}
-
-		}
-		else 
-		{
-			scene->activeLight = id - 2;
-		}
-		display();
-		lightMenuBeingUsed = false;
+	if (id == 0){
+		scene->addLight();
 	}
+	else if (id == 1){
+		CCmdDialog dlg;
+		if (dlg.DoModal() == IDOK){
+			renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
+		}
+
+	}
+	else 
+	{
+		scene->activeLight = id - 2;
+	}
+	display();
 }
 
 
@@ -534,7 +528,7 @@ int my_main( int argc, char **argv )
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS
-	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
+	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\dolphin.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\cow.obj"); // DELETE THIS
 
