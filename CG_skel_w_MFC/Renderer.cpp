@@ -325,7 +325,7 @@ void Renderer::putColor(int x, int y, Polygon3* P){
 	m_outBuffer[INDEX(m_width, x, y, 0)] = P->baseColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = P->baseColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = P->baseColor.z;
 }
 
-void Renderer::drawZBuffer(){
+void Renderer::drawFillAndFog(vec3 fog){
 	if (globalClippedVertices.empty())
 		return;
 	int x, y;
@@ -334,6 +334,8 @@ void Renderer::drawZBuffer(){
 	vec2 pt;
 	int globalClippedVerticesSize = globalClippedVertices.size();
 	Polygon3* currentPolygon;
+	GLfloat newZ;
+	int zIndex;
 	for (int i = 0; i < globalClippedVerticesSize; ++i){
 		currentPolygon = &globalClippedVertices[i];
 		minY = max(0, floor(currentPolygon->minY()));
@@ -346,12 +348,34 @@ void Renderer::drawZBuffer(){
 				pt.x = x;
 				PointInTriangle(pt, currentPolygon); //set "result" for the next line instead of instantiating a new variable.
 				if (result){
-					GLfloat z = Depth(currentPolygon, pt);
-					if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
-						m_zbuffer[INDEXZ(m_width, x, y)] = z;
+					//z = Depth(currentPolygon, pt);
+					newZ = getZ(pt, currentPolygon->a, currentPolygon->b, currentPolygon->c);
+					zIndex = INDEXZ(m_width, x, y);
+					if (newZ < m_zbuffer[zIndex]) {
+						m_zbuffer[zIndex] = newZ;
 						putColor(x, y, currentPolygon);
 					}
 				}
+			}
+		}
+	}
+	if (fog) {
+		GLfloat fogR = (fog.x / 256.0f);
+		GLfloat fogG = (fog.y / 256.0f);
+		GLfloat fogB = (fog.z / 256.0f);
+		int indexA;
+		int indexB;
+		int indexC;
+		GLfloat zValue;
+		for (int x = 0; x < m_width; ++x) {
+			for (int y = 0; y < m_width; ++y) {
+				indexA = INDEX(m_width, x, y, 0);
+				indexB = INDEX(m_width, x, y, 1);
+				indexC = INDEX(m_width, x, y, 2);
+				zValue = ((m_zbuffer[INDEXZ(m_width, x, y)] + 1.0f) / 2.0f);
+				m_outBuffer[indexA] = min(m_outBuffer[indexA] + (zValue * fogR), 1.0f);
+				m_outBuffer[indexB] = min(m_outBuffer[indexB] + (zValue * fogG), 1.0f);
+				m_outBuffer[indexC] = min(m_outBuffer[indexC] + (zValue * fogB), 1.0f);
 			}
 		}
 	}
@@ -458,25 +482,24 @@ void Renderer::DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* n
 }
 */
 
-GLfloat Renderer::getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1) {
+GLfloat Renderer::getZ(const vec2& ps, const vec4& z3, const vec4& z2, const vec4& z1) {
 	GLfloat aOne;
 	GLfloat cOne;
-	GLfloat aTwo = ((p2.y - p1.y) / (p2.x - p1.x));
-	GLfloat cTwo = (p2.y - (((p2.y - p1.y) / (p2.x - p1.x)) * p2.x));
+	GLfloat aTwo = ((z2.y - z1.y) / (z2.x - z1.x));
+	GLfloat cTwo = (z2.y - (((z2.y - z1.y) / (z2.x - z1.x)) * z2.x));
 	GLfloat piX;
 	vec2 pi;
-	if (p3.x == ps.x) {
-		pi = vec2(p3.x, ((aTwo * p3.x) + cTwo));
+	if (z3.x == ps.x) {
+		pi = vec2(z3.x, ((aTwo * z3.x) + cTwo));
 	} else {
-		aOne = ((p3.y - ps.y) / (p3.x - ps.x));
-		cOne = (p3.y - (((p3.y - ps.y) / (p3.x - ps.x)) * p3.x));
+		aOne = ((z3.y - ps.y) / (z3.x - ps.x));
+		cOne = (z3.y - (((z3.y - ps.y) / (z3.x - ps.x)) * z3.x));
 		piX = ((cTwo - cOne) / (aOne - aTwo));
 		pi = vec2(piX, ((aOne * piX) + cOne));
 	}
-	GLfloat ti = (length(pi - p1) / length(p2 - p1));
-	vec4 zi = ((z2 * ti) + (z1 * (1.0f - ti)));
-	GLfloat t = (length(ps - p3) / length(pi - p3));
-	vec4 zp = ((z3 * (1.0f - t)) + (zi * t));
+	GLfloat ti = (length(pi - vec4toVec2(z1)) / length(z2 - z1));
+	GLfloat t = (length(ps - vec4toVec2(z3)) / length(pi - vec4toVec2(z3)));
+	vec4 zp = ((z3 * (1.0f - t)) + (((z2 * ti) + (z1 * (1.0f - ti))) * t));
 	
 	return zp.z;
 }

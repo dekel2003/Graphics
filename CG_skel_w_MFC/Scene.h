@@ -71,9 +71,10 @@ class Scene {
 	bool shouldDrawNormalsPerFace = false;
 	bool shouldDrawNormalsPerVertex = false;
 	bool shouldDrawBoundingBox = false;
+	bool m_FogEnabled = false;
+	vec3 fogColor = vec3(256, 256, 256);
+
 	void drawCoordinateSystem();
-
-
 public:
 	mat4 model_to_world; // Tw
 	Scene() {
@@ -138,6 +139,9 @@ public:
 	void moveCamera(GLfloat dz);
 	void rotateCurrentCamera(GLfloat dz);
 
+	void EnableFog();
+	void DisableFog();
+	void setFogColor(GLfloat R, GLfloat G, GLfloat B);
 	
 	Model*  getModel(int id); //returns the model
 	vector<vec3> translateOrigin(vector<vec3>);

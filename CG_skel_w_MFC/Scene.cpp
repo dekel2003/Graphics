@@ -109,11 +109,23 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
-	m_renderer->drawZBuffer();
+	m_renderer->drawFillAndFog((m_FogEnabled ? fogColor : NULL));
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
 	m_renderer->SwapBuffers();
+}
+
+void Scene::EnableFog() {
+	m_FogEnabled = true;
+}
+
+void Scene::DisableFog() {
+	m_FogEnabled = false;
+}
+
+void Scene::setFogColor(GLfloat R, GLfloat G, GLfloat B) {
+	fogColor = vec3(R, G, B);
 }
 
 void Scene::drawDemo()

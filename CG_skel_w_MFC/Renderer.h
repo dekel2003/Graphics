@@ -91,16 +91,13 @@ class Renderer
 	//inline bool PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const;
 	void PointInTriangle(vec2& pt, Polygon3* P);
 	//bool PointInTriangle(const vec2& pt, Polygon3& P);
-	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
+	inline GLfloat getZ(const vec2& ps, const vec4& z3, const vec4& z2, const vec4& z1);
 	void putColor(int x, int y, Polygon3* P);
 
 
 	float AmbientIntensity = 1.0f;
 
 public:
-	void setAmbientLight(float intensity);
-	void drawZBuffer();
-
 	void CreateBuffers(int width, int height); // initially private
 	Renderer();
 	Renderer(int width, int height);
@@ -124,7 +121,8 @@ public:
 	int GetHeight();
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
 
-
+	void setAmbientLight(float intensity);
+	void drawFillAndFog(vec3 fog);
 
 	void testPointInTriangle(int x, int y);
 };
