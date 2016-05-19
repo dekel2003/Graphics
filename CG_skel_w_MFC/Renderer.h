@@ -69,6 +69,7 @@ class Renderer
 
 	float *m_outBuffer; // 3*width*height
 	float *m_zbuffer; // width*height
+	float AmbientIntensity = 1.0f;
 	int m_width;
 	int m_height;
 	int m_TotalNumberOfPixels;
@@ -80,6 +81,7 @@ class Renderer
 	mat4 world_to_camera; //  (Tc)
 	mat4 object_to_world; //  (Tw*Tm)
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
+	Renderer();
 	//Our private Funcs
 	void DrawLine(vec2, vec2);
 	vec2 vec4toVec2(const vec4 v);
@@ -94,15 +96,13 @@ class Renderer
 	inline GLfloat getZ(const vec2& ps, const vec4& z3, const vec4& z2, const vec4& z1);
 	void putColor(int x, int y, Polygon3* P);
 
-
-	float AmbientIntensity = 1.0f;
-
+	inline float findSSAAOfColorElement(int multiplier, int x, int y, int colorElement);
 public:
-	void CreateBuffers(int width, int height); // initially private
-	Renderer();
+	void CreateBuffers(); // initially private
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
+	void SetRendererSize(int width, int height);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
 
