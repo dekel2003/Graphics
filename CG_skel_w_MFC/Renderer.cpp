@@ -243,7 +243,7 @@ void Renderer::testPointInTriangle(int x, int y){
 
 inline GLfloat Depth(Polygon3* P, vec2& p){
 	Barycentric(p, P->ma, P->mb, P->mc);
-	return a1 * P->a.z + a2 * P->b.z + a3 *P->c.z;
+	return -(a3 * P->a.z + a1 * P->b.z + a2 *P->c.z);
 }
 
 

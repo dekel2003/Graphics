@@ -24,6 +24,7 @@ public:
 	vec4 a, b, c; //world coords
 	vec4 pa, pb, pc; //screen coords
 	vec4 ma, mb, mc; //monitor coords
+	vec3 aColor, bColor, cColor; // colors
 	vec3 baseColor, facecolor;
 	bool faceColorWasAlreadyCalculated = false;
 	vec4 temVec, tmpNormal;
