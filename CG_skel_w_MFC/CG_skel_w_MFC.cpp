@@ -324,23 +324,29 @@ void cameraMenu(int id)
 	display();
 }
 
+bool lightMenuBeingUsed = false;
+
 void lightMenu(int id)
 {
-	if (id == 0){
-		scene->addLight();
-	}
-	else if (id == 1){
-		CCmdDialog dlg;
-		if (dlg.DoModal() == IDOK){
-			renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
+	if (lightMenuBeingUsed == false) {
+		lightMenuBeingUsed = true;
+		if (id == 0){
+			scene->addLight();
 		}
+		else if (id == 1){
+			CCmdDialog dlg;
+			if (dlg.DoModal() == IDOK){
+				renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
+			}
 
+		}
+		else
+		{
+			scene->activeLight = id - 2;
+		}
+		display();
+		lightMenuBeingUsed = false;
 	}
-	else 
-	{
-		scene->activeLight = id - 2;
-	}
-	display();
 }
 
 
