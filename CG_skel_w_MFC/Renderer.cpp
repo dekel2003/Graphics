@@ -10,18 +10,17 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
+#define INDEXSSAA(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() :m_width(512), m_height(512)
-{
-	InitOpenGLRendering();
-	CreateBuffers(512,512);
-	Init();
+Renderer::Renderer() :m_width(512), m_height(512) { /////// PRIVATE C-TOR, NEVER CALLED ! :)
+	/*InitOpenGLRendering();
+	CreateBuffers();
+	Init();*/
 }
 
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
-{
+Renderer::Renderer(int width, int height) : m_width(width), m_height(height) {
 	InitOpenGLRendering();
-	CreateBuffers(width,height);
+	CreateBuffers();
 	Init();
 }
 
@@ -34,10 +33,13 @@ void Renderer::Init(){
 	Invalidate();
 }
 
-void Renderer::CreateBuffers(int width, int height)
-{
+void Renderer::SetRendererSize(int width, int height) {
 	m_width = width;
 	m_height = height;
+	CreateBuffers();
+}
+
+void Renderer::CreateBuffers() {
 	m_TotalNumberOfPixels = (m_width * m_height);
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3 * m_TotalNumberOfPixels];
@@ -404,6 +406,42 @@ void Renderer::drawZBuffer(vec3& fog){
 		}
 		
 	}
+	bool superSamling = true;
+	if (superSamling) {
+		int multiplier = 2;
+		int ssaaScreenWidth = (m_width / multiplier);
+		int ssaaScreenHeight = (m_height / multiplier);
+		float* ssaaScreen = new float[((ssaaScreenWidth * ssaaScreenHeight) * 3)];
+		for (int x = 0; x < ssaaScreenWidth; ++x) {
+			for (int y = 0; y < ssaaScreenHeight; ++y) {
+				ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 0)] = findSSAAOfColorElement(multiplier, x, y, 0);
+				ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 1)] = findSSAAOfColorElement(multiplier, x, y, 1);
+				ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 2)] = findSSAAOfColorElement(multiplier, x, y, 2);
+			}
+		}
+		for (int x = 0; x < ssaaScreenWidth; ++x) {
+			for (int y = 0; y < ssaaScreenHeight; ++y) {
+				m_outBuffer[INDEX(m_width, x, y, 0)] = ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 0)];
+				m_outBuffer[INDEX(m_width, x, y, 1)] = ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 1)];
+				m_outBuffer[INDEX(m_width, x, y, 2)] = ssaaScreen[INDEXSSAA(ssaaScreenWidth, x, y, 2)];
+			}
+		}
+		delete []ssaaScreen;
+	}
+}
+
+float Renderer::findSSAAOfColorElement(int multiplier, int x, int y, int colorElement) {
+	GLfloat sum = -1;
+	for (int i = 0; i < multiplier; ++i) {
+		for (int j = 0; j < multiplier; ++j) {
+			if (sum == -1) { // first pixel
+				sum = m_outBuffer[INDEX(m_width, ((x * multiplier) + i), ((y * multiplier) + j), colorElement)];
+			} else { // the rest of the pixels
+				sum += m_outBuffer[INDEX(m_width, ((x * multiplier) + i), ((y * multiplier) + j), colorElement)];
+			}
+		}
+	}
+	return (sum / (multiplier * multiplier));
 }
 
 /*
