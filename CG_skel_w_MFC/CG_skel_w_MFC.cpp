@@ -34,9 +34,6 @@
 #define MAIN_ABOUT 11
 #define ADD_SPHERE 7
 
-const int BASIC_SCREEN_WIDTH = 512;
-const int BASIC_SCREEN_HEIGHT = 512;
-
 Scene *scene;
 Renderer *renderer;
 int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
@@ -59,34 +56,7 @@ void display( void )
 void reshape( int width, int height )
 {
 //update the renderer's buffers
-	const float ar_origin = (float)BASIC_SCREEN_WIDTH / (float)BASIC_SCREEN_HEIGHT;
-	const float ar_new = (float)width / (float)height;
-
-	float scale_w = (float)width / (float)BASIC_SCREEN_WIDTH;
-	float scale_h = (float)height / (float)BASIC_SCREEN_HEIGHT;
-	if (ar_new > ar_origin) {
-		scale_w = scale_h;
-	}
-	else {
-		scale_h = scale_w;
-	}
-
-	float margin_x = (width - BASIC_SCREEN_WIDTH * scale_w) / 2;
-	float margin_y = (height - BASIC_SCREEN_HEIGHT * scale_h) / 2;
-
-	int scaledWidth = (BASIC_SCREEN_WIDTH * scale_w);
-	int scaledHeight = (BASIC_SCREEN_HEIGHT * scale_h);
-	renderer->SetRendererSize(scaledWidth, scaledHeight);
-
-	glViewport(margin_x, margin_y, BASIC_SCREEN_WIDTH * scale_w, BASIC_SCREEN_HEIGHT * scale_h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, BASIC_SCREEN_WIDTH / ar_origin, 0, BASIC_SCREEN_HEIGHT / ar_origin, 0, 1.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	//renderer->CreateBuffers(width, height);
+	renderer->CreateBuffers(width, height);
 }
 
 enum ROTATION{ NO_ROTATION, MODEL, WORLD };
@@ -575,7 +545,7 @@ int my_main( int argc, char **argv )
 	// Initialize window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_RGBA| GLUT_DOUBLE);
-	glutInitWindowSize(BASIC_SCREEN_WIDTH, BASIC_SCREEN_HEIGHT);
+	glutInitWindowSize( 512, 512 );
 	glutInitContextVersion( 3, 2 );
 	glutInitContextProfile( GLUT_CORE_PROFILE );
 	glutCreateWindow( "CG" );
@@ -591,7 +561,7 @@ int my_main( int argc, char **argv )
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
 	
-	renderer = new Renderer(BASIC_SCREEN_WIDTH, BASIC_SCREEN_HEIGHT);
+	renderer = new Renderer(512,512);
 	scene = new Scene(renderer);
 	scene->setOrthogonalView(-1,1,-1,1,-1,1);
 
