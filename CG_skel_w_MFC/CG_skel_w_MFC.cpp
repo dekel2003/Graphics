@@ -34,6 +34,9 @@
 #define MAIN_ABOUT 11
 #define ADD_SPHERE 7
 
+const int BASIC_SCREEN_WIDTH = 512;
+const int BASIC_SCREEN_HEIGHT = 512;
+
 Scene *scene;
 Renderer *renderer;
 int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
@@ -56,7 +59,34 @@ void display( void )
 void reshape( int width, int height )
 {
 //update the renderer's buffers
-	renderer->CreateBuffers(width, height);
+	const float ar_origin = (float)BASIC_SCREEN_WIDTH / (float)BASIC_SCREEN_HEIGHT;
+	const float ar_new = (float)width / (float)height;
+
+	float scale_w = (float)width / (float)BASIC_SCREEN_WIDTH;
+	float scale_h = (float)height / (float)BASIC_SCREEN_HEIGHT;
+	if (ar_new > ar_origin) {
+		scale_w = scale_h;
+	}
+	else {
+		scale_h = scale_w;
+	}
+
+	float margin_x = (width - BASIC_SCREEN_WIDTH * scale_w) / 2;
+	float margin_y = (height - BASIC_SCREEN_HEIGHT * scale_h) / 2;
+
+	int scaledWidth = (BASIC_SCREEN_WIDTH * scale_w);
+	int scaledHeight = (BASIC_SCREEN_HEIGHT * scale_h);
+	renderer->SetRendererSize(scaledWidth, scaledHeight);
+
+	glViewport(margin_x, margin_y, BASIC_SCREEN_WIDTH * scale_w, BASIC_SCREEN_HEIGHT * scale_h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, BASIC_SCREEN_WIDTH / ar_origin, 0, BASIC_SCREEN_HEIGHT / ar_origin, 0, 1.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	//renderer->CreateBuffers(width, height);
 }
 
 enum ROTATION{ NO_ROTATION, MODEL, WORLD };
@@ -577,7 +607,7 @@ int my_main( int argc, char **argv )
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS
-	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
+	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\dolphin.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\cow.obj"); // DELETE THIS
 

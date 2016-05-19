@@ -11,17 +11,17 @@
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
 
-Renderer::Renderer() :m_width(512), m_height(512)
+Renderer::Renderer() :m_width(512), m_height(512) // private c-tor, never to be called ;)
 {
-	InitOpenGLRendering();
+	/*InitOpenGLRendering();
 	CreateBuffers(512,512);
-	Init();
+	Init();*/
 }
 
 Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
 {
 	InitOpenGLRendering();
-	CreateBuffers(width,height);
+	CreateBuffers();
 	Init();
 }
 
@@ -34,10 +34,14 @@ void Renderer::Init(){
 	Invalidate();
 }
 
-void Renderer::CreateBuffers(int width, int height)
-{
+void Renderer::SetRendererSize(int width, int height) {
 	m_width = width;
 	m_height = height;
+	CreateBuffers();
+}
+
+void Renderer::CreateBuffers()
+{
 	m_TotalNumberOfPixels = (m_width * m_height);
 	CreateOpenGLBuffer(); //Do not remove this line.
 	m_outBuffer = new float[3 * m_TotalNumberOfPixels];

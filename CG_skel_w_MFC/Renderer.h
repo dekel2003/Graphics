@@ -113,7 +113,9 @@ class Renderer
 	mat4 objectToCamera; // = world_to_camera * object_to_world; (Tc*Tw*Tm)
 
 	mat4 normalTransform;
+	float AmbientIntensity = 1.0f;
 
+	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2);
@@ -128,19 +130,15 @@ class Renderer
 	//bool PointInTriangle(const vec2& pt, Polygon3& P);
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 	void putColor(int x, int y, Polygon3* P);
-
-
-	float AmbientIntensity = 1.0f;
-
 public:
 	void setAmbientLight(float intensity);
 	void drawZBuffer(vec3& fog);
 
-	void CreateBuffers(int width, int height); // initially private
-	Renderer();
+	void CreateBuffers(); // initially private
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
+	void SetRendererSize(int width, int height);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
 
