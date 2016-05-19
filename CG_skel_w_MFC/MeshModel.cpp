@@ -157,7 +157,7 @@ void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	//renderer->DrawTriangles(&vertex_positions);
-	renderer->AddTriangles(&vertex_positions, vec3(256, 0, 0), &normalsToFacesGeneralForm);
+	renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)

@@ -351,7 +351,7 @@ void Renderer::putColor(int x, int y, Polygon3* P){
 
 
 void Renderer::drawZBuffer(vec3& fog){
-	if (globalClippedVertices.empty())
+	if (globalClippedVertices.empty() || m_outBuffer==NULL)
 		return;
 	int x, y;
 	int minX, maxX;

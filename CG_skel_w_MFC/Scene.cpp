@@ -109,7 +109,7 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
-	m_renderer->drawZBuffer();
+	m_renderer->drawZBuffer(m_FogEnabled ? fogColor : NULL);
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
