@@ -34,8 +34,8 @@
 #define MAIN_ABOUT 11
 #define ADD_SPHERE 7
 
-const int BASIC_SCREEN_WIDTH = 512;
-const int BASIC_SCREEN_HEIGHT = 512;
+const int BASIC_SCREEN_WIDTH = 1024;
+const int BASIC_SCREEN_HEIGHT = 1024;
 
 Scene *scene;
 Renderer *renderer;
