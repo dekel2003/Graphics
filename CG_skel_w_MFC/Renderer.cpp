@@ -671,7 +671,7 @@ vec3& Polygon3::calculateColor(vector<Light*>* lights, mat4& world_to_camera,
 		r = normalize((2 * teta * normal) - l);
 		e = normalize(eye - location);
 		tmpColor += tmpColor *  max(1, 2 / AmbientIntensity) * max(0, teta);
-		//tmpColor += tmpColor * max(1, 5 / AmbientIntensity) * pow(max(0, dot(r, e)), 10);
+		tmpColor += tmpColor * max(1, 5 / AmbientIntensity) * pow(max(0, dot(r, e)), 10);
 
 	}
 	return tmpColor;
