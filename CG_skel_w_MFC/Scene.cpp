@@ -105,8 +105,7 @@ void Scene::draw() {
 		}
 		(*it)->draw(m_renderer);
 	}
-	m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
-	if (activeModel!=-1)
+	if (activeModel != -1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
 
@@ -120,6 +119,8 @@ void Scene::draw() {
 			m_renderer->DrawLineBetween3Dvecs(loc, loc2);
 		}
 	}
+	m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
+
 
 	m_renderer->SwapBuffers();
 }
