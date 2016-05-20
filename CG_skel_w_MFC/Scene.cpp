@@ -56,10 +56,7 @@ void Scene::addCamera(){
 void Scene::drawXY(){
 	float delta = 0.2;
 	m_renderer->setColor(0,100,100);
-	//m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
-	//m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	m_renderer->SetObjectMatrices(mat4(),mat4());
-	//m_renderer->DrawNormals
 	for (float i = -1; i <= 1; i += delta){
 		m_renderer->setColor(60 + int(55 * i), 50, 0);
 		m_renderer->DrawLineBetween3Dvecs(vec4(i, -1.0, -1, 1.0), vec4(i, 1.0, -1, 1.0));
@@ -77,13 +74,11 @@ void Scene::addPrimModel(){
 	draw();
 }
 
-void Scene::draw()
-{
+void Scene::draw() {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	//m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
 	m_renderer->Invalidate();
-	
 	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
@@ -109,7 +104,7 @@ void Scene::draw()
 		}
 		(*it)->draw(m_renderer);
 	}
-	m_renderer->drawZBuffer(m_FogEnabled ? fogColor : NULL);
+	m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
@@ -118,7 +113,6 @@ void Scene::draw()
 
 void Scene::EnableFog() {
 	m_FogEnabled = true;
-	
 }
 
 void Scene::DisableFog() {
@@ -127,6 +121,14 @@ void Scene::DisableFog() {
 
 void Scene::setFogColor(GLfloat R, GLfloat G, GLfloat B) {
 	fogColor = vec3(R, G, B);
+}
+
+void Scene::EnableSSAA() {
+	m_renderer->SetSSAAMultiplier(2);
+}
+
+void Scene::DisableSSAA() {
+	m_renderer->SetSSAAMultiplier(1);
 }
 
 void Scene::drawDemo()

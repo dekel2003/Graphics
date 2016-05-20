@@ -39,7 +39,7 @@ const int BASIC_SCREEN_HEIGHT = 512;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -59,6 +59,8 @@ void display( void )
 void reshape( int width, int height )
 {
 //update the renderer's buffers
+	width = (((width % 2) == 0) ? width : ((0 < (width - 1)) ? (width - 1) : 2));
+	height = (((height % 2) == 0) ? height : ((0 < (height - 1)) ? (height - 1) : 2));
 	const float ar_origin = (float)BASIC_SCREEN_WIDTH / (float)BASIC_SCREEN_HEIGHT;
 	const float ar_new = (float)width / (float)height;
 
@@ -419,6 +421,26 @@ void fogMenu(int id)
 	}
 }
 
+bool ssaaMenuBeingUsed = false;
+void ssaaMenu(int id)
+{
+	if (ssaaMenuBeingUsed == false) {
+		ssaaMenuBeingUsed = true;
+		if (id == 0){
+			scene->EnableSSAA();
+		}
+		else  if (id == 1) {
+			scene->DisableSSAA();
+		}
+		else
+		{
+			scene->activeLight = id - 2;
+		}
+		display();
+		ssaaMenuBeingUsed = false;
+	}
+}
+
 void viewMenu(int id)
 {
 	CFrustumDialog dlg;
@@ -532,6 +554,9 @@ void initMenu()
 	glutAddMenuEntry("On", 0);
 	glutAddMenuEntry("Off", 1);
 	glutAddMenuEntry("Set Color", 2);
+	menuSsaa = glutCreateMenu(ssaaMenu);
+	glutAddMenuEntry("On", 0);
+	glutAddMenuEntry("Off", 1);
 	menuFaceNormals = glutCreateMenu(normalsPerFaceMenu);
 	glutAddMenuEntry("On", NORMAL_ON);
 	glutAddMenuEntry("Off", NORMAL_OFF);
@@ -551,6 +576,7 @@ void initMenu()
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose Fog", menuFog);
+	glutAddSubMenu("Super Sampling Anti Aliasing", menuSsaa);
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
 	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);
@@ -575,7 +601,7 @@ int my_main( int argc, char **argv )
 	// Initialize window
 	glutInit( &argc, argv );
 	glutInitDisplayMode( GLUT_RGBA| GLUT_DOUBLE);
-	glutInitWindowSize( 512, 512 );
+	glutInitWindowSize(BASIC_SCREEN_WIDTH, BASIC_SCREEN_HEIGHT);
 	glutInitContextVersion( 3, 2 );
 	glutInitContextProfile( GLUT_CORE_PROFILE );
 	glutCreateWindow( "CG" );
@@ -590,16 +616,13 @@ int my_main( int argc, char **argv )
 	}
 	fprintf(stdout, "Status: Using GLEW %s\n", glewGetString(GLEW_VERSION));
 
-	
-	renderer = new Renderer(512,512);
+	renderer = new Renderer(BASIC_SCREEN_WIDTH, BASIC_SCREEN_HEIGHT);
 	scene = new Scene(renderer);
 	scene->setOrthogonalView(-1,1,-1,1,-1,1);
 
 
 	//Initialize Callbacks
-
 	glutDisplayFunc( display );
-
 	glutKeyboardFunc( keyboard );
 	glutMouseFunc( mouse );
 	glutMotionFunc ( motion );

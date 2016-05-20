@@ -10,62 +10,70 @@
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
+#define INDEXSSAA(width,x,y,c) (x+y*width)*3+c
 
-Renderer::Renderer() :m_width(512), m_height(512) // private c-tor, never to be called ;)
+Renderer::Renderer() :m_OutBufferWidth(512), m_OutBufferHeight(512) // private c-tor, never to be called ;)
 {
 	/*InitOpenGLRendering();
 	CreateBuffers(512,512);
 	Init();*/
 }
 
-Renderer::Renderer(int width, int height) : m_width(width), m_height(height)
-{
+Renderer::Renderer(int width, int height) : m_OutBufferWidth(width), m_OutBufferHeight(height) {
+	m_SSAAOutBufferWidth = (m_OutBufferWidth * m_SSAAMultiplier);
+	m_SSAAOutBufferHeight = (m_OutBufferHeight * m_SSAAMultiplier);
 	InitOpenGLRendering();
 	CreateBuffers();
 	Init();
 }
 
-Renderer::~Renderer(void)
-{
-}
+Renderer::~Renderer(void) {}
 
-void Renderer::Init(){
+void Renderer::Init() {
 	R = B = G = 0.5;
 	Invalidate();
 }
 
 void Renderer::SetRendererSize(int width, int height) {
-	m_width = width;
-	m_height = height;
+	m_OutBufferWidth = width;
+	m_OutBufferHeight = height;
+	m_SSAAOutBufferWidth = (m_OutBufferWidth * m_SSAAMultiplier);
+	m_SSAAOutBufferHeight = (m_OutBufferHeight * m_SSAAMultiplier);
 	CreateBuffers();
 }
 
-void Renderer::CreateBuffers()
-{
-	m_TotalNumberOfPixels = (m_width * m_height);
+void Renderer::SetSSAAMultiplier(int multiplier) {
+	m_SSAAMultiplier = multiplier;
+	SetRendererSize(m_OutBufferWidth, m_OutBufferHeight);
+	//Init();
+}
+
+void Renderer::CreateBuffers() {
+	m_TotalNumberOfOutBufferPixels = (m_OutBufferWidth * m_OutBufferHeight);
 	CreateOpenGLBuffer(); //Do not remove this line.
-	m_outBuffer = new float[3 * m_TotalNumberOfPixels];
-	m_zbuffer = new float[m_TotalNumberOfPixels];
+	m_SSAAOutBuffer = new float[3 * m_TotalNumberOfOutBufferPixels * (m_SSAAMultiplier * m_SSAAMultiplier)];
+	m_outBuffer = new float[3 * m_TotalNumberOfOutBufferPixels];
+	m_zbuffer = new float[m_TotalNumberOfOutBufferPixels * (m_SSAAMultiplier * m_SSAAMultiplier)];
 }
 
 void Renderer::Invalidate(){
-	for (int i = 0; i < 3 * m_width*m_height; ++i)
-		m_outBuffer[i] = 0.1;
+	for (int i = 0, end = 3 * m_SSAAOutBufferWidth * m_SSAAOutBufferHeight; i < end; ++i)
+		m_SSAAOutBuffer[i] = 0.1;
 	globalClippedVertices.clear();
-	for (int y = 0; y < m_height; ++y)
-		for (int x = 0; x < m_width; ++x)
-			m_zbuffer[INDEXZ(m_width, x, y)] = 5000; //TODO: max-z as back of the world...
+	for (int y = 0; y < m_SSAAOutBufferHeight; ++y)
+		for (int x = 0; x < m_SSAAOutBufferWidth; ++x)
+			m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = 5000; //TODO: max-z as back of the world...
 }
 
 void Renderer::SetDemoBuffer()
 {
-	vec2 a(m_width / 2, m_height / 2);
+	vec2 a(m_OutBufferWidth / 2, m_OutBufferHeight / 2);
 	vec2 b(0, 0);
-	vec2 c(m_width/2, 0);
-	vec2 d(m_width-1, 0);
-	vec2 b2(0, m_height-1);
-	vec2 c2(m_width / 2, m_height-1);
-	vec2 d2(m_width-1, m_height-1);
+	vec2 c(m_OutBufferWidth / 2, 0);
+	vec2 d(m_OutBufferWidth - 1, 0);
+	vec2 b2(0, m_OutBufferHeight - 1);
+	vec2 c2(m_OutBufferWidth / 2, m_OutBufferHeight - 1);
+	vec2 d2(m_OutBufferWidth - 1, m_OutBufferHeight - 1);
 
 
 	DrawLine(a, b);
@@ -111,8 +119,8 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 			else{
 				errorInteger += deltaError;
 			}
-			if (x > 0 && y > 0 && x < m_width && y < m_height){
-				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){
+				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
 			}
 		}
 	}
@@ -129,8 +137,8 @@ void Renderer::DrawLine(vec2 a, vec2 b){
 			else{
 				errorInteger += deltaError;
 			}
-			if (x > 0 && y > 0 && x < m_width && y < m_height){
-				m_outBuffer[INDEX(m_width, x, y, 0)] = R;	m_outBuffer[INDEX(m_width, x, y, 1)] = G;	m_outBuffer[INDEX(m_width, x, y, 2)] = B;
+			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){
+				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
 			}
 		}
 	}
@@ -155,11 +163,11 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	vec2 a =  vec2(vecA.x, vecA.y);
 	vec2 b = vec2(vecB.x, vecB.y);
 
-	a.x = m_width*(a.x + 1) / 2;
-	a.y = m_height*(a.y + 1) / 2;
+	a.x = m_SSAAOutBufferWidth*(a.x + 1) / 2;
+	a.y = m_SSAAOutBufferHeight*(a.y + 1) / 2;
 
-	b.x = m_width*(b.x + 1) / 2;
-	b.y = m_height*(b.y + 1) / 2;
+	b.x = m_SSAAOutBufferWidth*(b.x + 1) / 2;
+	b.y = m_SSAAOutBufferHeight*(b.y + 1) / 2;
 
 	DrawLine(a, b);
 }
@@ -271,7 +279,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		vec3 polygonColor = (color / 512 + vec3(0.01))*AmbientIntensity;
 
 		normalTransform.MultiplyVec(normals->at(i / 3), currentNormal);
-		globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_width, m_height));
+		globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth));
 	}
 	/*
 	for (int i = 0; i < numberOfVertices; ++i){
@@ -341,7 +349,7 @@ void Renderer::putColor(int x, int y, Polygon3* P){
 	polygonColor = P->calculateFaceColor(lights, world_to_camera, AmbientIntensity);
 
 
-	m_outBuffer[INDEX(m_width, x, y, 0)] = polygonColor.x;	m_outBuffer[INDEX(m_width, x, y, 1)] = polygonColor.y;	m_outBuffer[INDEX(m_width, x, y, 2)] = polygonColor.z;
+	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = polygonColor.x;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = polygonColor.y;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = polygonColor.z;
 
 	//m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 1);
 	//m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 1);
@@ -349,13 +357,8 @@ void Renderer::putColor(int x, int y, Polygon3* P){
 
 }
 
-
-
-
-
-
-void Renderer::drawZBuffer(vec3& fog){
-	if (globalClippedVertices.empty() || m_outBuffer==NULL)
+void Renderer::drawFillAndFog(vec3& fog){
+	if (globalClippedVertices.empty() || m_outBuffer == NULL || m_SSAAOutBuffer == NULL)
 		return;
 	int x, y;
 	int minX, maxX;
@@ -366,9 +369,9 @@ void Renderer::drawZBuffer(vec3& fog){
 	for (int i = 0; i < globalClippedVerticesSize; ++i){
 		currentPolygon = &globalClippedVertices[i];
 		minY = max(0, floor(currentPolygon->minY()));
-		maxY = min(m_height, ceil(currentPolygon->maxY()));
+		maxY = min(m_SSAAOutBufferHeight, ceil(currentPolygon->maxY()));
 		minX = max(0, floor(currentPolygon->minX()));
-		maxX = min(m_width, ceil(currentPolygon->maxX()));
+		maxX = min(m_SSAAOutBufferWidth, ceil(currentPolygon->maxX()));
 		for (y = minY; y < maxY; ++y){
 			pt.y = y;
 			for (int x = minX; x <= maxX; ++x){
@@ -376,8 +379,8 @@ void Renderer::drawZBuffer(vec3& fog){
 				PointInTriangle(pt, currentPolygon); //set "result" for the next line instead of instantiating a new variable.
 				if (result){
 					GLfloat z = Depth(currentPolygon, pt);
-					if (z < m_zbuffer[INDEXZ(m_width, x, y)]/* && z>0*/){
-						m_zbuffer[INDEXZ(m_width, x, y)] = z;
+					if (z < m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)]/* && z>0*/){
+						m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = z;
 						putColor(x, y, currentPolygon);
 					}
 				}
@@ -393,21 +396,43 @@ void Renderer::drawZBuffer(vec3& fog){
 		int indexB;
 		int indexC;
 		GLfloat zValue;
-		for (int x = 0; x < m_width; ++x) {
-			for (int y = 0; y < m_width; ++y) {
-				indexA = INDEX(m_width, x, y, 0);
-				indexB = INDEX(m_width, x, y, 1);
-				indexC = INDEX(m_width, x, y, 2);
-				zValue = ((m_zbuffer[INDEXZ(m_width, x, y)] + 1.0f) / 2.0f);
-				m_outBuffer[indexA] = min(m_outBuffer[indexA] + (zValue * fogR), 1.0f);
-				m_outBuffer[indexB] = min(m_outBuffer[indexB] + (zValue * fogG), 1.0f);
-				m_outBuffer[indexC] = min(m_outBuffer[indexC] + (zValue * fogB), 1.0f);
-				
+		for (int x = 0; x < m_SSAAOutBufferWidth; ++x) {
+			for (int y = 0; y < m_SSAAOutBufferWidth; ++y) {
+				indexA = INDEX(m_SSAAOutBufferWidth, x, y, 0);
+				indexB = INDEX(m_SSAAOutBufferWidth, x, y, 1);
+				indexC = INDEX(m_SSAAOutBufferWidth, x, y, 2);
+				zValue = ((m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] + 1.0f) / 2.0f);
+				m_SSAAOutBuffer[indexA] = min(m_SSAAOutBuffer[indexA] + (zValue * fogR), 1.0f);
+				m_SSAAOutBuffer[indexB] = min(m_SSAAOutBuffer[indexB] + (zValue * fogG), 1.0f);
+				m_SSAAOutBuffer[indexC] = min(m_SSAAOutBuffer[indexC] + (zValue * fogB), 1.0f);
 			}
-			
 		}
-		
 	}
+
+	bool superSamling = true;
+	if (superSamling) {
+		for (int x = 0; x < m_OutBufferWidth; ++x) {
+			for (int y = 0; y < m_OutBufferHeight; ++y) {
+				m_outBuffer[INDEX(m_OutBufferWidth, x, y, 0)] = findSSAAOfColorElement(m_SSAAMultiplier, x, y, 0);
+				m_outBuffer[INDEX(m_OutBufferWidth, x, y, 1)] = findSSAAOfColorElement(m_SSAAMultiplier, x, y, 1);
+				m_outBuffer[INDEX(m_OutBufferWidth, x, y, 2)] = findSSAAOfColorElement(m_SSAAMultiplier, x, y, 2);
+			}
+		}
+	}
+}
+
+float Renderer::findSSAAOfColorElement(int multiplier, int x, int y, int colorElement) {
+	GLfloat sum = -1;
+	for (int i = 0; i < multiplier; ++i) {
+		for (int j = 0; j < multiplier; ++j) {
+			if (sum == -1) { // first pixel
+				sum = m_SSAAOutBuffer[INDEXSSAA(m_SSAAOutBufferWidth, ((x * multiplier) + i), ((y * multiplier) + j), colorElement)];
+			} else { // the rest of the pixels
+				sum += m_SSAAOutBuffer[INDEXSSAA(m_SSAAOutBufferWidth, ((x * multiplier) + i), ((y * multiplier) + j), colorElement)];
+			}
+		}
+	}
+	return (sum / (multiplier * multiplier));
 }
 
 /*
@@ -544,11 +569,11 @@ vec2 Renderer::vec4toVec2(const vec4 v){
 }
 
 int Renderer::GetWidth() {
-	return m_width;
+	return m_OutBufferWidth;
 }
 
 int Renderer::GetHeight() {
-	return m_height;
+	return m_OutBufferHeight;
 }
 
 void Renderer::SetLights(vector<Light*>* l){
@@ -614,8 +639,8 @@ void Renderer::CreateOpenGLBuffer()
 {
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, gScreenTex);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
-	glViewport(0, 0, m_width, m_height);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, m_OutBufferWidth, m_OutBufferHeight, 0, GL_RGB, GL_FLOAT, NULL);
+	glViewport(0, 0, m_OutBufferWidth, m_OutBufferHeight);
 }
 
 void Renderer::SwapBuffers()
@@ -626,7 +651,7 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 	glBindTexture(GL_TEXTURE_2D, gScreenTex);
 	a = glGetError();
-	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_width, m_height, GL_RGB, GL_FLOAT, m_outBuffer);
+	glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, m_OutBufferWidth, m_OutBufferHeight, GL_RGB, GL_FLOAT, m_outBuffer);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	a = glGetError();
 

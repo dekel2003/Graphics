@@ -96,11 +96,15 @@ class Renderer
 	void InitOpenGLRendering();
 	//////////////////////////////
 
+	float* m_SSAAOutBuffer;
 	float *m_outBuffer; // 3*width*height
 	float *m_zbuffer; // width*height
-	int m_width;
-	int m_height;
-	int m_TotalNumberOfPixels;
+	int m_OutBufferWidth;
+	int m_OutBufferHeight;
+	int m_SSAAOutBufferWidth;
+	int m_SSAAOutBufferHeight;
+	int m_TotalNumberOfOutBufferPixels;
+	int m_SSAAMultiplier = 1;
 
 	vector<Polygon3> globalClippedVertices;
 	vector<Light*>* lights = NULL;
@@ -129,16 +133,18 @@ class Renderer
 	void PointInTriangle(vec2& pt, Polygon3* P);
 	//bool PointInTriangle(const vec2& pt, Polygon3& P);
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
+	inline float findSSAAOfColorElement(int multiplier, int x, int y, int colorElement);
 	void putColor(int x, int y, Polygon3* P);
 public:
 	void setAmbientLight(float intensity);
-	void drawZBuffer(vec3& fog);
+	void drawFillAndFog(vec3& fog);
 
 	void CreateBuffers(); // initially private
 	Renderer(int width, int height);
 	~Renderer(void);
 	void Init();
 	void SetRendererSize(int width, int height);
+	void SetSSAAMultiplier(int multiplier);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
 
@@ -156,8 +162,6 @@ public:
 	int GetWidth();
 	int GetHeight();
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
-
-
 
 	void testPointInTriangle(int x, int y);
 };

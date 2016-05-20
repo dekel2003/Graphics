@@ -6,8 +6,6 @@
 #include "Renderer.h"
 using namespace std;
 
-
-
 class Model {
 public:
 	void virtual draw(Renderer* renderer) = 0;
@@ -56,8 +54,6 @@ public:
 	void move(GLfloat dz);
 	void rotate(GLfloat dz);
 	void draw(Renderer* renderer);
-
-	
 };
 
 
@@ -74,7 +70,6 @@ class Scene {
 	bool m_FogEnabled = false;
 	vec3 fogColor = vec3(256, 256, 256);
 	void drawCoordinateSystem();
-
 
 public:
 	mat4 model_to_world; // Tw
@@ -142,6 +137,10 @@ public:
 
 	void EnableFog();
 	void DisableFog();
+
+	void EnableSSAA();
+	void DisableSSAA();
+
 	void setFogColor(GLfloat R, GLfloat G, GLfloat B);
 	
 	Model*  getModel(int id); //returns the model
