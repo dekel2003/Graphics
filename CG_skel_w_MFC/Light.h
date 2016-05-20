@@ -11,7 +11,7 @@ class Light {
 public:
 	vec4 location;
 	Light(){
-		location = vec4(-1, 1, -1, 1);
+		location = vec4(0.5, 0.5, 0, 1);
 	}
 	void move(GLfloat dx, GLfloat dy);
 	void rotate(GLfloat dx, GLfloat dy);
@@ -27,6 +27,7 @@ void Light::move(GLfloat dx, GLfloat dy){
 void Light::move(GLfloat dz){
 	location.z += dz;
 }
+
 
 //void Light::rotate(GLfloat dx, GLfloat dy);
 //void Light::rotate(GLfloat dz);

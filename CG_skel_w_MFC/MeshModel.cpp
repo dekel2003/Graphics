@@ -116,21 +116,26 @@ void MeshModel::loadFile(string fileName)
 	// iterate through all stored faces and create triangles
 
 	int k=0;
+	vec3 normal1, normal2, normal3;
 	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
 	{
-		vec3 normal1 = normals2vertices[it->vn[0]-1];
-		vec3 normal2 = normals2vertices[it->vn[1]-1];
-		vec3 normal3 = normals2vertices[it->vn[2]-1];
-		vec3 point1 = vertices[it->v[0] - 1];
-		vec3 point2 = vertices[it->v[1] - 1];
-		vec3 point3 = vertices[it->v[2] - 1];
-		vec3 point1Two = point1 + normalize(normal1)*normalVectorsSize;
-		vec3 point2Two = point2 + normalize(normal1)*normalVectorsSize;
-		vec3 point3Two = point3 + normalize(normal1)*normalVectorsSize;
-		normalsToVertices.push_back(pair<vec3, vec3>(point1, point1Two));
-		normalsToVertices.push_back(pair<vec3, vec3>(point2, point2Two));
-		normalsToVertices.push_back(pair<vec3, vec3>(point3, point3Two));
-
+		if (it->vn){
+			normal1 = normals2vertices[it->vn[0] - 1];
+			normal2 = normals2vertices[it->vn[1] - 1];
+			normal3 = normals2vertices[it->vn[2] - 1];
+			vec3 point1 = vertices[it->v[0] - 1];
+			vec3 point2 = vertices[it->v[1] - 1];
+			vec3 point3 = vertices[it->v[2] - 1];
+			vec3 point1Two = point1 + normalize(normal1)*normalVectorsSize;
+			vec3 point2Two = point2 + normalize(normal2)*normalVectorsSize;
+			vec3 point3Two = point3 + normalize(normal3)*normalVectorsSize;
+			normalsToVertices.push_back(pair<vec3, vec3>(point1, point1Two));
+			normalsToVertices.push_back(pair<vec3, vec3>(point2, point2Two));
+			normalsToVertices.push_back(pair<vec3, vec3>(point3, point3Two));
+			normalsToVerticesGeneralForm.push_back(normalize(normal1));
+			normalsToVerticesGeneralForm.push_back(normalize(normal2));
+			normalsToVerticesGeneralForm.push_back(normalize(normal3));
+		}
 		for (int i = 0; i < 3; i++)
 		{
 			vertex_positions.push_back(vec4(vertices[it->v[i] - 1].x, vertices[it->v[i] - 1].y, vertices[it->v[i] - 1].z, 1));
@@ -156,8 +161,11 @@ void MeshModel::loadFile(string fileName)
 void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	//renderer->DrawTriangles(&vertex_positions);
-	renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm);
+	//renderer->DrawTriangles(&vertex_positions);	normals2vertices
+	if (normalsToVerticesGeneralForm.size() == 0)
+		renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm);
+	else
+		renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)

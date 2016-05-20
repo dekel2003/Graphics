@@ -30,8 +30,8 @@
 #define VIEW_PERSPECTIVE 2
 #define NORMAL_ON 1
 #define NORMAL_OFF 2
-#define MAIN_DEMO 10
-#define MAIN_ABOUT 11
+#define MAIN_DEMO 11
+#define MAIN_ABOUT 12
 #define ADD_SPHERE 7
 
 const int BASIC_SCREEN_WIDTH = 1024;
@@ -39,7 +39,7 @@ const int BASIC_SCREEN_HEIGHT = 1024;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuLight, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -380,6 +380,22 @@ void lightMenu(int id)
 	}
 }
 
+void shadowMenu(int id){
+	switch (id)
+	{
+	case 0:
+		renderer->shadow = FLAT;
+		break;
+	case 1:
+		renderer->shadow = GOUARD;
+		break;
+	case 2:
+		renderer->shadow = PHONG;
+		break;
+	}
+	display();
+}
+
 vector<GLfloat> split(const string &text, char sep) {
 	vector<string> tokens;
 	size_t start = 0, end = 0;
@@ -550,6 +566,10 @@ void initMenu()
 	menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("Add light", 0);
 	glutAddMenuEntry("Change Ambient Light", 1);
+	menuShadow = glutCreateMenu(shadowMenu);
+	glutAddMenuEntry("Flat", 0);
+	glutAddMenuEntry("Gouard", 1);
+	glutAddMenuEntry("Phong", 2);
 	menuFog = glutCreateMenu(fogMenu);
 	glutAddMenuEntry("On", 0);
 	glutAddMenuEntry("Off", 1);
@@ -576,6 +596,7 @@ void initMenu()
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose Fog", menuFog);
+	glutAddSubMenu("Choose Shadow", menuShadow);
 	glutAddSubMenu("Super Sampling Anti Aliasing", menuSsaa);
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
@@ -630,7 +651,7 @@ int my_main( int argc, char **argv )
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS
-	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
+	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\chain.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\dolphin.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\cow.obj"); // DELETE THIS
 

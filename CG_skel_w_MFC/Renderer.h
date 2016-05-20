@@ -18,32 +18,25 @@ inline vec3 vec4TOvec3(vec4& v){
 
 class Polygon3{
 
-vec4 eye = vec3(0.5, 0.5, 0), l, n, r, e;
+vec3 eye = vec3(0.5, 0.5, 0), l, n, r, e;
 float teta;
 public:
 	vec4 a, b, c; //world coords
-	vec4 pa, pb, pc; //screen coords
+	vec4 pa, pb, pc; //screen coords [-1,1]X[-1,1]
 	vec4 ma, mb, mc; //monitor coords
+	vec4 na, nb, nc; //normals to vertices
 	vec3 aColor, bColor, cColor; // colors
-	vec3 baseColor, facecolor;
+	vec3 baseColor, facecolor, tmpColor;
 	bool faceColorWasAlreadyCalculated = false;
-	vec4 temVec, tmpNormal;
+	bool verticesColorsWasAlreadyCalculated = false;
+	vec4 temVec;
+	vec3 tmpNormal;
 	//vec3 normal;
 	Polygon3(){}
-	//Polygon3(vec4 _a, vec4 _b, vec4 _c) :a(_a), b(_b), c(_c){
-		/*a /= a.w;
-		b /= b.w;
-		c /= c.w;*/
-
-		/*if (a.y > b.y)
-		swap(a, b);
-		if (a.y > c.y)
-		swap(a, c);
-		if (b.y > c.y)
-		swap(b, c);*/
-	//}
-	//Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color) :a(_a), b(_b), c(_c), baseColor(color){}
-	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec4 _normal, mat4& projection, int m_width, int m_height) :a(_a), b(_b), c(_c), baseColor(color), facecolor(color){
+	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec4 _normal, mat4& projection,
+		int m_width, int m_height
+		,vec4* normalsToVertices = NULL) 
+		:a(_a), b(_b), c(_c), baseColor(color), facecolor(color){
 		projection.MultiplyVec(a, pa);
 		projection.MultiplyVec(b, pb);
 		projection.MultiplyVec(c, pc);
@@ -59,6 +52,12 @@ public:
 		mc.y = m_height*(pc.y + 1) / 2;
 
 		n = normalize(vec4TOvec3(_normal));
+
+		if (normalsToVertices){
+			na = normalize(normalsToVertices[0]);
+			nb = normalize(normalsToVertices[1]);
+			nc = normalize(normalsToVertices[2]);
+		}
 	}
 	inline float minY() const{
 		return min(ma.y, min(mb.y, mc.y));
@@ -82,9 +81,15 @@ public:
 		return minY() < p.minY();
 	}
 
-	vec3& calculateFaceColor(vector<Light*>* lights, mat4& world_to_camera, float AmbientIntensity);
+	vec3& calculateColor(vector<Light*>* lights, mat4& world_to_camera, float& AmbientIntensity, vec3& location, vec3& normal);
+	vec3& calculateFaceColor(vector<Light*>* lights, mat4& world_to_camera, float& AmbientIntensity);
+	void calculateVertexColors(vector<Light*>* lights, mat4& world_to_camera, float& AmbientIntensity);
 
+	vec3& getNormalOfBaricentricLocation(float& a1, float& a2, float& a3); //tmpNormal
 };
+
+
+enum Shadow { FLAT, GOUARD, PHONG };
 
 class Renderer
 {
@@ -146,7 +151,8 @@ public:
 	void SetRendererSize(int width, int height);
 	void SetSSAAMultiplier(int multiplier);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
-	void AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals = NULL);
+	void AddTriangles(const vector<vec4>* vertices, const vec3 color,
+		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL);
 
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
@@ -164,4 +170,7 @@ public:
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
 
 	void testPointInTriangle(int x, int y);
+
+
+	Shadow shadow = FLAT;
 };
