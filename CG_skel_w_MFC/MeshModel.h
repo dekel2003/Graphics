@@ -11,7 +11,7 @@ class MeshModel : public Model
 protected :
 	MeshModel() {}
 	vector<vec4> vertex_positions;
-	vector<vec3> normals2vertices, normalsToFacesGeneralForm;
+	vector<vec3> normals2vertices, normalsToFacesGeneralForm, normalsToVerticesGeneralForm;
 	vector<pair<vec3, vec3>> normalsToFaces;
 	vector<pair<vec3, vec3>> normalsToVertices;
 	vec4 massCenter;

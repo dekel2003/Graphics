@@ -190,14 +190,6 @@ void Barycentric(const vec2& p, const vec4& a, const vec4& b, const vec4& c)
 	a3 = 1.0f - a1 - a2;
 }
 
-/*
-inline bool Renderer::PointInTriangle(const vec2& pt, const  vec4 a, const  vec4 b, const  vec4 c) const{
-
-	Barycentric(pt, a, b, c);
-	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
-}
-*/
-
 bool result;
 vec4 a, b, c;
 void Renderer::PointInTriangle(vec2& pt, Polygon3* P) {
@@ -218,57 +210,24 @@ void Renderer::PointInTriangle(vec2& pt, Polygon3* P) {
 	result = (a1 >= 0 && a2 >= 0 && a3 >= 0/* && test_a1 + test_a2 + test_a3 <= 1*/);
 }
 
-/*
-bool Renderer::PointInTriangle(const vec2& pt, Polygon3& P) {
-
-	Barycentric(pt, P.a, P.b, P.c);
-	return (a1 >= 0 && a2 >= 0 && a3 >= 0);
-}
-*/
-
-vec2 vec3TOvec2(vec4 v){
-	return vec2(v.x, v.y);
-}
-
-void Renderer::testPointInTriangle(int x, int y){
-	//Polygon3 p;
-	/*vector<Polygon3>::iterator i = globalClippedVertices.begin();
-	while (i != globalClippedVertices.end()){
-		if PointInTriangle(vec2(x, y), it->a, it->b, it->c)){
-
-		}
-	}*/
-	/*for (int i = 0; i < globalClippedVertices.size(); ++i){
-		if (PointInTriangle(vec2(x, y), globalClippedVertices[i].a, globalClippedVertices[i].b, globalClippedVertices[i].c)){
-			cout << i << endl;
-			setColor(0, 233, 244);
-			DrawLine(vec3TOvec2(globalClippedVertices[i].a+0.1), vec3TOvec2(globalClippedVertices[i].b+0.1));
-			setColor(256, 233, 244);
-		}
-			
-
-	}*/
-}
-
-
-
-
 inline GLfloat Depth(Polygon3* P, vec2& p){
 	Barycentric(p, P->ma, P->mb, P->mc);
-	return -(a3 * P->a.z + a1 * P->b.z + a2 *P->c.z);
+	return (a3 * P->a.z + a1 * P->b.z + a2 *P->c.z);
 }
 
 
-void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, const vector<vec3>* normals){
+void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
+	const vector<vec3>* normals, const vector<vec3>* normals2vertices){
 	objectToCamera = world_to_camera * object_to_world;
-	mat4 objectToClip = projectionMatrix * objectToCamera;
+	//mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
+	vec4 PolygonVNormals[3];
 
-	vector<vec4> cameraVertices;
+	/*vector<vec4> cameraVertices;
 	vector<vec4> clippedVertices;
 	clippedVertices.reserve(numberOfVertices);
-	cameraVertices.reserve(numberOfVertices);
+	cameraVertices.reserve(numberOfVertices);*/
 	globalClippedVertices.reserve(numberOfVertices + globalClippedVertices.size());
 	vec4 aa, bb, cc;
 	
@@ -279,7 +238,15 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 		vec3 polygonColor = (color / 512 + vec3(0.01))*AmbientIntensity;
 
 		normalTransform.MultiplyVec(normals->at(i / 3), currentNormal);
-		globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth));
+		if (normals2vertices){
+			normalTransform.MultiplyVec((*normals2vertices)[i - 2], PolygonVNormals[0]);
+			normalTransform.MultiplyVec((*normals2vertices)[i - 1], PolygonVNormals[1]);
+			normalTransform.MultiplyVec((*normals2vertices)[i], PolygonVNormals[2]);
+			globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth, PolygonVNormals));
+		}
+		else{
+			globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth));
+		}
 	}
 	/*
 	for (int i = 0; i < numberOfVertices; ++i){
@@ -339,17 +306,32 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color, cons
 
 
 vec2 pixel;
-vec3 polygonColor;
-
+vec3 pixelColor;
+vec3 pixelLocation;
 void Renderer::putColor(int x, int y, Polygon3* P){
 
-	//pixel = vec2(x, y);
-	//Barycentric(pixel * pixleToScreen, P->pa, P->pb, P->pc); //use now a1, a2, a3 - global barycentric coordinates.
 
-	polygonColor = P->calculateFaceColor(lights, world_to_camera, AmbientIntensity);
+	if (shadow == GOUARD){
+		P->calculateVertexColors(lights, world_to_camera, AmbientIntensity);
+		pixel = vec2(x, y);
+		Barycentric(pixel, P->ma, P->mb, P->mc); //use now a1, a2, a3 - global barycentric coordinates.
+		pixelColor = (a3 * P->aColor + a1 * P->bColor + a2 * P->cColor);
+
+	}
+	else if (shadow == PHONG){
+		pixel = vec2(x, y);
+		Barycentric(pixel, P->ma, P->mb, P->mc); //use now a1, a2, a3 - global barycentric coordinates.
+		pixelLocation = vec4TOvec3(a3 * P->a + a1 * P->b + a2 * P->c);
+		//pixelLocation.z = -pixelLocation.z;
+		pixelColor = P->calculateColor(lights, world_to_camera, AmbientIntensity, pixelLocation, P->getNormalOfBaricentricLocation(a1, a2, a3));
+	}
+	else if (shadow == FLAT){
+		pixelColor = P->calculateFaceColor(lights, world_to_camera, AmbientIntensity);
+	}
+	
 
 
-	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = polygonColor.x;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = polygonColor.y;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = polygonColor.z;
+	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = pixelColor.x;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = pixelColor.y;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = pixelColor.z;
 
 	//m_outBuffer[INDEX(m_width, x, y, 0)] = min(m_outBuffer[INDEX(m_width, x, y, 0)] + R, 1);
 	//m_outBuffer[INDEX(m_width, x, y, 1)] = min(m_outBuffer[INDEX(m_width, x, y, 1)] + G, 1);
@@ -671,28 +653,45 @@ void Renderer::SwapBuffers()
 
 
 
+vec3& Polygon3::calculateColor(vector<Light*>* lights, mat4& world_to_camera,
+	float &AmbientIntensity, vec3& location, vec3& normal){
+	tmpColor = baseColor;
 
-
-
-
-
-
-
-vec3& Polygon3::calculateFaceColor(vector<Light*>* lights, mat4& world_to_camera, float AmbientIntensity){
-	if (faceColorWasAlreadyCalculated)
-		return facecolor;
 	for (int j = 0; j < lights->size(); ++j){
-		//(*lights)[j]->location
-
 		world_to_camera.MultiplyVec(-(*lights)[j]->location, temVec);
 		temVec /= temVec.w;
-		l = normalize(vec4TOvec3((a + b + c) / 3 - temVec));
-		teta = dot(l, n);
-		r = normalize((2 * teta * n) + l);
-		e = -normalize(eye - vec4TOvec3((a + b + c) / 3));
-		facecolor += facecolor *  max(1, 1 / AmbientIntensity) * max(0, teta);
-		facecolor += facecolor * max(1, 100 / AmbientIntensity) * pow(max(0, dot(r, e)), 10);
+		l = normalize(location - vec4TOvec3(temVec));
+		teta = dot(l, normal);
+		r = normalize((2 * teta * normal) + l);
+		e = normalize(eye - location);
+		tmpColor += tmpColor *  max(1, 1 / AmbientIntensity) * max(0, teta);
+		tmpColor += tmpColor * max(1, 5 / AmbientIntensity) * pow(max(0, dot(r, e)), 10);
 	}
+	return tmpColor;
+}
+
+
+
+vec3& Polygon3::calculateFaceColor(vector<Light*>* lights, mat4& world_to_camera, float& AmbientIntensity){
+	if (faceColorWasAlreadyCalculated)
+		return facecolor;
+	facecolor = calculateColor(lights, world_to_camera, AmbientIntensity, vec4TOvec3((a + b + c) / 3), n);
 	faceColorWasAlreadyCalculated = true;
 	return facecolor;
+}
+
+void Polygon3::calculateVertexColors(vector<Light*>* lights, mat4& world_to_camera, float &AmbientIntensity){
+	if (verticesColorsWasAlreadyCalculated)
+		return;
+	aColor = calculateColor(lights, world_to_camera, AmbientIntensity, vec4TOvec3(a), vec4TOvec3(na));
+	bColor = calculateColor(lights, world_to_camera, AmbientIntensity, vec4TOvec3(b), vec4TOvec3(nb));
+	cColor = calculateColor(lights, world_to_camera, AmbientIntensity, vec4TOvec3(c), vec4TOvec3(nc));
+	verticesColorsWasAlreadyCalculated = true;
+}
+
+vec3& Polygon3::getNormalOfBaricentricLocation(float& alpha1, float& alpha2, float& alpha3){
+	// return it using tmpNormal
+	tmpNormal = normalize(vec4TOvec3(alpha3 * na + alpha1 * nb + alpha2 * nc));
+	//tmpNormal /= tmpNormal.w;
+	return tmpNormal;
 }

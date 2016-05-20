@@ -79,8 +79,9 @@ void Scene::draw() {
 	// 2. Tell all models to draw themselves
 	//m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
 	m_renderer->Invalidate();
+	mat4 normalizedProjection = cameras[activeCamera]->normalizedProjection();
 	if (m_renderer && cameras[activeCamera]){
-		m_renderer->SetProjection(cameras[activeCamera]->normalizedProjection());
+		m_renderer->SetProjection(normalizedProjection);
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
 	drawXY();
@@ -108,6 +109,18 @@ void Scene::draw() {
 	if (activeModel!=-1)
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
+
+	m_renderer->setColor(256, 256, 256);
+	vec4 loc, loc2;
+	for (Light* l : lights){
+		//normalizedProjection.MultiplyVec(l->location, loc);
+		loc = l->location;
+		for (int i = 0; i < 10; ++i){
+			loc2 = loc + vec4(0.2 - 0.02 * i, 0.02 * i, -1, 0);
+			m_renderer->DrawLineBetween3Dvecs(loc, loc2);
+		}
+	}
+
 	m_renderer->SwapBuffers();
 }
 
