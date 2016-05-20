@@ -18,9 +18,10 @@ inline vec3 vec4TOvec3(vec4& v){
 
 class Polygon3{
 
-vec3 eye = vec3(0.5, 0.5, 0), l, n, r, e;
+vec3 eye = vec3(0.5, 0.5, 0), n, r, e;
 float teta;
 public:
+	vec3 l;
 	vec4 a, b, c; //world coords
 	vec4 pa, pb, pc; //screen coords [-1,1]X[-1,1]
 	vec4 ma, mb, mc; //monitor coords
@@ -127,7 +128,7 @@ class Renderer
 	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
-	void DrawLine(vec2, vec2);
+	void DrawLine(vec2, vec2, float za=1000, float zb=1000);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;

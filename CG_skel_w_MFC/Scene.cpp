@@ -109,13 +109,16 @@ void Scene::draw() {
 		models[activeModel]->drawAxis(m_renderer);
 	cameras[activeCamera]->draw(m_renderer);
 
-	m_renderer->setColor(256, 256, 256);
+	m_renderer->setColor(0, 256, 256);
 	vec4 loc, loc2;
 	for (Light* l : lights){
-		//normalizedProjection.MultiplyVec(l->location, loc);
+		//cameras[activeCamera]->world_to_camera.MultiplyVec(l->location, loc);
 		loc = l->location;
-		for (int i = 0; i < 10; ++i){
-			loc2 = loc + vec4(0.2 - 0.02 * i, 0.02 * i, -1, 0);
+		//loc2 = loc + vec4(1, 0, 0, 0);
+		for (int i = 0; i < 14; ++i){
+			loc2 = loc + (RotateX(i*180/7) * vec4(0, 0.1, 0, 0));
+			m_renderer->DrawLineBetween3Dvecs(loc, loc2);
+			loc2 = loc + RotateY(i*180/7) * vec4(0.1, 0, 0, 0);
 			m_renderer->DrawLineBetween3Dvecs(loc, loc2);
 		}
 	}
@@ -326,12 +329,12 @@ void Camera::rotate(GLfloat dx, GLfloat dy){
 }
 
 void Camera::move(GLfloat dz){
-	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
+	world_to_camera = Translate(0, 0, dz) * world_to_camera;
 	position -= vec4(0, 0, dz, 0);
 }
 
 void Camera::rotate(GLfloat dz){
-	world_to_camera = Translate(0, 0, -dz) * world_to_camera;
+	world_to_camera = Translate(0, 0, dz) * world_to_camera;
 	position -= vec4(0, 0, dz, 0);
 }
 
