@@ -12,6 +12,9 @@ using namespace std;
 
 
 inline vec3 vec4TOvec3(vec4& v){
+	/*if (v.w != 0){
+		v /= v.w;
+	}*/
 	return vec3(v.x, v.y, v.z);
 }
 
