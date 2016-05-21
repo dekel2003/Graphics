@@ -15,9 +15,9 @@ protected :
 	vector<pair<vec3, vec3>> normalsToFaces;
 	vector<pair<vec3, vec3>> normalsToVertices;
 	vec4 massCenter;
-	int num_vertices;
+	//int num_vertices;
 	float normalVectorsSize = 0.01;
-	bool shouldDrawNormals;
+	//bool shouldDrawNormals;
 	//add more attributes
 	mat4 model_to_world_transform; //the model transformation (Tm)
 	mat4 _world_transform; //What the heck (Tw)
@@ -36,7 +36,7 @@ public:
 	~MeshModel(void);
 	void loadFile(string fileName);
 	void draw(Renderer* renderer);
-	vector<vec4> GetModel();
+	//vector<vec4> GetModel();
 	void setModelTransformation(const mat4& T);
 	void setWorldTransformation(const mat4& T);
 	void drawFaceNormals(Renderer* renderer);

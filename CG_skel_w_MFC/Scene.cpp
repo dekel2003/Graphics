@@ -2,6 +2,7 @@
 #include "Scene.h"
 #include "MeshModel.h"
 #include "PrimMeshModel.cpp"
+#include "Our_Model.h"
 #include <string>
 
 using namespace std;
@@ -77,6 +78,14 @@ void Scene::addPrimModel(){
 	PrimMeshModel* primModel= new PrimMeshModel();
 	primModel->setSphere();
 	models.push_back(primModel);
+	activeModel = models.size() - 1;
+	addMeshToMenu();
+	draw();
+}
+
+void Scene::addOurModel(){
+	Model* ourModel = new Our_Model();
+	models.push_back(ourModel);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
 	draw();

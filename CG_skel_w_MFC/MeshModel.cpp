@@ -112,7 +112,7 @@ void MeshModel::loadFile(string fileName)
 	}
 	massCenter = sum / vertices.size();
 
-	num_vertices = 3 * faces.size();
+	//num_vertices = 3 * faces.size();
 	// iterate through all stored faces and create triangles
 
 	int k=0;
