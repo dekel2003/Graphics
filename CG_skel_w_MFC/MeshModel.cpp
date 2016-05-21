@@ -266,7 +266,7 @@ void MeshModel::drawBoundingBox(Renderer* renderer){
 }
 
 void MeshModel::setModelColor(float red, float green, float blue){
-	color.x = red / 256.0;
-	color.y = green / 256.0;
-	color.z = blue / 256.0;
+	color.x = red;
+	color.y = green;
+	color.z = blue;
 }

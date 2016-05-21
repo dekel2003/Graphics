@@ -708,7 +708,10 @@ vec3& Polygon3::calculateColor(vector<Light*>* lights, mat4& world_to_camera,
 		world_to_camera.MultiplyVec((*lights)[j]->location, temVec);
 		temVec /= temVec.w;
 
-		l = normalize(vec4TOvec3(temVec) - location); //temVec used here as the light's location.
+		if ((*lights)[j]->lightType == LIGHT_POINT)
+			l = normalize(vec4TOvec3(temVec) - location); //temVec used here as the light's location.
+		else //PARRALEL LIGHT
+			l = -vec4TOvec3(temVec);
 		teta = dot(l, normal);
 		// for debbuging:
 		/*if (teta>0.77){

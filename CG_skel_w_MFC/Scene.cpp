@@ -17,11 +17,19 @@ int Scene::numCameras(){
 	return cameras.size();
 }
 
-void Scene::addLight(){
+void Scene::addLight(vec3* direction, LightType lightType){
 	Light * light = new Light;
 	lights.push_back(light);
 	activeLight = lights.size() - 1;
 	addLightToMenu();
+	if (direction){
+		light->location = *direction;
+	}
+	light->lightType = lightType;
+}
+
+void Scene::changeLight(vec3* direction){
+	lights[activeLight]->location = *direction;
 }
 
 void Scene::loadOBJModel(string fileName)

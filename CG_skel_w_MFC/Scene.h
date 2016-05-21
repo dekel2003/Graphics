@@ -96,7 +96,8 @@ public:
 	void loadOBJModel(string fileName);
 	void addPrimModel();
 	void addCamera();
-	void addLight();
+	void addLight(vec3* direction = NULL, LightType lightType = LIGHT_POINT);
+	void changeLight(vec3* direction = NULL);
 
 	void LookAt();
 	void draw();

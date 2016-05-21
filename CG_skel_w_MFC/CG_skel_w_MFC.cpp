@@ -370,16 +370,28 @@ void lightMenu(int id)
 		if (id == 0){
 			scene->addLight();
 		}
-		else if (id == 1){
+		if (id == 1){
+			CXyzDialog dlg;
+			if (dlg.DoModal() == IDOK){
+				scene->addLight(&dlg.GetXYZ(), LightType::LIGHT_PARALLEL);
+			}
+		}
+		else if (id == 2){
 			CCmdDialog dlg;
 			if (dlg.DoModal() == IDOK){
 				renderer->setAmbientLight(atof(dlg.GetCmd().c_str()));
 			}
 
 		}
+		else if (id == 3){
+			CXyzDialog dlg;
+			if (dlg.DoModal() == IDOK){
+				scene->changeLight(&dlg.GetXYZ());
+			}
+		}
 		else
 		{
-			scene->activeLight = id - 2;
+			scene->activeLight = id - 4;
 		}
 		display();
 		lightMenuBeingUsed = false;
@@ -454,7 +466,7 @@ void fogMenu(int id)
 		}
 		else
 		{
-			scene->activeLight = id - 2;
+			scene->activeLight = id - 4;
 		}
 		display();
 		fogMenuBeingUsed = false;
@@ -474,7 +486,7 @@ void ssaaMenu(int id)
 		}
 		else
 		{
-			scene->activeLight = id - 2;
+			scene->activeLight = id - 4;
 		}
 		display();
 		ssaaMenuBeingUsed = false;
@@ -567,9 +579,9 @@ void addCameraToMenu(){
 
 void addLightToMenu(){
 	cout << "menu:   view=" << menuView << " light=" << menuLight << endl;
-	static int numLights = 2;
+	static int numLights = 3;
 	glutSetMenu(menuLight);
-	sprintf(c, "%s", to_string(numLights-1).c_str());
+	sprintf(c, "%s", to_string(numLights-2).c_str());
 	glutAddMenuEntry(c, numLights);
 	glutSetMenu(mainMenuRef);
 	glutChangeToSubMenu(menuLight, "Choose Light", menuLight);
@@ -589,7 +601,9 @@ void initMenu()
 	glutAddMenuEntry("0", 1);
 	menuLight = glutCreateMenu(lightMenu);
 	glutAddMenuEntry("Add light", 0);
-	glutAddMenuEntry("Change Ambient Light", 1);
+	glutAddMenuEntry("Add parralel light", 1);
+	glutAddMenuEntry("Change Ambient Light", 2);
+	glutAddMenuEntry("Change light's direction", 3);
 	menuShadow = glutCreateMenu(shadowMenu);
 	glutAddMenuEntry("Flat", 0);
 	glutAddMenuEntry("Gouard", 1);
@@ -622,11 +636,13 @@ void initMenu()
 	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
 	glutAddSubMenu("Change Model", menuMesh);
-	glutAddSubMenu("Choose Colors", colorMenu);
+
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
-	glutAddSubMenu("Choose Fog", menuFog);
 	glutAddSubMenu("Choose Shadow", menuShadow);
+	glutAddSubMenu("Choose Colors", colorMenu);
+	glutAddSubMenu("Choose Fog", menuFog);
+
 	glutAddSubMenu("Super Sampling Anti Aliasing", menuSsaa);
 	glutAddSubMenu("Choose View", menuView);
 	glutAddSubMenu("Set Face Normals", menuFaceNormals);
