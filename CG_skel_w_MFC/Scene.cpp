@@ -285,6 +285,22 @@ void Scene::setDrawBoundingBoxOff(){
 	shouldDrawBoundingBox = false;
 }
 
+void Scene::setCurrentMeshColor(float R, float G, float B){
+	models[activeModel]->setModelColor(R, G, B);
+}
+void Scene::setCurrentLightColor(float R, float G, float B){
+	lights[activeLight]->setLightColor(R, G, B);
+}
+
+
+
+void Scene::cameraZoomIn(){
+	cameras[activeCamera]->zoomIn();
+}
+void Scene::cameraZoomOut(){
+	cameras[activeCamera]->zoomOut();
+}
+
 
 //------------------------------Camera -----------------------------------------------------
 
@@ -303,21 +319,42 @@ mat4 Camera::normalizedProjection(){
 	return  projection * ST;
 }
 
-void Camera::zoomIn(){
-	//
+void Camera::zoomOut(){
 	//left = bottom = bottom - 0.1;
 	//right = top = top - 0.1;
 	// zNear -= 0.1;
 	// zFar -= 0.1;
 	//projection = Scale(1.1, 1.1, 1.1) * projection;
+	_left -= 0.1;
+	_right += 0.1;
+	_bottom -= 0.1;
+	_top += 0.1;
+	_zNear -= 0.1;
+	_zFar += 0.1;
+
+	if (!state)
+		Ortho(_left, _right, _bottom, _top, _zNear, _zFar);
+	else
+		Frustum(_left, _right, _bottom, _top, _zNear, _zFar);
 }
 
-void Camera::zoomOut(){
+void Camera::zoomIn(){
 	//left = bottom = bottom + 0.1;
 	//right = top = top + 0.1;
 	//zNear += 0.1;
 	//zFar += 0.1;
 	//projection = Scale(0.9, 0.9, 0.9) * projection;
+	_left += 0.1;
+	_right -= 0.1;
+	_bottom += 0.1;
+	_top -= 0.1;
+	_zNear += 0.1;
+	_zFar -= 0.1;
+
+	if (!state)
+		Ortho(_left, _right, _bottom, _top, _zNear, _zFar);
+	else
+		Frustum(_left, _right, _bottom, _top, _zNear, _zFar);
 }
 
 void Camera::move(GLfloat dx, GLfloat dy){
@@ -342,6 +379,14 @@ void Camera::rotate(GLfloat dz){
 
 void Camera::Ortho(const float left, const float right,const float bottom , 
 	const float top, const float zNear , const float zFar){
+
+	_left = left;
+	_right = right;
+	_bottom = bottom;
+	_top = top;
+	_zNear = zNear;
+	_zFar = zFar;
+	state = 0;
 
 	cube[0] = vec3(left, bottom, zNear);
 	cube[1] = vec3(left, bottom, zFar);
@@ -397,6 +442,14 @@ void Camera::draw(Renderer* renderer){
 
 void Camera::Frustum(const float left, const float right,const float bottom,
 	const float top, const float zNear, const float zFar){
+
+	_left = left;
+	_right = right;
+	_bottom = bottom;
+	_top = top;
+	_zNear = zNear;
+	_zFar = zFar;
+	state = 1;
 
 	const float zdelta = (zFar - zNear);
 	const float dir = (right - left);

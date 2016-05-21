@@ -163,9 +163,9 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	//renderer->DrawTriangles(&vertex_positions);	normals2vertices
 	if (normalsToVerticesGeneralForm.size() == 0)
-		renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm);
+		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
 	else
-		renderer->AddTriangles(&vertex_positions, vec3(0, 70, 70), &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
+		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)
@@ -263,4 +263,10 @@ void MeshModel::drawBoundingBox(Renderer* renderer){
 	renderer->DrawLineBetween3Dvecs(cube[1], cube[5]);
 	renderer->DrawLineBetween3Dvecs(cube[2], cube[6]);
 	renderer->DrawLineBetween3Dvecs(cube[3], cube[7]);
+}
+
+void MeshModel::setModelColor(float red, float green, float blue){
+	color.x = red / 256.0;
+	color.y = green / 256.0;
+	color.z = blue / 256.0;
 }

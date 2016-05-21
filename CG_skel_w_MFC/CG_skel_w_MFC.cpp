@@ -39,7 +39,7 @@ const int BASIC_SCREEN_HEIGHT = 512;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -195,6 +195,12 @@ void keyboard( unsigned char key, int x, int y )
 			scene->moveCamera(0, t);
 		else
 			scene->moveCamera(t);
+		break;
+	case '-':
+		scene->cameraZoomOut();
+		break;
+	case '+':
+		scene->cameraZoomIn();
 		break;
 	}
 	if (key >= '0' && key <= '9'){
@@ -396,6 +402,24 @@ void shadowMenu(int id){
 	display();
 }
 
+void setColorMenu(int id){
+	CColorDialog dlg;
+	if (dlg.DoModal() == IDOK){
+		COLORREF color = dlg.GetColor();
+
+		switch (id)
+		{
+		case 0: //mesh
+			scene->setCurrentMeshColor(GetRValue(color), GetGValue(color), GetBValue(color));
+			break;
+		case 1: //light
+			scene->setCurrentLightColor(GetRValue(color), GetGValue(color), GetBValue(color));
+			break;
+		}
+		display();
+	}
+}
+
 vector<GLfloat> split(const string &text, char sep) {
 	vector<string> tokens;
 	size_t start = 0, end = 0;
@@ -570,6 +594,11 @@ void initMenu()
 	glutAddMenuEntry("Flat", 0);
 	glutAddMenuEntry("Gouard", 1);
 	glutAddMenuEntry("Phong", 2);
+
+	colorMenu = glutCreateMenu(setColorMenu);
+	glutAddMenuEntry("change mesh color", 0);
+	glutAddMenuEntry("change light color", 1);
+
 	menuFog = glutCreateMenu(fogMenu);
 	glutAddMenuEntry("On", 0);
 	glutAddMenuEntry("Off", 1);
@@ -592,7 +621,8 @@ void initMenu()
 	glutAddMenuEntry("Perspective", VIEW_PERSPECTIVE);
 	mainMenuRef = glutCreateMenu(mainMenu);
 	glutAddSubMenu("File",menuFile);
-	glutAddSubMenu("Choose Model", menuMesh);
+	glutAddSubMenu("Change Model", menuMesh);
+	glutAddSubMenu("Choose Colors", colorMenu);
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose Fog", menuFog);

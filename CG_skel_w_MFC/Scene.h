@@ -16,6 +16,7 @@ public:
 	void virtual drawBoundingBox(Renderer* renderer)=0;
 	void virtual drawFaceNormals(Renderer* renderer)=0;
 	void virtual drawVertexNormals(Renderer* renderer)=0;
+	void virtual setModelColor(float R, float G, float B) = 0;
 protected:
 	virtual ~Model() {}
 };
@@ -27,8 +28,9 @@ class Camera {
 	mat4 ST;
 	float perspectiveD = 0.1;
 	
-	//float left, right, bottom, top, zNear, zFar;
+	float _left, _right, _bottom, _top, _zNear, _zFar;
 	vec4 cube[8];
+	bool state = 0;
 
 public:
 	vec4 position = vec4(0, 0, 0, 1);
@@ -105,6 +107,8 @@ public:
 	void addCamera(Camera* camera); //CG_skel will create and add the camera
 	void zoomIn();
 	void zoomOut();
+	void cameraZoomIn();
+	void cameraZoomOut();
 	void setOrthogonalView(const float left, const float right, const float bottom,
 		const float top, const float zNear, const float zFar);
 	void setPerspectiveView(const float left, const float right, const float bottom,
@@ -127,6 +131,9 @@ public:
 
 	void setDrawBoundingBoxOn();
 	void setDrawBoundingBoxOff();
+
+	void setCurrentMeshColor(float R, float G, float B);
+	void setCurrentLightColor(float R, float G, float B);
 
 	void moveCurrentModel(GLfloat dz);
 	void rotateCurrentModel(GLfloat dz);

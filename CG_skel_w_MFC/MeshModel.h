@@ -28,7 +28,9 @@ protected :
 
 	vec3 baseColor = vec3(256, 50, 50);
 
+
 public:
+	vec3 color = vec3(0, 70, 70);
 
 	MeshModel(string fileName);
 	~MeshModel(void);
@@ -44,4 +46,5 @@ public:
 	vec4 getOrigin(); // returns the origin of the model
 	void drawAxis(Renderer* renderer);
 	void MeshModel::drawBoundingBox(Renderer* renderer);
+	void setModelColor(float R, float G, float B);
 };
