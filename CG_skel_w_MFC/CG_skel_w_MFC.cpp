@@ -30,10 +30,10 @@
 #define VIEW_PERSPECTIVE 2
 #define NORMAL_ON 1
 #define NORMAL_OFF 2
-#define MAIN_DEMO 11
-#define MAIN_ABOUT 12
+#define MAIN_DEMO 13
+#define MAIN_ABOUT 14
 #define ADD_SPHERE 7
-
+#define ADD_OUR_MODEL 8
 const int BASIC_SCREEN_WIDTH = 512;
 const int BASIC_SCREEN_HEIGHT = 512;
 
@@ -341,7 +341,11 @@ void mainMenu(int id)
 
 	case ADD_SPHERE:
 		scene->addPrimModel();
+
+	case ADD_OUR_MODEL:
+		scene->addOurModel();
 	}
+
 }
 
 void meshMenu(int id)
@@ -658,6 +662,7 @@ void initMenu()
 	glutAddSubMenu("Set Vertex Normals", menuVertexNormals);
 	glutAddSubMenu("Show Bounding Box", menuBoundingBox);
 	glutAddMenuEntry("Add Sphere", ADD_SPHERE);
+	glutAddMenuEntry("Add Our Model", ADD_OUR_MODEL);
 	glutAddMenuEntry("Demo",MAIN_DEMO);
 	glutAddMenuEntry("About",MAIN_ABOUT);
 	glutAttachMenu(GLUT_RIGHT_BUTTON);
