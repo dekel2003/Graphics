@@ -182,9 +182,13 @@ void Scene::zoomIn(){
 }
 
 void Scene::zoomOut(){
-	// cameras[activeCamera]->zoomOut();.
 	if (activeModel != -1)
 		models[activeModel]->setModelTransformation(Scale(0.9, 0.9, 0.9));
+}
+
+void Scene::currentModelGeneralScaling(vec3 _scale){
+	if (activeModel != -1)
+		models[activeModel]->setModelTransformation(Scale(_scale.x, _scale.y, _scale.z));
 }
 
 void Scene::setOrthogonalView(const float left, const float right, const float bottom, const float top, const float zNear, const float zFar){

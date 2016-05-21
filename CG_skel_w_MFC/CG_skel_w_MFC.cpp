@@ -346,7 +346,15 @@ void mainMenu(int id)
 
 void meshMenu(int id)
 {
-	scene->activeModel = id;
+	if (id == 0){ //scale current model
+		CXyzDialog dlg;
+		if (dlg.DoModal() == IDOK){
+			scene->currentModelGeneralScaling(dlg.GetXYZ());
+		}
+	}
+	else{
+		scene->activeModel = id - 1;
+	}
 	display();
 }
 
@@ -558,7 +566,7 @@ void addMeshToMenu(){
 	glutSetMenu(menuMesh);
 	sprintf(c, "%s", to_string(numMeshes).c_str());
 	cout << to_string(numMeshes) << endl << to_string(numMeshes).c_str() << endl;
-	glutAddMenuEntry(c, numMeshes);
+	glutAddMenuEntry(c, numMeshes+1);
 	glutSetMenu(mainMenuRef);
 	glutChangeToSubMenu(menuMesh, "Choose Model", menuMesh);
 	numMeshes++;
@@ -596,6 +604,7 @@ void initMenu()
 	int menuFile = glutCreateMenu(fileMenu);
 	glutAddMenuEntry("Open..",FILE_OPEN);
 	menuMesh = glutCreateMenu(meshMenu);
+	glutAddMenuEntry("Scale current Model",0);
 	menuCamera = glutCreateMenu(cameraMenu);
 	glutAddMenuEntry("Add camera", 0);
 	glutAddMenuEntry("0", 1);

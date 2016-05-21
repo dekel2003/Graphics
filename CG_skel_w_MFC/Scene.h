@@ -108,6 +108,7 @@ public:
 	void addCamera(Camera* camera); //CG_skel will create and add the camera
 	void zoomIn();
 	void zoomOut();
+	void currentModelGeneralScaling(vec3);
 	void cameraZoomIn();
 	void cameraZoomOut();
 	void setOrthogonalView(const float left, const float right, const float bottom,
