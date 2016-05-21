@@ -97,53 +97,94 @@ void Renderer::SetObjectMatrices(const mat4& oTransform, const mat4& nTransform)
 	this->normalTransform = nTransform;
 }
 
-void Renderer::DrawLine(vec2 a, vec2 b, float az, float bz){
-	if (a.x > 1000 || a.x < -1000 || b.x>1000 || b.x>1000)
-		return;
-	// Takes to 2d vectors and draws line betwen them - Must be in the markings of the screen
+void Renderer::DrawLine(vec2 a, vec2 b, float az, float bz) {
+	/*if (a.x > 1000 || a.x < -1000 || b.x>1000 || b.x>1000)
+	return;*/
+	if (!clip2D(a.x, a.y, b.x, b.y)) {
+		return; // All of the line is outside of the window
+	}
 	int xCounter = a.x < b.x ? 1 : -1;
 	int yCounter = a.y < b.y ? 1 : -1;
 	int deltaY = abs((int)a.y - (int)b.y) << 1;
 	int deltaX = abs((int)a.x - (int)b.x) << 1;
-
-	if (deltaX >= deltaY){	//slope<1
+	if (deltaX >= deltaY) {	//slope<1
 		int errorInteger = deltaY - deltaX >> 1;
 		int deltaError = deltaY;
 		int deltaErrorNegation = deltaY - deltaX;
 		int y = a.y;
-		for (int x = a.x; xCounter*x <= xCounter*b.x; x = x + xCounter){
-			if (errorInteger > 0 && (errorInteger || (xCounter > 0))){
+		for (int x = a.x, end = xCounter*b.x; xCounter*x <= end; x += xCounter) {
+			if (errorInteger > 0 && (errorInteger || (xCounter > 0))) {
 				errorInteger += deltaErrorNegation;
 				y += yCounter;
 			}
-			else{
+			else {
 				errorInteger += deltaError;
 			}
-			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){
-				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
-				m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
-			}
+			m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
+			m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
 		}
 	}
-	else{
-		int errorInteger = deltaX - deltaY>>1;
+	else {
+		int errorInteger = deltaX - deltaY >> 1;
 		int deltaError = deltaX;
 		int deltaErrorNegation = deltaX - deltaY;
 		int x = a.x;
-		for (int y = a.y; yCounter*y <= yCounter*b.y; y = y + yCounter){
-			if (errorInteger > 0 && (errorInteger || (yCounter > 0))){
+		for (int y = a.y, end = yCounter*b.y; yCounter*y <= end; y += yCounter) {
+			if (errorInteger > 0 && (errorInteger || (yCounter > 0))) {
 				errorInteger += deltaErrorNegation;
-				x = x + xCounter;
+				x += xCounter;
 			}
-			else{
+			else {
 				errorInteger += deltaError;
 			}
-			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){
-				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
-				m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
+			m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
+			m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
+		}
+	}
+}
+
+bool Renderer::clip2D(float& x1, float& y1, float& x2, float& y2) {
+	int xMin = 0;
+	int yMin = 0;
+	int xMax = (m_SSAAOutBufferWidth - 1);
+	int yMax = (m_SSAAOutBufferHeight - 1);
+	int dx = (x2 - x1);
+	int dy = (y2 - y1);
+	int p[4] = { -dx, dx, -dy, dy };
+	int q[4] = { (x1 - xMin), (xMax - x1), (y1 - yMin), (yMax - y1) };
+	float t1;
+	float t2;
+	float t[4];
+	for (int i = 0; i < 4; ++i){
+		if (p[i]) {
+			t[i] = (((float)q[i]) / p[i]);
+		}
+		else {
+			if (q[i] < 0) { // All of the line is outside of the window
+				return false;
 			}
 		}
 	}
+	if (t[0] > t[2]) {
+		t1 = t[0];
+	}
+	else {
+		t1 = t[2];
+	}
+	if (t[1] < t[3]) {
+		t2 = t[1];
+	}
+	else {
+		t2 = t[3];
+	}
+	if (t1 < t2) {
+		x1 += t1 * dx;
+		x1 += t2 * dx;
+		y1 += t1 * dy;
+		y1 += t2 * dy;
+		return true;
+	}
+	return false;
 }
 
 void Renderer::setColor(float red, float green, float blue){
