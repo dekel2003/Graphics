@@ -132,6 +132,7 @@ class Renderer
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2, float za=1000, float zb=1000);
+	bool clip2D(float& x1, float& y1, float& x2, float& y2);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;
