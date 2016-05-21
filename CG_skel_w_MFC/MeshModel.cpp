@@ -205,7 +205,7 @@ void MeshModel::drawAxis(Renderer* renderer)
 
 void MeshModel::setModelTransformation(const mat4& T){
 	model_to_world_transform = T * model_to_world_transform;
-	_normal_transform = T * _normal_transform;
+		_normal_transform = T * _normal_transform;
 }
 
 void MeshModel::setWorldTransformation(const mat4& T){

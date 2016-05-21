@@ -107,6 +107,8 @@ void Scene::draw() {
 	}
 	if (activeModel != -1)
 		models[activeModel]->drawAxis(m_renderer);
+
+	m_renderer->SetObjectMatrices(mat4(), mat4());
 	cameras[activeCamera]->draw(m_renderer);
 
 	m_renderer->setColor(0, 256, 256);
