@@ -260,14 +260,15 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 
 
 void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
-	const vector<vec3>* normals, const vector<vec3>* normals2vertices){
+	const vector<vec3>* normals, const vector<vec3>* normals2vertices, Material material){
 	objectToCamera = world_to_camera * object_to_world;
 	mat4 normalToCamera = world_to_camera * normalTransform;
 	//mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
 	vec4 PolygonVNormals[3];
-
+	vec3 polygonColor;
+	Polygon3 P;
 	/*vector<vec4> cameraVertices;
 	vector<vec4> clippedVertices;
 	clippedVertices.reserve(numberOfVertices);
@@ -282,18 +283,23 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		currentVerticeZ_A /= currentVerticeZ_A.w;
 		currentVerticeZ_B /= currentVerticeZ_B.w;
 		currentVerticeZ_C /= currentVerticeZ_C.w;
-		vec3 polygonColor = (color / 512 + vec3(0.01))*AmbientIntensity;
+		if (material == ALL || material == EMISSIVE)
+			polygonColor = (color / 512 + vec3(0.01))*AmbientIntensity;
+		else
+			polygonColor = (color / 512 + vec3(0.01));
 
 		normalToCamera.MultiplyVec(normals->at(i / 3), currentNormal);
 		if (normals2vertices){
 			normalToCamera.MultiplyVec((*normals2vertices)[i - 2], PolygonVNormals[0]);
 			normalToCamera.MultiplyVec((*normals2vertices)[i - 1], PolygonVNormals[1]);
 			normalToCamera.MultiplyVec((*normals2vertices)[i], PolygonVNormals[2]);
-			globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth, PolygonVNormals));
+			P = Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth, PolygonVNormals);
 		}
 		else{
-			globalClippedVertices.push_back(Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth));
+			P = Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth);
 		}
+		P.setMaterial(material);
+		globalClippedVertices.push_back(P);
 	}
 	/*
 	for (int i = 0; i < numberOfVertices; ++i){
@@ -728,8 +734,9 @@ vec3& Polygon3::calculateColor(vector<Light*>* lights, mat4& world_to_camera,
 		}*/
 		r = normalize((2 * teta * normal) - l);
 		e = normalize(eye - location);
+		if (material==DIFFUSE || material == ALL)
 		tmpColor += tmpColor *  max(1, 2 / AmbientIntensity) * max(0, teta) * (*lights)[j]->color;
-		if (dot(r,n)>0)
+		if (dot(r, n)>0 && (material == SPECULAR || material == ALL))
 			tmpColor += tmpColor * max(1, 2 / AmbientIntensity) * pow(max(0, dot(r, e)), 10) * (*lights)[j]->color;
 
 	}

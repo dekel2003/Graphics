@@ -66,10 +66,10 @@ Our_Model::Our_Model(){
 
 void Our_Model::draw(Renderer* renderer){
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin()+3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6));
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9));
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12));
+	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin()+3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, EMISSIVE);
+	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6),DIFFUSE);
+	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9),SPECULAR);
+	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12),ALL);
 
 		
 }

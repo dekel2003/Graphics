@@ -18,11 +18,18 @@ inline vec3 vec4TOvec3(vec4& v){
 	return vec3(v.x, v.y, v.z);
 }
 
+enum Material {
+	EMISSIVE,
+	DIFFUSE,
+	SPECULAR,
+	ALL
+};
 
 class Polygon3{
 
 vec3 eye = vec3(0.5, 0.5, 0), n, r, e;
 float teta;
+Material material = ALL;
 public:
 	vec3 l;
 	vec4 a, b, c; //world coords
@@ -37,6 +44,7 @@ public:
 	vec3 tmpNormal;
 	//vec3 normal;
 	Polygon3(){}
+	void setMaterial(Material _m){ material = _m; }
 	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec4 _normal, mat4& projection,
 		int m_width, int m_height
 		,vec4* normalsToVertices = NULL) 
@@ -157,7 +165,8 @@ public:
 	void SetSSAAMultiplier(int multiplier);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	void AddTriangles(const vector<vec4>* vertices, const vec3 color,
-		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL);
+		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL
+		, Material m = ALL);
 
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);
