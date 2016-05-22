@@ -237,8 +237,8 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	cameraVertices.reserve(numberOfVertices);*/
 
 	
-	vector<Polygon3> currentClippedPolygon3;
-	currentClippedPolygon3.reserve(numberOfVertices / 3);
+	/*vector<Polygon3> currentClippedPolygon3;
+	currentClippedPolygon3.reserve(numberOfVertices / 3);*/
 	
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i++], currentVerticeZ_A);
@@ -263,11 +263,11 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 			P = Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth);
 		}
 		P.setMaterial(material);
-		currentClippedPolygon3.push_back(P);
-		//globalClippedPolygon3.push_back(P);
+		//currentClippedPolygon3.push_back(P);
+		globalClippedPolygon3.push_back(P);
 	}
 
-	// Determines if the model is inside/outside the view volume
+	/*// Determines if the model is inside/outside the view volume
 	bool isModelInViewVolume = false;
 	Polygon3& currentPolygon3 = currentClippedPolygon3[0];
 	vec4& a = currentPolygon3.a;
@@ -360,7 +360,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 										newVectors.push_back(vec4(currentVectors[1].x, currentVectors[1].y, 0.0f, 1.0f));
 										newVectors.push_back(vec4(outx2[2], outy2[2], 0.0f, 1.0f));
 										newVectors.push_back(vec4(outx1[1], outy1[1], 0.0f, 1.0f));
-									} else { /* Shouldn't get here */ }
+									} else {} // Shouldn't get here
 								}
 							}
 						}
@@ -405,7 +405,7 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 														 currentPolygon3.m_width, currentPolygon3.m_height, currentPolygon3.normalsToVertices));
 			}
 		}
-	}
+	}*/
 }
 
 bool Renderer::clip2D(float x1, float y1, float x2, float y2, float& outx1, float& outy1, float& outx2, float& outy2) {
