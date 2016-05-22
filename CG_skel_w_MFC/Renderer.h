@@ -7,7 +7,6 @@
 #include "GL/glew.h"
 #include "Light.h"
 
-
 using namespace std;
 
 
@@ -42,13 +41,17 @@ public:
 	bool verticesColorsWasAlreadyCalculated = false;
 	vec4 temVec;
 	vec3 tmpNormal;
+	mat4 projection;
+	int m_width;
+	int m_height;
+	vec4* normalsToVertices;
 	//vec3 normal;
 	Polygon3(){}
 	void setMaterial(Material _m){ material = _m; }
 	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec4 _normal, mat4& projection,
 		int m_width, int m_height
 		,vec4* normalsToVertices = NULL) 
-		:a(_a), b(_b), c(_c), baseColor(color), facecolor(color){
+		:a(_a), b(_b), c(_c), baseColor(color), facecolor(color), projection(projection), m_width(m_width), m_height(m_height), normalsToVertices(normalsToVertices) {
 		projection.MultiplyVec(a, pa);
 		projection.MultiplyVec(b, pb);
 		projection.MultiplyVec(c, pc);
@@ -63,7 +66,7 @@ public:
 		mc.x = m_width*(pc.x + 1) / 2;
 		mc.y = m_height*(pc.y + 1) / 2;
 
-		n = normalize(vec4TOvec3(_normal));
+		n = normalize(vec4TOvec3(_normal)); /// NEEDED LINE ?
 
 		if (normalsToVertices){
 			na = normalize(normalsToVertices[0]);
@@ -123,7 +126,12 @@ class Renderer
 	int m_TotalNumberOfOutBufferPixels;
 	int m_SSAAMultiplier = 1;
 
-	vector<Polygon3> globalClippedVertices;
+	float clippingXMin = -1.0f;
+	float clippingYMin = -1.0f;
+	float clippingXMax = 1.0f;
+	float clippingYMax = 1.0f;
+
+	vector<Polygon3> globalClippedPolygon3;
 	vector<Light*>* lights = NULL;
 
 	//vec2 pixleToScreen = vec2(1.0f / m_width, 1.0f / m_height);
@@ -140,7 +148,8 @@ class Renderer
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2, float za=1000, float zb=1000);
-	bool clip2D(float& x1, float& y1, float& x2, float& y2);
+	bool clip2D(float x1, float y1, float x2, float y2, float& outx1, float& outy1, float& outx2, float& outy2); // DELETE THIS
+	bool clip3D(float x1, float y1, float z1, float x2, float y2, float z2,	float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;

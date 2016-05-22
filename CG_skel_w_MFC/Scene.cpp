@@ -143,7 +143,6 @@ void Scene::draw() {
 	}
 	m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
 
-
 	m_renderer->SwapBuffers();
 }
 
