@@ -128,8 +128,10 @@ class Renderer
 
 	float clippingXMin = -1.0f;
 	float clippingYMin = -1.0f;
+	float clippingZMin = -1.0f;
 	float clippingXMax = 1.0f;
 	float clippingYMax = 1.0f;
+	float clippingZMax = 1.0f;
 
 	vector<Polygon3> globalClippedPolygon3;
 	vector<Light*>* lights = NULL;
@@ -148,8 +150,10 @@ class Renderer
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
 	void DrawLine(vec2, vec2, float za=1000, float zb=1000);
-	bool clip2D(float x1, float y1, float x2, float y2, float& outx1, float& outy1, float& outx2, float& outy2); // DELETE THIS
+	inline vector<vec4> createNewPolygon3(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex);
+	inline vector<vec4> createNewPolygon4(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex);
 	bool clip3D(float x1, float y1, float z1, float x2, float y2, float z2,	float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2);
+	void clipEdge(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, vector<Polygon3>& currentClippedPolygon3);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;

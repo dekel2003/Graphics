@@ -122,7 +122,7 @@ void Renderer::DrawLine(vec2 a, vec2 b, float az, float bz) {
 			else {
 				errorInteger += deltaError;
 			}
-			if (x >= 0 && y >= 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){ // DELETE ?
+			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){ // DELETE ?
 				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
 				m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
 			}
@@ -141,7 +141,7 @@ void Renderer::DrawLine(vec2 a, vec2 b, float az, float bz) {
 			else {
 				errorInteger += deltaError;
 			}
-			if (x >= 0 && y >= 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){ // DELETE ?
+			if (x > 0 && y > 0 && x < m_SSAAOutBufferWidth && y < m_SSAAOutBufferHeight){ // DELETE ?
 				m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 0)] = R;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 1)] = G;	m_SSAAOutBuffer[INDEX(m_SSAAOutBufferWidth, x, y, 2)] = B;
 				m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = (length(vec2(x, y) - a) / length(b - a)) * (az - bz);
 			}
@@ -237,8 +237,8 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	cameraVertices.reserve(numberOfVertices);*/
 
 	
-	/*vector<Polygon3> currentClippedPolygon3;
-	currentClippedPolygon3.reserve(numberOfVertices / 3);*/
+	vector<Polygon3> currentClippedPolygon3;
+	currentClippedPolygon3.reserve(numberOfVertices / 3);
 	
 	for (int i = 0; i < numberOfVertices; ++i){
 		objectToCamera.MultiplyVec((*vertices)[i++], currentVerticeZ_A);
@@ -263,11 +263,10 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 			P = Polygon3(currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, polygonColor, currentNormal, projectionMatrix, m_SSAAOutBufferWidth, m_SSAAOutBufferWidth);
 		}
 		P.setMaterial(material);
-		//currentClippedPolygon3.push_back(P);
-		globalClippedPolygon3.push_back(P);
+		currentClippedPolygon3.push_back(P);
 	}
 
-	/*// Determines if the model is inside/outside the view volume
+	// Determines if the model is at least partly inside the view volume
 	bool isModelInViewVolume = false;
 	Polygon3& currentPolygon3 = currentClippedPolygon3[0];
 	vec4& a = currentPolygon3.a;
@@ -278,157 +277,173 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		a = currentPolygon3.a;
 		b = currentPolygon3.b;
 		c = currentPolygon3.c;
-		if ((((-1 <= a.x) && (a.x <= 1)) && ((-1 <= a.y) && (a.y <= 1))) ||
-			(((-1 <= b.x) && (b.x <= 1)) && ((-1 <= b.y) && (b.y <= 1))) ||
-			(((-1 <= c.x) && (c.x <= 1)) && ((-1 <= c.y) && (c.y <= 1)))) {
+		if ((((-1 <= a.x) && (a.x <= 1)) && ((-1 <= a.y) && (a.y <= 1)) && ((-1 <= a.z) && (a.z <= 1))) ||
+			(((-1 <= b.x) && (b.x <= 1)) && ((-1 <= b.y) && (b.y <= 1)) && ((-1 <= b.z) && (b.z <= 1))) ||
+			(((-1 <= c.x) && (c.x <= 1)) && ((-1 <= c.y) && (c.y <= 1)) && ((-1 <= c.z) && (c.z <= 1)))) {
 			isModelInViewVolume = true;
 			break;
 		}
 	}
 	if (isModelInViewVolume) {
-		vector<vec4> currentVectors;
-		currentVectors.reserve(6);
-		vector<vec4> newVectors;
-		newVectors.reserve(6);
-		bool wasInside[6];
-		float outx1[6];
-		float outy1[6];
-		float outx2[6];
-		float outy2[6];
-		bool wasAnyInside;
-		bool wasAnyVerticeClipped;
-		float wasClipped[6];
-		for (int i = 0, endi = currentClippedPolygon3.size(); i < endi; ++i) {
-			currentPolygon3 = currentClippedPolygon3[i];
-			currentVectors.clear();
-			currentVectors.push_back(currentPolygon3.a);
-			currentVectors.push_back(currentPolygon3.b);
-			currentVectors.push_back(currentPolygon3.c);
+		// Top
+		clipEdge(-FLT_MAX, -FLT_MAX, -FLT_MAX, FLT_MAX, 1.0f, FLT_MAX, currentClippedPolygon3);
+		// Bottom
+		clipEdge(-FLT_MAX, -1.0f, -FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, currentClippedPolygon3);
+		// Right
+		clipEdge(-FLT_MAX, -FLT_MAX, -FLT_MAX, 1.0f, FLT_MAX, FLT_MAX, currentClippedPolygon3);
+		// Left
+		clipEdge(-1.0f, -FLT_MAX, -FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX, currentClippedPolygon3);
+		// Far
+		clipEdge(-FLT_MAX, -FLT_MAX, -1.0f, FLT_MAX, FLT_MAX, FLT_MAX, currentClippedPolygon3);
+		// Near
+		clipEdge(-FLT_MAX, -FLT_MAX, -FLT_MAX, FLT_MAX, FLT_MAX, 1.0f, currentClippedPolygon3);
+		globalClippedPolygon3 = currentClippedPolygon3;
+	}
+}
 
-			// Top
-			clippingXMin = -FLT_MAX;
-			clippingYMin = -FLT_MAX;
-			clippingXMax = FLT_MAX;
-			clippingYMax = 1.0f;
-			
-			wasAnyInside = false;
+void Renderer::clipEdge(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, vector<Polygon3>& currentClippedPolygon3) {
+	clippingXMin = xMin;
+	clippingYMin = yMin;
+	clippingZMin = zMin;
+	clippingXMax = xMax;
+	clippingYMax = yMax;
+	clippingZMax = zMax;
+	Polygon3& currentPolygon3 = currentClippedPolygon3[0];
+	vector<vec4> currentVectors;
+	currentVectors.reserve(3);
+	vector<vec4> newVectors;
+	bool wasInside[3];
+	bool wasAnyInside;
+	bool wasAnyVerticeClipped;
+	float outx1[3];
+	float outy1[3];
+	float outz1[3];
+	float outx2[3];
+	float outy2[3];
+	float outz2[3];
+	float wasClipped[3];
+	int currentClippedPolygon3Size = currentClippedPolygon3.size();
+	vector<Polygon3> newClippedPolygon3;
+	newClippedPolygon3.reserve(currentClippedPolygon3Size * 2);
+	newClippedPolygon3.clear();
+	for (int i = 0; i < currentClippedPolygon3Size; ++i) {
+		currentPolygon3 = currentClippedPolygon3[i];
+		currentVectors.clear();
+		currentVectors.push_back(currentPolygon3.a);
+		currentVectors.push_back(currentPolygon3.b);
+		currentVectors.push_back(currentPolygon3.c);
+		wasAnyInside = false;
+		for (int j = 0, end = currentVectors.size(); j < end; ++j) {
+			wasInside[j] = clip3D(currentVectors[j].x, currentVectors[j].y, currentVectors[j].z,
+								currentVectors[((j + 1) % end)].x, currentVectors[((j + 1) % end)].y, currentVectors[((j + 1) % end)].z,
+								outx1[j], outy1[j], outz1[j], outx2[j], outy2[j], outz2[j]);
+			wasAnyInside |= wasInside[j];
+		}
+		if (!wasAnyInside) {
+			continue; // Whole triangle was out of the view volume
+		}
+		wasAnyVerticeClipped = false;
+		for (int j = 0, end = currentVectors.size(); j < end; ++j) {
+			wasAnyVerticeClipped |= ((currentVectors[j].x != outx1[j]) || (currentVectors[j].y != outy1[j]) || (currentVectors[j].z != outz1[j]) ||
+									(currentVectors[((j + 1) % end)].x != outx2[j]) || (currentVectors[((j + 1) % end)].y != outy2[j]) || (currentVectors[((j + 1) % end)].z != outz2[j]));
+		}
+		if (wasAnyVerticeClipped) { // If at least 1 vertice was clipped
 			for (int j = 0, end = currentVectors.size(); j < end; ++j) {
-				wasInside[j] = clip2D(currentVectors[j].x, currentVectors[j].y, currentVectors[((j + 1) % end)].x, currentVectors[((j + 1) % end)].y, outx1[j], outy1[j], outx2[j], outy2[j]);
-				wasAnyInside |= wasInside[j];
+				wasClipped[j] = ((currentVectors[j].x != outx1[j]) || (currentVectors[j].y != outy1[j]) || (currentVectors[j].z != outz1[j]));
 			}
-			if (!wasAnyInside) {
-				continue; // Whole triangle was out of the view volume
+			if (wasClipped[0] && wasClipped[1]) {
+				newVectors = createNewPolygon3(currentVectors, 2, outx1, outy1, outz1, outx2, outy2, outz2, 1);
 			}
-			wasAnyVerticeClipped = false;
-			for (int j = 0, end = currentVectors.size(); j < end; ++j) {
-				wasAnyVerticeClipped |= ((currentVectors[j].x != outx1[j]) || (currentVectors[j].y != outy1[j]) || (currentVectors[((j + 1) % end)].x != outx2[j]) || (currentVectors[((j + 1) % end)].y != outy2[j]));
-			}
-			if (wasAnyVerticeClipped) { // If at least 1 vertice was clipped
-				for (int j = 0, end = currentVectors.size(); j < end; ++j) {
-					wasClipped[j] = ((currentVectors[j].x != outx1[j]) || (currentVectors[j].y != outy1[j]));
+			else {
+				if (wasClipped[0] && wasClipped[2]) {
+					newVectors = createNewPolygon3(currentVectors, 1, outx1, outy1, outz1, outx2, outy2, outz2, 0);
 				}
-				newVectors.clear();
-				if (wasClipped[0] && wasClipped[1]) {////// Place in a loop
-					newVectors.push_back(vec4(currentVectors[2].x, currentVectors[2].y, 0.0f, 1.0f));
-					newVectors.push_back(vec4(outx1[0], outy1[0], 0.0f, 1.0f));
-					newVectors.push_back(vec4(outx1[2], outy1[2], 0.0f, 1.0f));
-				} else {
-					if (wasClipped[0] && wasClipped[2]) {
-						newVectors.push_back(vec4(currentVectors[1].x, currentVectors[1].y, 0.0f, 1.0f));
-						newVectors.push_back(vec4(outx1[0], outy1[0], 0.0f, 1.0f));
-						newVectors.push_back(vec4(outx1[1], outy1[1], 0.0f, 1.0f));
-					} else {
-						if (wasClipped[1] && wasClipped[2]) {
-							newVectors.push_back(vec4(currentVectors[0].x, currentVectors[0].y, 0.0f, 1.0f));
-							newVectors.push_back(vec4(outx1[2], outy1[2], 0.0f, 1.0f));
-							newVectors.push_back(vec4(outx1[1], outy1[1], 0.0f, 1.0f));
-						} else {
-							if (wasClipped[0]) {
-								newVectors.push_back(vec4(outx1[0], outy1[0], 0.0f, 1.0f));
-								newVectors.push_back(vec4(currentVectors[1].x, currentVectors[1].y, 0.0f, 1.0f));
-								newVectors.push_back(vec4(currentVectors[2].x, currentVectors[2].y, 0.0f, 1.0f));
-								newVectors.push_back(vec4(outx2[1], outy2[1], 0.0f, 1.0f));
-							} else {
-								if (wasClipped[1]) {
-									newVectors.push_back(vec4(currentVectors[0].x, currentVectors[0].y, 0.0f, 1.0f));
-									newVectors.push_back(vec4(outx2[0], outy2[0], 0.0f, 1.0f));
-									newVectors.push_back(vec4(outx1[2], outy1[2], 0.0f, 1.0f));
-									newVectors.push_back(vec4(currentVectors[2].x, currentVectors[2].y, 0.0f, 1.0f));
-								} else {
-									if (wasClipped[2]) {
-										newVectors.push_back(vec4(currentVectors[0].x, currentVectors[0].y, 0.0f, 1.0f));
-										newVectors.push_back(vec4(currentVectors[1].x, currentVectors[1].y, 0.0f, 1.0f));
-										newVectors.push_back(vec4(outx2[2], outy2[2], 0.0f, 1.0f));
-										newVectors.push_back(vec4(outx1[1], outy1[1], 0.0f, 1.0f));
-									} else {} // Shouldn't get here
+				else {
+					if (wasClipped[1] && wasClipped[2]) {
+						newVectors = createNewPolygon3(currentVectors, 0, outx1, outy1, outz1, outx2, outy2, outz2, 2);
+					}
+					else {
+						if (wasClipped[0]) {
+							newVectors = createNewPolygon4(currentVectors, 1, outx1, outy1, outz1, outx2, outy2, outz2, 2);
+						}
+						else {
+							if (wasClipped[1]) {
+								newVectors = createNewPolygon4(currentVectors, 2, outx1, outy1, outz1, outx2, outy2, outz2, 0);
+							}
+							else {
+								if (wasClipped[2]) {
+									newVectors = createNewPolygon4(currentVectors, 0, outx1, outy1, outz1, outx2, outy2, outz2, 1);
 								}
+								else {} // Shouldn't get here
 							}
 						}
 					}
 				}
-				currentVectors = newVectors;
 			}
-			
-			else { // DELETE the whole else and continue to check the Bottom, Right and Left..
-				currentVectors.push_back(vec4(currentVectors[2].x, currentVectors[2].y, 0.0f, 1.0f)); // DELETE
-				currentVectors.push_back(vec4(currentVectors[0].x, currentVectors[0].y, 0.0f, 1.0f)); // DELETE
-				currentVectors.push_back(vec4(currentVectors[1].x, currentVectors[1].y, 0.0f, 1.0f)); // DELETE
-			} // DELETE
-			
-			// Bottom
-			clippingXMin = -FLT_MAX;
-			clippingYMin = -1.0f;
-			clippingXMax = FLT_MAX;
-			clippingYMax = FLT_MAX;
-
-
-			// Right
-			clippingXMin = -FLT_MAX;
-			clippingYMin = -FLT_MAX;
-			clippingXMax = 1.0f;
-			clippingYMax = FLT_MAX;
-
-
-			// Left
-			clippingXMin = -1.0f;
-			clippingYMin = -FLT_MAX;
-			clippingXMax = FLT_MAX;
-			clippingYMax = FLT_MAX;
-			
-			
 			// Divides a polygon into triangle\s
-			for (int j = (currentVectors.size() - 1); j >= 2; --j) {
-				globalClippedPolygon3.push_back(Polygon3(vec4(currentVectors[j - 2].x, currentVectors[j - 2].y, 0.0f, 1.0f),
-														 vec4(currentVectors[j - 1].x, currentVectors[j - 1].y, 0.0f, 1.0f),
-														 vec4(currentVectors[j].x, currentVectors[j].y, 0.0f, 1.0f),
-														 currentPolygon3.baseColor, NULL, currentPolygon3.projection,
-														 currentPolygon3.m_width, currentPolygon3.m_height, currentPolygon3.normalsToVertices));
+			int currentVectorsSize = newVectors.size();
+			int modulu = currentVectorsSize;
+			for (int j = currentVectorsSize; j > 2; --j) {
+				newClippedPolygon3.push_back(Polygon3(vec4(newVectors[j - 2].x, newVectors[j - 2].y, newVectors[j - 2].z, newVectors[j - 2].w),
+													vec4(newVectors[j - 1].x, newVectors[j - 1].y, newVectors[j - 1].z, newVectors[j - 1].w),
+													vec4(newVectors[(j % modulu)].x, newVectors[(j % modulu)].y, newVectors[(j % modulu)].z, newVectors[(j % modulu)].w),
+													currentPolygon3.baseColor, NULL, currentPolygon3.projection,
+													currentPolygon3.m_width, currentPolygon3.m_height, currentPolygon3.normalsToVertices));
+				--modulu;
 			}
 		}
-	}*/
+		else {
+			newClippedPolygon3.push_back(currentPolygon3);
+		}
+	}
+	currentClippedPolygon3 = newClippedPolygon3;
 }
 
-bool Renderer::clip2D(float x1, float y1, float x2, float y2, float& outx1, float& outy1, float& outx2, float& outy2) {
-	if ((clippingXMin <= x1 && x1 <= clippingXMax) && (clippingXMin <= x2 && x2 <= clippingXMax) && (clippingYMin <= y1 && y1 <= clippingYMax) && (clippingYMin <= y2 && y2 <= clippingYMax)) {
+vector<vec4> Renderer::createNewPolygon3(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex) {
+	vector<vec4> newVectors;
+	newVectors.reserve(3);
+	newVectors.push_back(vec4(currentVectors[currentVectorsIndex].x, currentVectors[currentVectorsIndex].y, currentVectors[currentVectorsIndex].z, currentVectors[currentVectorsIndex].w));
+	newVectors.push_back(vec4(outx2[(outIndex + 1) % 3], outy2[(outIndex + 1) % 3], outz2[(outIndex + 1) % 3], 1.0f));
+	newVectors.push_back(vec4(outx1[outIndex], outy1[outIndex], outz1[outIndex], 1.0f));
+	return newVectors;
+}
+
+vector<vec4> Renderer::createNewPolygon4(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex) {
+	vector<vec4> newVectors;
+	newVectors.reserve(4);
+	newVectors.push_back(vec4(currentVectors[currentVectorsIndex].x, currentVectors[currentVectorsIndex].y, currentVectors[currentVectorsIndex].z, currentVectors[currentVectorsIndex].w));
+	newVectors.push_back(vec4(currentVectors[(currentVectorsIndex + 1) % 3].x, currentVectors[(currentVectorsIndex + 1) % 3].y, currentVectors[(currentVectorsIndex + 1) % 3].z, currentVectors[(currentVectorsIndex + 1) % 3].w));
+	newVectors.push_back(vec4(outx2[outIndex], outy2[outIndex], outz2[outIndex], 1.0f));
+	newVectors.push_back(vec4(outx1[(outIndex + 1) % 3], outy1[(outIndex + 1) % 3], outz1[(outIndex + 1) % 3], 1.0f));
+	return newVectors;
+}
+
+bool Renderer::clip3D(float x1, float y1, float z1, float x2, float y2, float z2, float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2) {
+	if ((clippingXMin <= x1 && x1 <= clippingXMax) && (clippingXMin <= x2 && x2 <= clippingXMax) && (clippingYMin <= y1 && y1 <= clippingYMax) && (clippingYMin <= y2 && y2 <= clippingYMax) && (clippingZMin <= z1 && z1 <= clippingZMax) && (clippingZMin <= z2 && z2 <= clippingZMax)) {
 		outx1 = x1;
 		outy1 = y1;
+		outz1 = z1;
 		outx2 = x2;
 		outy2 = y2;
+		outz2 = z2;
 		return true;
 	}
 	float dx = (x2 - x1);
 	float dy = (y2 - y1);
-	float p[4] = { -dx, dx, -dy, dy };
-	float q[4] = { (x1 - clippingXMin), (clippingXMax - x1), (y1 - clippingYMin), (clippingYMax - y1) };
+	float dz = (z2 - z1);
+	float p[6] = { -dx, dx, -dy, dy, -dz, dz };
+	float q[6] = { (x1 - clippingXMin), (clippingXMax - x1), (y1 - clippingYMin), (clippingYMax - y1), (z1 - clippingZMin), (clippingZMax - z1) };
 	float a1 = 0.0f;
 	float a2 = 1.0f;
-	for (int i = 0; i < 4; ++i){
+	for (int i = 0; i < 6; ++i){
 		if (p[i] < 0) {
-			a1 = max(0, (q[i]) / p[i]);
-		} else {
+			a1 = max(a1, (q[i]) / p[i]);
+		}
+		else {
 			if (p[i] > 0) {
-				a2 = min(1, (q[i]) / p[i]);
-			} else { // p[i] == 0
+				a2 = min(a2, (q[i]) / p[i]);
+			}
+			else { // p[i] == 0
 				if (q[i] < 0) { // All of the line is outside of the window
 					return false;
 				}
@@ -441,28 +456,31 @@ bool Renderer::clip2D(float x1, float y1, float x2, float y2, float& outx1, floa
 	if (a1 == 0.0f) {
 		outx1 = x1;
 		outy1 = y1;
-	} else {
+		outz1 = z1;
+	}
+	else {
 		outx1 = (x1 + (a1 * dx));
 		outy1 = (y1 + (a1 * dy));
+		outz1 = (z1 + (a1 * dz));
 	}
 	if (a2 == 1.0f) {
 		if (a1 == 0.0f) {
 			outx2 = (x1 + dx);
 			outy2 = (y1 + dy);
-		} else {
+			outz2 = (z1 + dz);
+		}
+		else {
 			outx2 = x2;
 			outy2 = y2;
+			outz2 = z2;
 		}
-	} else {
+	}
+	else {
 		outx2 = (x1 + (a2 * dx));
-		outy2 = (y1 + (a2 * dy)); 
+		outy2 = (y1 + (a2 * dy));
+		outz2 = (z1 + (a2 * dz));
 	}
 	return true;
-}
-
-bool Renderer::clip3D(float x1, float y1, float z1, float x2, float y2, float z2,
-					  float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2) {
-	return false;// TODO
 }
 
 vec2 pixel;
