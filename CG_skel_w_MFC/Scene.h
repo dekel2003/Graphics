@@ -11,6 +11,7 @@ public:
 	void virtual draw(Renderer* renderer) = 0;
 	void virtual setModelTransformation(const mat4& T) = 0;
 	void virtual setWorldTransformation(const mat4& T) = 0;
+	void virtual setNormalTransformation(const mat4& T) = 0;
 	vec4 virtual getOrigin() = 0;
 	void virtual drawAxis(Renderer* renderer)=0;
 	void virtual drawBoundingBox(Renderer* renderer)=0;

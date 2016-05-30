@@ -39,6 +39,7 @@ public:
 	//vector<vec4> GetModel();
 	void setModelTransformation(const mat4& T);
 	void setWorldTransformation(const mat4& T);
+	void setNormalTransformation(const mat4& T);
 	void drawFaceNormals(Renderer* renderer);
 	void drawVertexNormals(Renderer* renderer);
 	vec3 getTopRightFar();

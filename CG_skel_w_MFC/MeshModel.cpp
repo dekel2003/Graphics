@@ -205,13 +205,15 @@ void MeshModel::drawAxis(Renderer* renderer)
 
 void MeshModel::setModelTransformation(const mat4& T){
 	model_to_world_transform = T * model_to_world_transform;
-		_normal_transform = T * _normal_transform;
 }
 
 void MeshModel::setWorldTransformation(const mat4& T){
 	_world_transform = T * _world_transform;
-	if (T[0][3] == 0 && T[1][3] == 0 && T[2][3] == 0)
-		_normal_transform = T * _normal_transform;
+		
+}
+
+void MeshModel::setNormalTransformation(const mat4& T){
+	_normal_transform = T * _normal_transform;
 }
 
 void MeshModel::computeNormalsPerFace(){

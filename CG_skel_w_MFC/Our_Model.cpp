@@ -16,27 +16,27 @@ Our_Model::Our_Model(){
 	vertex_positions.push_back(vec4(-1, -1, 0, 1));
 	vertex_positions.push_back(vec4(0, 0, 1, 1));
 
-
 	vertex_positions.push_back(vec4(-0.77, 0.77, 0,1));
-	vertex_positions.push_back(vec4(-1, -1, 0,1));
 	vertex_positions.push_back(vec4(1, -1, 0,1));
+	vertex_positions.push_back(vec4(-1, -1, 0,1));
+
 	
 
-	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(1, -1, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 1));
+	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(1, -1, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 0.8));
 
-	normalsToVerticesGeneralForm.push_back(vec3(1, -1, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 1));
+	normalsToVerticesGeneralForm.push_back(vec3(1, -1, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 0.8));
 
-	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 1));
+	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(0, 0, 0.8));
 
-	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, 0));
-	normalsToVerticesGeneralForm.push_back(vec3(1, -1, 0));
+	normalsToVerticesGeneralForm.push_back(vec3(-0.77, 0.77, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(1, -1, -0.2));
+	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, -0.2));
 
 	//normalsToVerticesGeneralForm.push_back(vec3());
 

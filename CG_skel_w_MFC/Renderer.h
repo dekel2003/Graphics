@@ -12,7 +12,7 @@ using namespace std;
 
 inline vec3 vec4TOvec3(vec4& v){
 	/*if (v.w != 0){
-		v /= v.w;
+	v /= v.w;
 	}*/
 	return vec3(v.x, v.y, v.z);
 }
@@ -26,9 +26,9 @@ enum Material {
 
 class Polygon3{
 
-vec3 eye = vec3(0.5, 0.5, 0), n, r, e;
-float teta;
-Material material = ALL;
+	vec3 eye = vec3(0.5, 0.5, 0), n, r, e;
+	float teta;
+	Material material = ALL;
 public:
 	vec3 l;
 	vec4 a, b, c; //world coords
@@ -50,7 +50,7 @@ public:
 	void setMaterial(Material _m){ material = _m; }
 	Polygon3(vec4 _a, vec4 _b, vec4 _c, vec3 color, vec4 _normal, mat4& projection,
 		int m_width, int m_height
-		,vec4* normalsToVertices = NULL) 
+		, vec4* normalsToVertices = NULL)
 		:a(_a), b(_b), c(_c), baseColor(color), facecolor(color), projection(projection), m_width(m_width), m_height(m_height), normalsToVertices(normalsToVertices) {
 		projection.MultiplyVec(a, pa);
 		projection.MultiplyVec(b, pb);
@@ -128,10 +128,8 @@ class Renderer
 
 	float clippingXMin = -1.0f;
 	float clippingYMin = -1.0f;
-	float clippingZMin = -1.0f;
 	float clippingXMax = 1.0f;
 	float clippingYMax = 1.0f;
-	float clippingZMax = 1.0f;
 
 	vector<Polygon3> globalClippedPolygon3;
 	vector<Light*>* lights = NULL;
@@ -149,11 +147,9 @@ class Renderer
 	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
-	void DrawLine(vec2, vec2, float za=1000, float zb=1000);
-	inline vector<vec4> createNewPolygon3(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex);
-	inline vector<vec4> createNewPolygon4(vector<vec4>& currentVectors, int currentVectorsIndex, float outx1[], float outy1[], float outz1[], float outx2[], float outy2[], float outz2[], int outIndex);
-	bool clip3D(float x1, float y1, float z1, float x2, float y2, float z2,	float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2);
-	void clipEdge(float xMin, float yMin, float zMin, float xMax, float yMax, float zMax, vector<Polygon3>& currentClippedPolygon3);
+	void DrawLine(vec2, vec2, float za = 1000, float zb = 1000);
+	bool clip2D(float x1, float y1, float x2, float y2, float& outx1, float& outy1, float& outx2, float& outy2); // DELETE THIS
+	bool clip3D(float x1, float y1, float z1, float x2, float y2, float z2, float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
 	float R, G, B;
