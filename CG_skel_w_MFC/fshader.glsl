@@ -5,12 +5,37 @@ in vec3 frag;
 in vec3 norm;
 out vec4 fColor;
 
+uniform vec4 lPosition;
+uniform vec3 lColor;
 
+vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
 void main() 
 { 
    //fColor = textureLod( texture, texCoord, 0 );
    //fColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
    fColor = color;
+   fColor = fColor + putColor(color, lPosition, lColor, norm, frag);
 } 
 
+vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
+
+	vec4 tmpColor = vec4(0,0,0,0);
+	vec3 l,r,e;
+	float teta;
+	vec3 eye = vec3(0.5, 0.5, 0);
+	if (lPosition.w==1.0)
+		l=normalize(frag-lPosition.xyz);
+	else
+		l = -frag;
+	teta = dot(l, normal);
+
+	r = normalize((2 * teta * normal) - l);
+	e = normalize(eye - frag);
+
+	tmpColor += color * max(1, 2/1) * max(0, teta) * vec4(lColor, 1.0f);
+	if (dot(r,normal)>0)
+		tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
+
+	return tmpColor;
+}

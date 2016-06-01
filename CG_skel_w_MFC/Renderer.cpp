@@ -262,18 +262,18 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + sizeof(vec3)), NULL , GL_STATIC_DRAW);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
 
-		GLint  vPosition = glGetAttribLocation(program, "vPosition");
-		glEnableVertexAttribArray(vPosition);
-		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
-
-		size_t start = numberOfVertices * 4 * sizeof(GLfloat);
+		size_t start = numberOfVertices * sizeof(vec4);
 
 		if (normals2vertices){
-			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &(*normals2vertices)[0]);
+			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &((*normals2vertices)[0]));
 			GLint  nPosition = glGetAttribLocation(program, "nPosition");
 			glEnableVertexAttribArray(nPosition);
-			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)&(start));
+			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
 		}
+
+		GLint  vPosition = glGetAttribLocation(program, "vPosition");
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
 		//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
 		//glEnableVertexAttribArray(vTexCoord);
