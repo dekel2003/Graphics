@@ -67,10 +67,12 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 		maxX = MININT, maxY = MININT, maxZ = MININT;
 	loadFile(fileName);
 
+	glGenVertexArrays(1, &this->VAO);
+	glBindVertexArray(this->VAO);
 	if (normalsToVerticesGeneralForm.size() == 0)
-		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
 	else
-		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
 
 MeshModel::~MeshModel(void)
@@ -165,7 +167,12 @@ void MeshModel::loadFile(string fileName)
 
 void MeshModel::draw(Renderer* renderer)
 {
+	glBindVertexArray(this->VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+	renderer->setColor(color.x, color.y, color.z);
+	renderer->draw();
+	glBindVertexArray(0);
 }
 
 

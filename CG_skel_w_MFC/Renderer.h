@@ -117,6 +117,7 @@ class Renderer
 	//////////////////////////////
 
 	GLuint VAO;
+	GLuint VAOLines;
 	GLuint program;
 	GLuint totalNumberOfVertices = 0;
 
@@ -158,7 +159,7 @@ class Renderer
 	bool clip3D(float x1, float y1, float z1, float x2, float y2, float z2,	float& outx1, float& outy1, float& outz1, float& outx2, float& outy2, float& outz2);
 	vec2 vec4toVec2(const vec4 v);
 	void CreateLocalBuffer();
-	float R, G, B;
+	GLfloat R, G, B;
 	//int GetRange(double y1, double y2, int& maxY);
 	//Func<int, double> CreateFunc(vec2 pt1, vec2 pt2);
 	inline float sign(vec2& p1, vec3& p2, vec3& p3) const;
@@ -179,7 +180,7 @@ public:
 	void SetRendererSize(int width, int height);
 	void SetSSAAMultiplier(int multiplier);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
-	void AddTriangles(const vector<vec4>* vertices, const vec3 color,
+	GLuint AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL
 		, Material m = ALL);
 
@@ -188,6 +189,7 @@ public:
 	void SetLights(vector<Light*>* lights);
 	void SetObjectMatrices(const mat4& oTransform, const mat4& nTransform); //only The Active Model - ask Itay about nTransform
 	void SwapBuffers();
+	void draw();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
 	void SetDemoBuffer();

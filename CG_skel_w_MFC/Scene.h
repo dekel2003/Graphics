@@ -17,6 +17,7 @@ public:
 	void virtual drawFaceNormals(Renderer* renderer)=0;
 	void virtual drawVertexNormals(Renderer* renderer)=0;
 	void virtual setModelColor(float R, float G, float B) = 0;
+	GLuint VAO, VBO;
 protected:
 	virtual ~Model() {}
 };

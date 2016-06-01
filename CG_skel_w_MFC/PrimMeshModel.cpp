@@ -8,12 +8,17 @@
 
 class PrimMeshModel : public MeshModel {
 public:
-	void setSphere(){
+	void setSphere(Renderer* renderer){
 		minX = MAXINT, minY = MAXINT, minZ = MAXINT,
 			maxX = MININT, maxY = MININT, maxZ = MININT;
 		generateIcosahedronVertices();
 		tesselateIcosahedron(2);
 		computeNormalsPerFace();
+
+		if (normalsToVerticesGeneralForm.size() == 0)
+			VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
+		else
+			VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 	}
 
 private:

@@ -3,23 +3,23 @@
 #include"Our_Model.h"
 #include "vec.h"
 
-Our_Model::Our_Model(){
-	vertex_positions.push_back(vec4(-1, -1, 0, 1));
-	vertex_positions.push_back(vec4(1, -1, 0, 1));
-	vertex_positions.push_back(vec4(0, 0, 1, 1));
+Our_Model::Our_Model(Renderer* renderer){
+	vertex_positions.push_back(vec4(-0.1, -0.1, 0, 2));
+	vertex_positions.push_back(vec4(0.1, -0.1, 0, 2));
+	vertex_positions.push_back(vec4(0, 0, 0.1, 2));
 
-	vertex_positions.push_back(vec4(1, -1, 0, 1));
-	vertex_positions.push_back(vec4(-0.77, 0.77, 0, 1));
-	vertex_positions.push_back(vec4(0, 0, 1, 1));
+	vertex_positions.push_back(vec4(0.1, -0.1, 0, 2));
+	vertex_positions.push_back(vec4(-0.077, 0.077, 0, 2));
+	vertex_positions.push_back(vec4(0, 0, 0.1, 2));
 
-	vertex_positions.push_back(vec4(-0.77, 0.77, 0, 1));
-	vertex_positions.push_back(vec4(-1, -1, 0, 1));
-	vertex_positions.push_back(vec4(0, 0, 1, 1));
+	vertex_positions.push_back(vec4(-0.077, 0.077, 0, 2));
+	vertex_positions.push_back(vec4(-0.1, -0.1, 0, 2));
+	vertex_positions.push_back(vec4(0, 0, 0.1, 2));
 
 
-	vertex_positions.push_back(vec4(-0.77, 0.77, 0,1));
-	vertex_positions.push_back(vec4(-1, -1, 0,1));
-	vertex_positions.push_back(vec4(1, -1, 0,1));
+	vertex_positions.push_back(vec4(-0.077, 0.077, 0,2));
+	vertex_positions.push_back(vec4(-0.1, -0.1, 0,2));
+	vertex_positions.push_back(vec4(0.1, -0.1, 0,2));
 	
 
 	normalsToVerticesGeneralForm.push_back(vec3(-1, -1, 0));
@@ -61,17 +61,23 @@ Our_Model::Our_Model(){
 	
 
 	massCenter = vec4(0, 0, 0.4, 1);
+
+	if (normalsToVerticesGeneralForm.size() == 0)
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
+	else
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
 
 
 void Our_Model::draw(Renderer* renderer){
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin()+3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, EMISSIVE);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6),DIFFUSE);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9),SPECULAR);
-	renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12),ALL);
+	renderer->setColor(color.x, color.y, color.z);
+	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin() + 3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, EMISSIVE);
+	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6), DIFFUSE);
+	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9), SPECULAR);
+	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12), ALL);
 
-		
+	renderer->draw();
 }
 void Our_Model::setModelColor(float R, float G, float B){
 

@@ -32,12 +32,14 @@ Renderer::~Renderer(void) {}
 void Renderer::Init() {
 	R = B = G = 0.5;
 	glGenVertexArrays(1, &VAO);
-
+	glGenVertexArrays(1, &VAOLines);
 	program = InitShader("vshader.glsl", "fshader.glsl");
 	glUseProgram(program);
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	glEnable(GL_DEPTH_TEST);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glutSwapBuffers();
 }
 
 void Renderer::SetRendererSize(int width, int height) {
@@ -65,15 +67,7 @@ void Renderer::CreateBuffers() {
 }
 
 void Renderer::Invalidate(){
-	/*for (int i = 0, end = 3 * m_SSAAOutBufferWidth * m_SSAAOutBufferHeight; i < end; ++i)
-		m_SSAAOutBuffer[i] = 0.1;
-	globalClippedPolygon3.clear();
-	for (int y = 0; y < m_SSAAOutBufferHeight; ++y)
-		for (int x = 0; x < m_SSAAOutBufferWidth; ++x)
-			m_zbuffer[INDEXZ(m_SSAAOutBufferWidth, x, y)] = 5000; //TODO: max-z as back of the world...
-			*/
-	//glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	//glClear(GL_COLOR_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Renderer::SetDemoBuffer()
@@ -168,7 +162,7 @@ void Renderer::setColor(float red, float green, float blue){
 
 void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	//Function for Coordinate System for now
-	vec4 vecA, vecB;
+	/*vec4 vecA, vecB;
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
 	vecA = objectToClip * _vecA;
 	vecB = objectToClip * _vecB;
@@ -186,6 +180,27 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	b.y = m_SSAAOutBufferHeight*(b.y + 1) / 2;
 
 	DrawLine(a, b);
+	*/
+
+	GLuint numberOfVertices = 2;
+	vector<vec4>* vertices = new vector<vec4>(2);
+	vertices->push_back(_vecA);
+	vertices->push_back(_vecB);
+
+	glBindVertexArray(VAOLines);
+	GLuint VBO;
+	glGenBuffers(1, &VBO);
+	// 2. Copy our vertices array in a vertex buffer for OpenGL to use
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), &(*vertices)[0], GL_STATIC_DRAW);
+
+	// 3. Then set the vertex attributes pointers
+	GLint  vPosition = glGetAttribLocation(program, "vPosition");
+	glEnableVertexAttribArray(vPosition);
+	glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+
+	// 4. Unbind VAOLines
+	glBindVertexArray(0);
 }
 
 /*vec4 v0, v1, v2;
@@ -232,14 +247,13 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 }
 */
 
-void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
+GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	const vector<vec3>* normals, const vector<vec3>* normals2vertices, Material material){
 	objectToCamera = world_to_camera * object_to_world;
 	mat4 normalToCamera = world_to_camera * normalTransform;
 	//mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	totalNumberOfVertices += numberOfVertices;
-	glBindVertexArray(VAO);
 		GLuint VBO;
 		glGenBuffers(1, &VBO);
 		// 2. Copy our vertices array in a vertex buffer for OpenGL to use
@@ -249,14 +263,14 @@ void Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		// 3. Then set the vertex attributes pointers
 		GLint  vPosition = glGetAttribLocation(program, "vPosition");
 		glEnableVertexAttribArray(vPosition);
-		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+		//glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 
 		// 4. Unbind VAO
-	glBindVertexArray(0);
 
 		int err = glGetError();
 
+	return VBO;
 
 	/*vec4 currentVertice, currentVerticeZ_A, currentVerticeZ_B, currentVerticeZ_C, currentNormal;
 	vec4 PolygonVNormals[3];
@@ -611,23 +625,54 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 	*/
 
-	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT);
+	
 
-	glUseProgram(program);
-	glBindVertexArray(VAO);
 
-	GLuint transformId = glGetUniformLocation(program, "transform");
-	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*object_to_world[0]));
-	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
+	/*
+	glBindVertexArray(VAOLines);
+
+	transformId = glGetUniformLocation(program, "Tmodel");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, vec4());
+
+	transformId = glGetUniformLocation(program, "Tcamera");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*world_to_camera[0]));
+
+	transformId = glGetUniformLocation(program, "Tprojection");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
+
+	transformId = glGetUniformLocation(program, "MyColor");
+	glUniform3f(transformId, R,G,B);
+
+	glDrawArrays(GL_LINE_STRIP, 0, 20);
 	a = glGetError();
+	*/
+
 	glBindVertexArray(0);
 	glutSwapBuffers();
 	a = glGetError();
 }
 
 
+void Renderer::draw(){
+	int a = glGetError();
+	glUseProgram(program);
+	//glBindVertexArray(VAO);
 
+	GLuint transformId = glGetUniformLocation(program, "Tmodel");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*object_to_world[0]));
+
+	transformId = glGetUniformLocation(program, "Tcamera");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*world_to_camera[0]));
+
+	transformId = glGetUniformLocation(program, "Tprojection");
+	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
+
+	transformId = glGetUniformLocation(program, "MyColor");
+	glUniform3f(transformId, R, G, B);
+
+	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
+	a = glGetError();
+}
 
 
 

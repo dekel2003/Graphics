@@ -33,16 +33,6 @@ void Scene::changeLight(vec3* direction){
 	lights[activeLight]->location = *direction;
 }
 
-void Scene::loadOBJModel(string fileName)
-{
-	MeshModel *model = new MeshModel(fileName, m_renderer);
-	models.push_back(model);
-	activeModel = models.size() - 1;
-	addMeshToMenu();
-	draw();
-	//cameras[activeCamera]->LookAt(vec4(1.0, 1.0, 1.0, 1.0), model->getOrigin());
-}
-
 void Scene::LookAt(){
 	if (orthogonalView)
 		return;
@@ -74,10 +64,19 @@ void Scene::drawXY(){
 	}
 }
 
+void Scene::loadOBJModel(string fileName)
+{
+	MeshModel *model = new MeshModel(fileName, m_renderer);
+	models.push_back(model);
+	activeModel = models.size() - 1;
+	addMeshToMenu();
+	draw();
+	//cameras[activeCamera]->LookAt(vec4(1.0, 1.0, 1.0, 1.0), model->getOrigin());
+}
+
 void Scene::addPrimModel(){
 	PrimMeshModel* primModel= new PrimMeshModel();
-	primModel->setSphere();
-	primModel->draw(m_renderer);
+	primModel->setSphere(m_renderer);
 	models.push_back(primModel);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
@@ -85,8 +84,7 @@ void Scene::addPrimModel(){
 }
 
 void Scene::addOurModel(){
-	Model* ourModel = new Our_Model();
-	ourModel->draw(m_renderer);
+	Model* ourModel = new Our_Model(m_renderer);
 	models.push_back(ourModel);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
@@ -97,7 +95,7 @@ void Scene::draw() {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	//m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
-	//m_renderer->Invalidate();
+	m_renderer->Invalidate();
 	mat4 normalizedProjection = cameras[activeCamera]->normalizedProjection();
 	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(normalizedProjection);
@@ -105,9 +103,9 @@ void Scene::draw() {
 	}
 	drawXY();
 	m_renderer->setColor(200, 200, 200);
-	/*for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
+	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		if (*it == models[activeModel]){
-			m_renderer->setColor(256, 256, 256);
+
 			(*it)->draw(m_renderer);
 			if (shouldDrawNormalsPerFace){
 				(*it)->drawFaceNormals(m_renderer);
@@ -119,11 +117,10 @@ void Scene::draw() {
 				m_renderer->setColor(80, 50, 230);
 				(*it)->drawBoundingBox(m_renderer);
 			}
-			m_renderer->setColor(200, 200, 200);
 			continue;
 		}
 		(*it)->draw(m_renderer);
-	}*/
+	}
 	if (activeModel != -1)
 		models[activeModel]->drawAxis(m_renderer);
 
@@ -144,8 +141,7 @@ void Scene::draw() {
 		}
 	}
 	//m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
-	if (activeModel != -1)
-		models[activeModel]->draw(m_renderer);
+
 	m_renderer->SwapBuffers();
 }
 
@@ -403,6 +399,7 @@ void Camera::rotate(GLfloat dz){
 void Camera::Ortho(const float left, const float right,const float bottom , 
 	const float top, const float zNear , const float zFar){
 
+
 	_left = left;
 	_right = right;
 	_bottom = bottom;
@@ -441,7 +438,7 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 
 	//Set projecion Matrix
 	projection = mat4();
-	projection[2][2] = 0; // projection Matrix
+	//projection[2][2] = 0; // projection Matrix
 }
 
 void Camera::draw(Renderer* renderer){

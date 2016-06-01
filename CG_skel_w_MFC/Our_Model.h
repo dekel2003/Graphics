@@ -13,7 +13,7 @@ protected:
 	float normalVectorsSize = 0.02;
 	vec3 colors[9];
 public:
-	Our_Model();
+	Our_Model(Renderer* renderer);
 	void draw(Renderer* renderer);
 	void setModelColor(float R, float G, float B);
 };
