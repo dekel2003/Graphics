@@ -32,7 +32,7 @@ protected :
 public:
 	vec3 color = vec3(0, 70, 70);
 
-	MeshModel(string fileName);
+	MeshModel(string fileName, Renderer* r);
 	~MeshModel(void);
 	void loadFile(string fileName);
 	void draw(Renderer* renderer);

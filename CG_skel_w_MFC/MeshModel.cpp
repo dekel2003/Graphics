@@ -61,11 +61,16 @@ vec2 vec2fFromStream(std::istream & aStream)
 	return vec2(x, y);
 }
 
-MeshModel::MeshModel(string fileName)
+MeshModel::MeshModel(string fileName, Renderer* renderer)
 {
 	minX = MAXINT, minY = MAXINT, minZ = MAXINT,
 		maxX = MININT, maxY = MININT, maxZ = MININT;
 	loadFile(fileName);
+
+	if (normalsToVerticesGeneralForm.size() == 0)
+		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
+	else
+		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
 
 MeshModel::~MeshModel(void)
@@ -161,12 +166,11 @@ void MeshModel::loadFile(string fileName)
 void MeshModel::draw(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	//renderer->DrawTriangles(&vertex_positions);	normals2vertices
-	if (normalsToVerticesGeneralForm.size() == 0)
-		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
-	else
-		renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
 }
+
+
+
+
 
 void MeshModel::drawFaceNormals(Renderer* renderer)
 {

@@ -116,6 +116,12 @@ class Renderer
 	void InitOpenGLRendering();
 	//////////////////////////////
 
+	GLuint VAO;
+	GLuint program;
+	GLuint totalNumberOfVertices = 0;
+
+
+
 	float* m_SSAAOutBuffer;
 	float *m_outBuffer; // 3*width*height
 	float *m_zbuffer; // width*height

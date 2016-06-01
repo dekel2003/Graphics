@@ -35,7 +35,7 @@ void Scene::changeLight(vec3* direction){
 
 void Scene::loadOBJModel(string fileName)
 {
-	MeshModel *model = new MeshModel(fileName);
+	MeshModel *model = new MeshModel(fileName, m_renderer);
 	models.push_back(model);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
@@ -77,6 +77,7 @@ void Scene::drawXY(){
 void Scene::addPrimModel(){
 	PrimMeshModel* primModel= new PrimMeshModel();
 	primModel->setSphere();
+	primModel->draw(m_renderer);
 	models.push_back(primModel);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
@@ -85,6 +86,7 @@ void Scene::addPrimModel(){
 
 void Scene::addOurModel(){
 	Model* ourModel = new Our_Model();
+	ourModel->draw(m_renderer);
 	models.push_back(ourModel);
 	activeModel = models.size() - 1;
 	addMeshToMenu();
@@ -95,7 +97,7 @@ void Scene::draw() {
 	// 1. Send the renderer the current camera transform and the projection
 	// 2. Tell all models to draw themselves
 	//m_renderer->CreateBuffers(m_renderer->m_width, m_renderer->m_height);
-	m_renderer->Invalidate();
+	//m_renderer->Invalidate();
 	mat4 normalizedProjection = cameras[activeCamera]->normalizedProjection();
 	if (m_renderer && cameras[activeCamera]){
 		m_renderer->SetProjection(normalizedProjection);
@@ -103,7 +105,7 @@ void Scene::draw() {
 	}
 	drawXY();
 	m_renderer->setColor(200, 200, 200);
-	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
+	/*for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		if (*it == models[activeModel]){
 			m_renderer->setColor(256, 256, 256);
 			(*it)->draw(m_renderer);
@@ -121,7 +123,7 @@ void Scene::draw() {
 			continue;
 		}
 		(*it)->draw(m_renderer);
-	}
+	}*/
 	if (activeModel != -1)
 		models[activeModel]->drawAxis(m_renderer);
 
@@ -141,8 +143,9 @@ void Scene::draw() {
 			m_renderer->DrawLineBetween3Dvecs(loc, loc2);
 		}
 	}
-	m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
-
+	//m_renderer->drawFillAndFog(m_FogEnabled ? fogColor : NULL);
+	if (activeModel != -1)
+		models[activeModel]->draw(m_renderer);
 	m_renderer->SwapBuffers();
 }
 
