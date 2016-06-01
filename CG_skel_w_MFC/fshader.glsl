@@ -1,8 +1,10 @@
 #version 330
 
 in vec4 color;
-
+in vec3 frag;
+in vec3 norm;
 out vec4 fColor;
+
 
 
 void main() 

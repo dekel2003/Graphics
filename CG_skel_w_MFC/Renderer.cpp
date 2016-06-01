@@ -268,12 +268,12 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 
 		size_t start = numberOfVertices * 4 * sizeof(GLfloat);
 
-		/*if (normals2vertices){
+		if (normals2vertices){
+			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &(*normals2vertices)[0]);
 			GLint  nPosition = glGetAttribLocation(program, "nPosition");
 			glEnableVertexAttribArray(nPosition);
 			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)&(start));
-			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &(*normals2vertices)[0]);
-		}*/
+		}
 
 		//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
 		//glEnableVertexAttribArray(vTexCoord);
@@ -692,13 +692,13 @@ void Renderer::draw(){
 
 
 	//for (int j = 0; j < lights->size() && j<4; ++j){
-	/*if (lights->size() >= 0){
-		GLuint lPositionId = glGetUniformLocation(program, "lPosition[0]");
-		GLuint lColor = glGetUniformLocation(program, "lColor[0]");
+	if (lights->size() > 0){
+		GLuint lPositionId = glGetUniformLocation(program, "lPosition");
 		glUniform4fv(lPositionId, 1, &((*lights)[0]->location[0]));
+		GLuint lColor = glGetUniformLocation(program, "lColor");
 		glUniform3fv(lColor, 1, &((*lights)[0]->color[0]));
 	}
-	*/
+	
 	//}
 
 	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
