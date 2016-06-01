@@ -12,6 +12,7 @@ class Our_Model : public MeshModel
 protected:
 	float normalVectorsSize = 0.02;
 	vec3 colors[9];
+	GLuint VCO[4];
 public:
 	Our_Model(Renderer* renderer);
 	void draw(Renderer* renderer);

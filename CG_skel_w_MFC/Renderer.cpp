@@ -158,6 +158,7 @@ void Renderer::setColor(float red, float green, float blue){
 	R = red / 256.0;
 	G = green / 256.0;
 	B = blue / 256.0;
+	drawingColor = vec3(red, green, blue);
 }
 
 void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
@@ -256,17 +257,32 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	totalNumberOfVertices += numberOfVertices;
 		GLuint VBO;
 		glGenBuffers(1, &VBO);
-		// 2. Copy our vertices array in a vertex buffer for OpenGL to use
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), &(*vertices)[0], GL_STATIC_DRAW);
 
-		// 3. Then set the vertex attributes pointers
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + sizeof(vec3)), NULL , GL_STATIC_DRAW);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
+
 		GLint  vPosition = glGetAttribLocation(program, "vPosition");
 		glEnableVertexAttribArray(vPosition);
-		//glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, 0);
 		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
 
-		// 4. Unbind VAO
+		size_t start = numberOfVertices * 4 * sizeof(GLfloat);
+
+		/*if (normals2vertices){
+			GLint  nPosition = glGetAttribLocation(program, "nPosition");
+			glEnableVertexAttribArray(nPosition);
+			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)&(start));
+			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &(*normals2vertices)[0]);
+		}*/
+
+		//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
+		//glEnableVertexAttribArray(vTexCoord);
+		//glVertexAttribPointer(vTexCoord, 2, GL_FLOAT, GL_FALSE, 0,
+		//	(GLvoid *) sizeof(vtc));
+		//glBufferData(GL_ARRAY_BUFFER, sizeof(vtc)+sizeof(tex), NULL, GL_STATIC_DRAW);
+		//glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vtc), vtc);
+		//glBufferSubData(GL_ARRAY_BUFFER, sizeof(vtc), sizeof(tex), tex);
+
 
 		int err = glGetError();
 
@@ -658,6 +674,9 @@ void Renderer::draw(){
 	glUseProgram(program);
 	//glBindVertexArray(VAO);
 
+
+	vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
+
 	GLuint transformId = glGetUniformLocation(program, "Tmodel");
 	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*object_to_world[0]));
 
@@ -668,7 +687,19 @@ void Renderer::draw(){
 	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
 
 	transformId = glGetUniformLocation(program, "MyColor");
-	glUniform3f(transformId, R, G, B);
+	glUniform3f(transformId, color.x, color.y, color.z);
+
+
+
+	//for (int j = 0; j < lights->size() && j<4; ++j){
+	/*if (lights->size() >= 0){
+		GLuint lPositionId = glGetUniformLocation(program, "lPosition[0]");
+		GLuint lColor = glGetUniformLocation(program, "lColor[0]");
+		glUniform4fv(lPositionId, 1, &((*lights)[0]->location[0]));
+		glUniform3fv(lColor, 1, &((*lights)[0]->color[0]));
+	}
+	*/
+	//}
 
 	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
 	a = glGetError();

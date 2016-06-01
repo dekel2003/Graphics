@@ -150,6 +150,7 @@ class Renderer
 
 	mat4 normalTransform;
 	float AmbientIntensity = 1.0f;
+	vec3 drawingColor;
 
 	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera

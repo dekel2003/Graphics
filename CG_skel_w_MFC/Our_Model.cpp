@@ -62,22 +62,35 @@ Our_Model::Our_Model(Renderer* renderer){
 
 	massCenter = vec4(0, 0, 0.4, 1);
 
-	if (normalsToVerticesGeneralForm.size() == 0)
-		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
-	else
-		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
+	glGenVertexArrays(1, &this->VAO);
+	glBindVertexArray(this->VAO);
+
+	VCO[0] = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin() + 3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, EMISSIVE);
+	VCO[1] = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6), DIFFUSE);
+	VCO[2] = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9), SPECULAR);
+	VCO[3] = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12), ALL);
 }
 
 
 void Our_Model::draw(Renderer* renderer){
+	glBindVertexArray(this->VAO);
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	renderer->setColor(color.x, color.y, color.z);
-	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin(), vertex_positions.begin() + 3), colors[0], &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, EMISSIVE);
-	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 3, vertex_positions.begin() + 6), colors[1], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 3, normalsToVerticesGeneralForm.begin() + 6), DIFFUSE);
-	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 6, vertex_positions.begin() + 9), colors[2], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 6, normalsToVerticesGeneralForm.begin() + 9), SPECULAR);
-	VBO = renderer->AddTriangles(&vector<vec4>(vertex_positions.begin() + 9, vertex_positions.begin() + 12), colors[3], &normalsToFacesGeneralForm, &vector<vec3>(normalsToVerticesGeneralForm.begin() + 9, normalsToVerticesGeneralForm.begin() + 12), ALL);
 
+	glBindBuffer(GL_ARRAY_BUFFER, VCO[0]);
+	renderer->setColor(colors[0].x, colors[0].y, colors[0].z);
 	renderer->draw();
+	glBindBuffer(GL_ARRAY_BUFFER, VCO[1]);
+	renderer->setColor(colors[1].x, colors[1].y, colors[1].z);
+	renderer->draw();
+	glBindBuffer(GL_ARRAY_BUFFER, VCO[2]);
+	renderer->setColor(colors[2].x, colors[2].y, colors[2].z);
+	renderer->draw();
+	glBindBuffer(GL_ARRAY_BUFFER, VCO[3]);
+	renderer->setColor(colors[3].x, colors[3].y, colors[3].z);
+	renderer->draw();
+
+	glBindVertexArray(0);
+
 }
 void Our_Model::setModelColor(float R, float G, float B){
 
