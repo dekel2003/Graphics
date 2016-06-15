@@ -688,7 +688,7 @@ void Renderer::loadTexture() {
 
 	glBindTexture(GL_TEXTURE_2D, texture);
 	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
 }
 
@@ -697,7 +697,7 @@ void Renderer::draw(){
 	//glBindVertexArray(VAO);
 
 
-	loadTexture();
+	//loadTexture();
 
 
 	vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
@@ -714,7 +714,10 @@ void Renderer::draw(){
 	transformId = glGetUniformLocation(program, "MyColor");
 	glUniform3f(transformId, color.x, color.y, color.z);
 
+	//shadow
 
+	transformId = glGetUniformLocation(program, "shadow");
+	glUniform1i(transformId, shadow);
 
 	//for (int j = 0; j < lights->size() && j<4; ++j){
 	if (lights->size() > 0){

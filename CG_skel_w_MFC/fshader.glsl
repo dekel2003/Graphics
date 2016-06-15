@@ -5,8 +5,14 @@ in vec3 frag;
 in vec3 norm;
 out vec4 fColor;
 
+
+uniform mat4 Tcamera;
+
+
 uniform vec4 lPosition;
 uniform vec3 lColor;
+
+uniform int shadow; 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -15,7 +21,11 @@ void main()
    //fColor = textureLod( texture, texCoord, 0 );
    //fColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
    //fColor = color;
-   fColor = color + putColor(color, lPosition, lColor, norm, frag);
+   vec4 pos = Tcamera * lPosition;
+   if (shadow==2)
+	   fColor = color + putColor(color, pos/pos.w, lColor, norm, frag);
+	else
+		fColor = color;
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){

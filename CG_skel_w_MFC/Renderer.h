@@ -206,5 +206,5 @@ public:
 	void testPointInTriangle(int x, int y);
 
 
-	Shadow shadow = FLAT;
+	Shadow shadow = GOUARD;
 };
