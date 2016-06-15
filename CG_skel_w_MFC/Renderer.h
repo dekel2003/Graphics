@@ -6,6 +6,7 @@
 #include "mat.h"
 #include "GL/glew.h"
 #include "Light.h"
+#include "SOIL.h"
 
 using namespace std;
 
@@ -22,7 +23,7 @@ enum Material {
 	DIFFUSE,
 	SPECULAR,
 	ALL
-};
+};//$(VC_IncludePath);$(WindowsSDK_IncludePath);
 
 class Polygon3{
 
@@ -170,6 +171,7 @@ class Renderer
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 	inline float findSSAAOfColorElement(int multiplier, int x, int y, int colorElement);
 	void putColor(int x, int y, Polygon3* P);
+	void loadTexture();
 public:
 	void setAmbientLight(float intensity);
 	void drawFillAndFog(vec3& fog);

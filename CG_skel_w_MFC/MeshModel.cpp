@@ -5,47 +5,9 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-
+//#include "PngWrapper.h"
 
 using namespace std;
-
-struct FaceIdcs
-{
-	int v[4];
-	int vn[4];
-	int vt[4];
-
-	FaceIdcs()
-	{
-		for (int i=0; i<4; i++)
-			v[i] = vn[i] = vt[i] = 0;
-	}
-
-	FaceIdcs(std::istream & aStream)
-	{
-		for (int i=0; i<4; i++)
-			v[i] = vn[i] = vt[i] = 0;
-
-		char c;
-		for(int i = 0; i < 3; i++)
-		{
-			aStream >> std::ws >> v[i] >> std::ws;
-			if (aStream.peek() != '/')
-				continue;
-			aStream >> c >> std::ws;
-			if (aStream.peek() == '/')
-			{
-				aStream >> c >> std::ws >> vn[i];
-				continue;
-			}
-			else
-				aStream >> vt[i];
-			if (aStream.peek() != '/')
-				continue;
-			aStream >> c >> vn[i];
-		}
-	}
-};
 
 vec3 vec3fFromStream(std::istream & aStream)
 {
@@ -82,7 +44,6 @@ MeshModel::~MeshModel(void)
 void MeshModel::loadFile(string fileName)
 {
 	ifstream ifile(fileName.c_str());
-	vector<FaceIdcs> faces;
 	vector<vec3> vertices;
 	
 	// while not end of file
@@ -105,9 +66,12 @@ void MeshModel::loadFile(string fileName)
 			sum += vertices[vertices.size() - 1];
 		}
 		else if (lineType == "f")
-			faces.push_back(issLine);
+			m_Faces.push_back(FaceIdcs(issLine));
+			//m_Faces.push_back(issLine);
 		else if (lineType == "vn")
 			normals2vertices.push_back(vec3fFromStream(issLine));
+		else if (lineType == "vt")
+			m_Textures.push_back(vec2fFromStream(issLine));
 		else if (lineType == "#" || lineType == "")
 		{
 			// comment / empty line
@@ -119,23 +83,21 @@ void MeshModel::loadFile(string fileName)
 	}
 	massCenter = sum / vertices.size();
 
-	//num_vertices = 3 * faces.size();
 	// iterate through all stored faces and create triangles
-
-	int k=0;
 	vec3 normal1, normal2, normal3;
-	for (vector<FaceIdcs>::iterator it = faces.begin(); it != faces.end(); ++it)
-	{
+	vec3 point1, point2, point3;
+	vec3 point1Two, point2Two, point3Two;
+	for (vector<FaceIdcs>::iterator it = m_Faces.begin(); it != m_Faces.end(); ++it) {
 		if (it->vn){
 			normal1 = normals2vertices[it->vn[0] - 1];
 			normal2 = normals2vertices[it->vn[1] - 1];
 			normal3 = normals2vertices[it->vn[2] - 1];
-			vec3 point1 = vertices[it->v[0] - 1];
-			vec3 point2 = vertices[it->v[1] - 1];
-			vec3 point3 = vertices[it->v[2] - 1];
-			vec3 point1Two = point1 + normalize(normal1)*normalVectorsSize;
-			vec3 point2Two = point2 + normalize(normal2)*normalVectorsSize;
-			vec3 point3Two = point3 + normalize(normal3)*normalVectorsSize;
+			point1 = vertices[it->v[0] - 1];
+			point2 = vertices[it->v[1] - 1];
+			point3 = vertices[it->v[2] - 1];
+			point1Two = point1 + normalize(normal1)*normalVectorsSize;
+			point2Two = point2 + normalize(normal2)*normalVectorsSize;
+			point3Two = point3 + normalize(normal3)*normalVectorsSize;
 			normalsToVertices.push_back(pair<vec3, vec3>(point1, point1Two));
 			normalsToVertices.push_back(pair<vec3, vec3>(point2, point2Two));
 			normalsToVertices.push_back(pair<vec3, vec3>(point3, point3Two));
@@ -143,7 +105,7 @@ void MeshModel::loadFile(string fileName)
 			normalsToVerticesGeneralForm.push_back(normalize(normal2));
 			normalsToVerticesGeneralForm.push_back(normalize(normal3));
 		}
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 3; ++i)
 		{
 			vertex_positions.push_back(vec4(vertices[it->v[i] - 1].x, vertices[it->v[i] - 1].y, vertices[it->v[i] - 1].z, 1));
 			maxX = vertices[it->v[i] - 1].x > maxX ? vertices[it->v[i] - 1].x : maxX;
@@ -152,6 +114,9 @@ void MeshModel::loadFile(string fileName)
 			minX = vertices[it->v[i] - 1].x < minX ? vertices[it->v[i] - 1].x : minX;
 			minY = vertices[it->v[i] - 1].y < minY ? vertices[it->v[i] - 1].y : minY;
 			minZ = vertices[it->v[i] - 1].z < minZ ? vertices[it->v[i] - 1].z : minZ;
+		}
+		if (it->vt){
+
 		}
 	}
 	cube[0] = vec4(minX, minY, minZ, 1.0);
@@ -165,7 +130,7 @@ void MeshModel::loadFile(string fileName)
 	computeNormalsPerFace();
 }
 
-void MeshModel::draw(Renderer* renderer)
+void MeshModel::draw(Renderer* renderer) 
 {
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -174,10 +139,6 @@ void MeshModel::draw(Renderer* renderer)
 	renderer->draw();
 	glBindVertexArray(0);
 }
-
-
-
-
 
 void MeshModel::drawFaceNormals(Renderer* renderer)
 {
@@ -189,7 +150,6 @@ void MeshModel::drawFaceNormals(Renderer* renderer)
 	}
 }
 
-
 void MeshModel::drawVertexNormals(Renderer* renderer)
 {
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
@@ -199,7 +159,6 @@ void MeshModel::drawVertexNormals(Renderer* renderer)
 		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
 	}
 }
-
 
 void MeshModel::drawAxis(Renderer* renderer)
 {

@@ -2,6 +2,7 @@
 
 in  vec4 vPosition;
 in  vec3 nPosition;
+in  vec2 texCoord;
 
 uniform mat4 Tmodel;
 uniform mat4 Tcamera;
@@ -12,6 +13,7 @@ uniform vec3 MyColor;
 out vec4 color;
 out vec3 frag;
 out vec3 norm;
+out vec2 TexCoord;
 
 void main()
 {
@@ -20,4 +22,5 @@ void main()
 
 	frag = (Tmodel * vPosition).xyz;
 	norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
+	TexCoord = texCoord;
 }
