@@ -259,7 +259,8 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		glGenBuffers(1, &VBO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + sizeof(vec3)), NULL , GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + sizeof(vec3) + 0 /*tex coords*/), NULL , GL_STATIC_DRAW);
+		
 		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
 
 		size_t start = numberOfVertices * sizeof(vec4);

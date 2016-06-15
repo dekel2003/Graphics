@@ -18,7 +18,6 @@ void main()
     gl_Position = Tprojection * Tcamera * Tmodel * vPosition;
 	color = vec4(MyColor, 1.0f);
 
-	vec4 _frag = Tmodel * vPosition;
-	frag = _frag.xyz / _frag.w;
+	frag = (Tmodel * vPosition).xyz;
 	norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
 }

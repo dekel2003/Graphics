@@ -14,8 +14,8 @@ void main()
 { 
    //fColor = textureLod( texture, texCoord, 0 );
    //fColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
-   fColor = color;
-   fColor = fColor + putColor(color, lPosition, lColor, norm, frag);
+   //fColor = color;
+   fColor = color + putColor(color, lPosition, lColor, norm, frag);
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
