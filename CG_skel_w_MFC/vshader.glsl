@@ -2,6 +2,7 @@
 
 in  vec4 vPosition;
 in  vec3 nPosition;
+in  vec3 fnPosition;
 in  vec2 texCoord;
 
 uniform mat4 Tmodel;
@@ -27,20 +28,23 @@ void main()
 //{ FLAT, GOUARD, PHONG }
 
     gl_Position = Tprojection * Tcamera * Tmodel * vPosition;
-	frag = (Tcamera * Tmodel * vPosition).xyz;
+	vec4 frag4 = Tmodel * vPosition;
+	frag = (frag4 / frag4.w).xyz;
 
-
-	if (shadow != 0)
-		norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
+	if (shadow==0)
+		norm = normalize((   transpose(inverse(Tmodel)) * vec4(fnPosition,1)   ).xyz);
 	else
-		norm = vec3(0,0,0);
+		norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
 
-	vec4 pos = Tcamera * lPosition;
+
+	vec4 pos = lPosition;
+	//if (lPosition.w!=0)
+	//	pos /= pos.w;
 
 	color = vec4(MyColor, 1.0f);
-	if (shadow == 1)
-		color = color + putColor(color, pos, lColor, norm, frag );
 
+	if (shadow != 2)
+		color = color + putColor(color, pos, lColor, norm, frag );
 
 
 
@@ -55,7 +59,7 @@ vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
 	float teta;
 	vec3 eye = vec3(0.5, 0.5, 0);
 	if (lPosition.w==1.0)
-		l=normalize(frag-lPosition.xyz);
+		l=normalize(lPosition.xyz-frag);
 	else
 		l = -frag;
 	teta = dot(l, normal);
@@ -64,8 +68,8 @@ vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
 	e = normalize(eye - frag);
 
 	tmpColor += color * max(1, 2/1) * max(0, teta) * vec4(lColor, 1.0f);
-	if (dot(r,normal)>0)
-		tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
+	//if (dot(r,normal)>0)
+		//tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
 
 	return tmpColor;
 }

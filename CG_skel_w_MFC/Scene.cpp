@@ -101,17 +101,17 @@ void Scene::draw() {
 		m_renderer->SetProjection(normalizedProjection);
 		m_renderer->SetCameraTransform(cameras[activeCamera]->world_to_camera);
 	}
-	drawXY();
-	m_renderer->setColor(200, 200, 200);
+	//drawXY();
+	//m_renderer->setColor(200, 200, 200);
 	for (vector<Model*>::iterator it = models.begin(); it != models.end(); it++){
 		if (*it == models[activeModel]){
 
 			(*it)->draw(m_renderer);
 			if (shouldDrawNormalsPerFace){
-				(*it)->drawFaceNormals(m_renderer);
+				//(*it)->drawFaceNormals(m_renderer);
 			}
 			if (shouldDrawNormalsPerVertex){
-				(*it)->drawVertexNormals(m_renderer);
+				//(*it)->drawVertexNormals(m_renderer);
 			}
 			if (shouldDrawBoundingBox){
 				m_renderer->setColor(80, 50, 230);
@@ -124,10 +124,10 @@ void Scene::draw() {
 	if (activeModel != -1)
 		models[activeModel]->drawAxis(m_renderer);
 
-	m_renderer->SetObjectMatrices(mat4(), mat4());
-	cameras[activeCamera]->draw(m_renderer);
+	//m_renderer->SetObjectMatrices(mat4(), mat4());
+	//cameras[activeCamera]->draw(m_renderer);
 
-	m_renderer->setColor(0, 256, 256);
+	//m_renderer->setColor(0, 256, 256);
 	vec4 loc, loc2;
 	for (Light* l : lights){
 		//cameras[activeCamera]->world_to_camera.MultiplyVec(l->location, loc);

@@ -67,6 +67,7 @@ void Renderer::CreateBuffers() {
 }
 
 void Renderer::Invalidate(){
+	lines.clear();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -162,6 +163,8 @@ void Renderer::setColor(float red, float green, float blue){
 }
 
 void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
+	lines.push_back(_vecA);
+	lines.push_back(_vecB);
 	//Function for Coordinate System for now
 	/*vec4 vecA, vecB;
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
@@ -181,7 +184,7 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 	b.y = m_SSAAOutBufferHeight*(b.y + 1) / 2;
 
 	DrawLine(a, b);
-	*/
+	
 
 	GLuint numberOfVertices = 2;
 	vector<vec4>* vertices = new vector<vec4>(2);
@@ -202,6 +205,7 @@ void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
 
 	// 4. Unbind VAOLines
 	glBindVertexArray(0);
+	*/
 }
 
 /*vec4 v0, v1, v2;
@@ -250,8 +254,8 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 
 GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	const vector<vec3>* normals, const vector<vec3>* normals2vertices, Material material){
-	objectToCamera = world_to_camera * object_to_world;
-	mat4 normalToCamera = world_to_camera * normalTransform;
+	//objectToCamera = world_to_camera * object_to_world;
+	//mat4 normalToCamera = world_to_camera * normalTransform;
 	//mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
 	totalNumberOfVertices += numberOfVertices;
@@ -259,7 +263,7 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		glGenBuffers(1, &VBO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + sizeof(vec3) + 0 /*tex coords*/), NULL , GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + 2*sizeof(vec3) + 0 /*tex coords*/), NULL , GL_STATIC_DRAW);
 		
 		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
 
@@ -268,6 +272,20 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		if (normals2vertices){
 			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &((*normals2vertices)[0]));
 			GLint  nPosition = glGetAttribLocation(program, "nPosition");
+			glEnableVertexAttribArray(nPosition);
+			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
+		}
+		if (normals){
+			vector<vec3> fNormals;
+			fNormals.reserve(numberOfVertices);
+			for (vec3 nn : *normals){
+				fNormals.push_back(nn);
+				fNormals.push_back(nn);
+				fNormals.push_back(nn);
+			}
+			start = numberOfVertices * (sizeof(vec4) + sizeof(vec3));
+			glBufferSubData(GL_ARRAY_BUFFER, start, numberOfVertices * sizeof(vec3), &((fNormals)[0]));
+			GLint  nPosition = glGetAttribLocation(program, "fnPosition");
 			glEnableVertexAttribArray(nPosition);
 			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
 		}
@@ -663,6 +681,50 @@ void Renderer::SwapBuffers()
 	glDrawArrays(GL_LINE_STRIP, 0, 20);
 	a = glGetError();
 	*/
+
+	////////////////////////////////////////// draw all lines
+	GLuint linesSize = lines.size();
+	if (linesSize == 0)
+		return;
+	//while (lines.size() != 0){
+		//vec4 _vecA = lines[0];
+		//vec4 _vecB = lines[1];
+		//lines.pop_back();
+		//lines.pop_back();
+
+		glBindVertexArray(VAOLines);
+		GLuint VBO;
+		glGenBuffers(1, &VBO);
+		// 2. Copy our vertices array in a vertex buffer for OpenGL to use
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, linesSize * sizeof(vec4), &(lines)[0], GL_STATIC_DRAW);
+
+		// 3. Then set the vertex attributes pointers
+		GLint  vPosition = glGetAttribLocation(program, "vPosition");
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+
+
+		vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
+
+		GLuint transformId = glGetUniformLocation(program, "Tmodel");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(mat4()[0][0]));
+
+		transformId = glGetUniformLocation(program, "Tcamera");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*world_to_camera[0]));
+
+		transformId = glGetUniformLocation(program, "MyColor");
+		glUniform3f(transformId, 1, 0, 0);
+
+		glDrawArrays(GL_LINES, 0, linesSize);
+
+
+		// 4. Unbind VAOLines
+		glBindVertexArray(0);
+	//}
+/////////////////////////////////////////////////////////////////////
+
+
 
 	glBindVertexArray(0);
 	glutSwapBuffers();

@@ -382,7 +382,7 @@ void lightMenu(int id)
 		if (id == 0){
 			scene->addLight();
 		}
-		if (id == 1){
+		else if (id == 1){
 			CXyzDialog dlg;
 			if (dlg.DoModal() == IDOK){
 				scene->addLight(&dlg.GetXYZ(), LightType::LIGHT_PARALLEL);
@@ -476,10 +476,6 @@ void fogMenu(int id)
 				scene->setFogColor(GetRValue(color), GetGValue(color), GetBValue(color));
 			}
 		}
-		else
-		{
-			scene->activeLight = id - 4;
-		}
 		display();
 		fogMenuBeingUsed = false;
 	}
@@ -495,10 +491,6 @@ void ssaaMenu(int id)
 		}
 		else  if (id == 1) {
 			scene->DisableSSAA();
-		}
-		else
-		{
-			scene->activeLight = id - 4;
 		}
 		display();
 		ssaaMenuBeingUsed = false;

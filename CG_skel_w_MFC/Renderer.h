@@ -122,6 +122,8 @@ class Renderer
 	GLuint program;
 	GLuint totalNumberOfVertices = 0;
 
+	vector<vec4> lines;
+
 
 
 	float* m_SSAAOutBuffer;
@@ -206,5 +208,5 @@ public:
 	void testPointInTriangle(int x, int y);
 
 
-	Shadow shadow = GOUARD;
+	Shadow shadow = FLAT;
 };
