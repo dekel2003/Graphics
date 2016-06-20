@@ -186,8 +186,8 @@ public:
 	void SetSSAAMultiplier(int multiplier);
 	//void DrawTriangles(const vector<vec4>* vertices, const vector<vec3>* normals=NULL);
 	GLuint AddTriangles(const vector<vec4>* vertices, const vec3 color,
-		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL
-		, Material m = ALL);
+		const vector<vec3>* normals = NULL, const vector<vec3>* normals2vertices = NULL,
+		const vector<vec2>* textures = NULL, Material m = ALL);
 
 	void SetCameraTransform(const mat4& world_to_camera);
 	void SetProjection(const mat4& projection);

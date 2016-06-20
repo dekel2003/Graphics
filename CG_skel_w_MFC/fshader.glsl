@@ -3,6 +3,7 @@
 in vec4 color;
 in vec3 frag;
 in vec3 norm;
+in vec2 TexCoord;
 out vec4 fColor;
 
 
@@ -10,6 +11,7 @@ uniform vec4 lPosition;
 uniform vec3 lColor;
 
 uniform int shadow; 
+uniform sampler2D ourTexture;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -26,6 +28,8 @@ void main()
 	   fColor = color + putColor(color, pos/pos.w, lColor, norm, frag);
 	else
 		fColor = color;
+
+	fColor = texture2D(ourTexture, TexCoord);
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){

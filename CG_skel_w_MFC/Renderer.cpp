@@ -253,7 +253,7 @@ inline GLfloat Depth(Polygon3* P, vec2& p){
 */
 
 GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
-	const vector<vec3>* normals, const vector<vec3>* normals2vertices, Material material){
+	const vector<vec3>* normals, const vector<vec3>* normals2vertices, const vector<vec2>* textures, Material material){
 	//objectToCamera = world_to_camera * object_to_world;
 	//mat4 normalToCamera = world_to_camera * normalTransform;
 	//mat4 objectToClip = projectionMatrix * objectToCamera;
@@ -263,18 +263,21 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		glGenBuffers(1, &VBO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + 2*sizeof(vec3) + 0 /*tex coords*/), NULL , GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + (2 * sizeof(vec3)) + sizeof(vec2) /*tex coords*/), NULL, GL_STATIC_DRAW);
 		
 		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
+		GLint  vPosition = glGetAttribLocation(program, "vPosition");
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
 		size_t start = numberOfVertices * sizeof(vec4);
-
 		if (normals2vertices){
 			glBufferSubData(GL_ARRAY_BUFFER, numberOfVertices * sizeof(vec4), numberOfVertices * sizeof(vec3), &((*normals2vertices)[0]));
 			GLint  nPosition = glGetAttribLocation(program, "nPosition");
 			glEnableVertexAttribArray(nPosition);
 			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
 		}
+
 		if (normals){
 			vector<vec3> fNormals;
 			fNormals.reserve(numberOfVertices);
@@ -290,9 +293,13 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 			glVertexAttribPointer(nPosition, 3, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
 		}
 
-		GLint  vPosition = glGetAttribLocation(program, "vPosition");
-		glEnableVertexAttribArray(vPosition);
-		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+		if (textures) {
+			start = numberOfVertices * sizeof(vec4)* sizeof(vec3)* sizeof(vec3);
+			glBufferSubData(GL_ARRAY_BUFFER, start, numberOfVertices * sizeof(vec2), &((*textures)[0]));
+			GLint  texCoord = glGetAttribLocation(program, "texCoord");
+			glEnableVertexAttribArray(texCoord);
+			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)start);
+		}
 
 		//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
 		//glEnableVertexAttribArray(vTexCoord);
@@ -731,37 +738,37 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 }
 
-
-void Renderer::loadTexture() {
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	int width, height;
-	unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
-
-
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
-	glEnableVertexAttribArray(2);
-
-
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glBindVertexArray(VAO);
-	//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-}
-
 void Renderer::draw(){
 	int a = glGetError();
 	//glBindVertexArray(VAO);
 
+	/**/
+	glActiveTexture(GL_TEXTURE0);
+	GLuint texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	int width, height;
+	//unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("statue1.png", &width, &height, 0, SOIL_LOAD_RGB);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 
-	//loadTexture();
 
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
+	
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(4 * sizeof(GLfloat)));
 
+	glEnableVertexAttribArray(2);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(7 * sizeof(GLfloat)));
+
+	glEnableVertexAttribArray(3);
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(10 * sizeof(GLfloat)));
+	/**/
+	
 	vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
 
 	GLuint transformId = glGetUniformLocation(program, "Tmodel");
@@ -781,6 +788,11 @@ void Renderer::draw(){
 	transformId = glGetUniformLocation(program, "shadow");
 	glUniform1i(transformId, shadow);
 
+	// Texture
+
+	transformId = glGetUniformLocation(program, "ourTexture");
+	glUniform1i(transformId, 0);
+
 	//for (int j = 0; j < lights->size() && j<4; ++j){
 	if (lights->size() > 0){
 		GLuint lPositionId = glGetUniformLocation(program, "lPosition");
@@ -790,6 +802,13 @@ void Renderer::draw(){
 	}
 	
 	//}
+
+	/*
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glBindVertexArray(VAO);
+	glDrawElements(GL_TRIANGLES, totalNumberOfVertices, GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);
+	*/
 
 	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
 	a = glGetError();

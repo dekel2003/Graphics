@@ -32,9 +32,9 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 	glGenVertexArrays(1, &this->VAO);
 	glBindVertexArray(this->VAO);
 	if (normalsToVerticesGeneralForm.size() == 0)
-		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm);
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, NULL, (m_Textures.size() == 0 ? NULL : &m_Textures));
 	else
-		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm);
+		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, (m_Textures.size() == 0 ? NULL : &m_Textures));
 }
 
 MeshModel::~MeshModel(void)
@@ -45,6 +45,7 @@ void MeshModel::loadFile(string fileName)
 {
 	ifstream ifile(fileName.c_str());
 	vector<vec3> vertices;
+	vector<vec2> textures;
 	
 	// while not end of file
 	vec3 sum = vec3(0, 0, 0);
@@ -71,7 +72,7 @@ void MeshModel::loadFile(string fileName)
 		else if (lineType == "vn")
 			normals2vertices.push_back(vec3fFromStream(issLine));
 		else if (lineType == "vt")
-			m_Textures.push_back(vec2fFromStream(issLine));
+			textures.push_back(vec2fFromStream(issLine));
 		else if (lineType == "#" || lineType == "")
 		{
 			// comment / empty line
@@ -115,8 +116,10 @@ void MeshModel::loadFile(string fileName)
 			minY = vertices[it->v[i] - 1].y < minY ? vertices[it->v[i] - 1].y : minY;
 			minZ = vertices[it->v[i] - 1].z < minZ ? vertices[it->v[i] - 1].z : minZ;
 		}
-		if (it->vt){
-
+		if (0 < textures.size()) {
+			for (int i = 0; i < 2; ++i) {
+				m_Textures.push_back(textures[(it->vt[i] - 1)]);
+			}
 		}
 	}
 	cube[0] = vec4(minX, minY, minZ, 1.0);
