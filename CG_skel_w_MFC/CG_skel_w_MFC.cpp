@@ -422,6 +422,8 @@ void shadowMenu(int id){
 	case 2:
 		renderer->shadow = PHONG;
 		break;
+	case 3:
+		renderer->shadow = TOON;
 	}
 	display();
 }
@@ -613,6 +615,7 @@ void initMenu()
 	glutAddMenuEntry("Flat", 0);
 	glutAddMenuEntry("Gouard", 1);
 	glutAddMenuEntry("Phong", 2);
+	glutAddMenuEntry("Toon", 3);
 
 	colorMenu = glutCreateMenu(setColorMenu);
 	glutAddMenuEntry("change mesh color", 0);

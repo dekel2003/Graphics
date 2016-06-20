@@ -117,12 +117,14 @@ void Scene::draw() {
 				m_renderer->setColor(80, 50, 230);
 				(*it)->drawBoundingBox(m_renderer);
 			}
+			(*it)->drawAxis(m_renderer);
+			m_renderer->drawModelsLines();
 			continue;
 		}
 		(*it)->draw(m_renderer);
 	}
-	if (activeModel != -1)
-		models[activeModel]->drawAxis(m_renderer);
+	//if (activeModel != -1)
+	//	models[activeModel]->drawAxis(m_renderer);
 
 	//m_renderer->SetObjectMatrices(mat4(), mat4());
 	//cameras[activeCamera]->draw(m_renderer);
@@ -436,7 +438,7 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 	}
 	ST = normalized;
 
-	ST = mat4();
+	//ST = mat4();
 
 	//Set projecion Matrix
 	projection = mat4();

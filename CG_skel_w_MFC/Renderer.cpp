@@ -33,6 +33,9 @@ void Renderer::Init() {
 	R = B = G = 0.5;
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &VAOLines);
+	glGenVertexArrays(1, &VAOModelLines);
+	
+
 	program = InitShader("vshader.glsl", "fshader.glsl");
 	glUseProgram(program);
 
@@ -68,6 +71,7 @@ void Renderer::CreateBuffers() {
 
 void Renderer::Invalidate(){
 	lines.clear();
+	model_lines.clear();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
@@ -162,9 +166,18 @@ void Renderer::setColor(float red, float green, float blue){
 	drawingColor = vec3(red, green, blue);
 }
 
-void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA,const vec4& _vecB){
-	lines.push_back(_vecA);
-	lines.push_back(_vecB);
+void Renderer::DrawLineBetween3Dvecs(const vec4& _vecA, const vec4& _vecB, bool modelOriented){
+
+
+	if (modelOriented){
+		model_lines.push_back(_vecA);
+		model_lines.push_back(_vecB);
+	}
+	else{
+		lines.push_back(_vecA);
+		lines.push_back(_vecB);
+	}
+
 	//Function for Coordinate System for now
 	/*vec4 vecA, vecB;
 	mat4 objectToClip = projectionMatrix * world_to_camera * object_to_world;
@@ -652,6 +665,57 @@ void Renderer::CreateOpenGLBuffer()
 	glViewport(0, 0, m_OutBufferWidth, m_OutBufferHeight);
 }
 
+void Renderer::drawModelsLines(){
+	////////////////////////////////////////// draw all model's lines
+	GLuint linesSize = model_lines.size();
+	if (linesSize != 0){
+		//while (lines.size() != 0){
+		//vec4 _vecA = lines[0];
+		//vec4 _vecB = lines[1];
+		//lines.pop_back();
+		//lines.pop_back();
+
+		glBindVertexArray(VAOModelLines);
+		GLuint VBO;
+		glGenBuffers(1, &VBO);
+		// 2. Copy our vertices array in a vertex buffer for OpenGL to use
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, linesSize * sizeof(vec4), &(model_lines)[0], GL_STATIC_DRAW);
+
+		// 3. Then set the vertex attributes pointers
+		GLint  vPosition = glGetAttribLocation(program, "vPosition");
+		glEnableVertexAttribArray(vPosition);
+		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
+
+
+		vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
+
+		GLuint transformId = glGetUniformLocation(program, "Tmodel");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*object_to_world[0]));
+
+
+		transformId = glGetUniformLocation(program, "Tcamera");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*world_to_camera[0]));
+
+		transformId = glGetUniformLocation(program, "Tprojection");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
+
+		transformId = glGetUniformLocation(program, "MyColor");
+		glUniform3f(transformId, 1, 0, 0);
+
+		transformId = glGetUniformLocation(program, "useTexture");
+		glUniform1i(transformId, 0);
+
+		glDrawArrays(GL_LINES, 0, linesSize);
+
+
+		// 4. Unbind VAOLines
+		glBindVertexArray(0);
+		model_lines.clear();
+	}
+	/////////////////////////////////////////////////////////////////////
+}
+
 void Renderer::SwapBuffers()
 {
 	int a = glGetError();
@@ -689,10 +753,11 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 	*/
 
+
 	////////////////////////////////////////// draw all lines
 	GLuint linesSize = lines.size();
-	if (linesSize == 0)
-		return;
+
+	if (linesSize != 0){
 	//while (lines.size() != 0){
 		//vec4 _vecA = lines[0];
 		//vec4 _vecB = lines[1];
@@ -707,7 +772,7 @@ void Renderer::SwapBuffers()
 		glBufferData(GL_ARRAY_BUFFER, linesSize * sizeof(vec4), &(lines)[0], GL_STATIC_DRAW);
 
 		// 3. Then set the vertex attributes pointers
-		GLint  vPosition = glGetAttribLocation(program, "vPosition");
+		GLint vPosition = glGetAttribLocation(program, "vPosition");
 		glEnableVertexAttribArray(vPosition);
 		glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, (GLvoid*)0);
 
@@ -720,6 +785,9 @@ void Renderer::SwapBuffers()
 		transformId = glGetUniformLocation(program, "Tcamera");
 		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*world_to_camera[0]));
 
+		transformId = glGetUniformLocation(program, "Tprojection");
+		glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
+
 		transformId = glGetUniformLocation(program, "MyColor");
 		glUniform3f(transformId, 1, 0, 0);
 
@@ -728,7 +796,7 @@ void Renderer::SwapBuffers()
 
 		// 4. Unbind VAOLines
 		glBindVertexArray(0);
-	//}
+	}
 /////////////////////////////////////////////////////////////////////
 
 

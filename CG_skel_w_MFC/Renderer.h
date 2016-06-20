@@ -105,7 +105,7 @@ public:
 };
 
 
-enum Shadow { FLAT, GOUARD, PHONG };
+enum Shadow { FLAT, GOUARD, PHONG, TOON };
 
 class Renderer
 {
@@ -118,11 +118,12 @@ class Renderer
 	//////////////////////////////
 
 	GLuint VAO;
-	GLuint VAOLines;
+	GLuint VAOLines, VAOModelLines;
 	GLuint program;
 	GLuint totalNumberOfVertices = 0;
 
 	vector<vec4> lines;
+	vector<vec4> model_lines;
 
 	GLuint current_texture;
 
@@ -196,11 +197,12 @@ public:
 	void SetLights(vector<Light*>* lights);
 	void SetObjectMatrices(const mat4& oTransform, const mat4& nTransform); //only The Active Model - ask Itay about nTransform
 	void SwapBuffers();
+	void drawModelsLines();
 	void draw();
 	void ClearColorBuffer();
 	void ClearDepthBuffer();
 	void SetDemoBuffer();
-	void DrawLineBetween3Dvecs(const vec4& a, const vec4& b);
+	void DrawLineBetween3Dvecs(const vec4& a, const vec4& b, bool modelOriented = false);
 	void setColor(float red, float green, float blue); // 0..255
 	void Invalidate();
 	int GetWidth();

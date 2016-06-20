@@ -12,6 +12,7 @@ uniform mat4 Tprojection;
 uniform vec3 MyColor;
 uniform int shadow; 
 
+
 uniform vec4 lPosition;
 uniform vec3 lColor;
 
@@ -27,14 +28,20 @@ void main()
 
 //{ FLAT, GOUARD, PHONG }
 
-    gl_Position = Tprojection * Tcamera * Tmodel * vPosition;
-	vec4 frag4 = Tmodel * vPosition;
-	frag = (frag4 / frag4.w).xyz;
-
 	if (shadow==0)
 		norm = normalize((   transpose(inverse(Tmodel)) * vec4(fnPosition,1)   ).xyz);
 	else
 		norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
+
+	vec4 vertex = vPosition;
+	if (shadow == 3){
+		vertex += 0.5 * vec4(norm, 0);
+	}
+    gl_Position = Tprojection * Tcamera * Tmodel * vertex;
+	vec4 frag4 = Tmodel * vertex;
+	frag = (frag4 / frag4.w).xyz;
+
+
 
 
 	vec4 pos = lPosition;
@@ -43,9 +50,11 @@ void main()
 
 	color = vec4(MyColor, 1.0f);
 
-	if (shadow != 2)
+	if (shadow == 0 || shadow == 1)
 		color = color + putColor(color, pos, lColor, norm, frag );
 
+	if (shadow == 3 && norm.z < 0)
+		color = vec4(0,0,0,1);
 
 
 	TexCoord = vec2(texCoord.x, 1-texCoord.y);

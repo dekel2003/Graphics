@@ -12,6 +12,7 @@ uniform vec3 lColor;
 
 uniform int shadow; 
 uniform sampler2D ourTexture;
+uniform int useTexture;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -29,10 +30,17 @@ void main()
 	else
 		fColor = color;
 
-	fColor = texture2D(ourTexture, TexCoord);
+	//if (useTexture == 1)
+		fColor = texture2D(ourTexture, TexCoord);
 
-	//if (TexCoord.x > 1)
-	//	fColor = vec4(1,0,0,1);
+	if (shadow == 3){
+		fColor.xyz = round(fColor.xyz * 8) / 8.0;
+		//if (abs(norm.z) < 0.2)
+		//	fColor = vec4(0,0,0,1);
+		if (norm.z < 0)
+			fColor = vec4(0,0,0,1);
+	}
+
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
