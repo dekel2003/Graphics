@@ -124,7 +124,7 @@ class Renderer
 
 	vector<vec4> lines;
 
-
+	GLuint current_texture;
 
 	float* m_SSAAOutBuffer;
 	float *m_outBuffer; // 3*width*height
@@ -173,8 +173,10 @@ class Renderer
 	GLfloat getZ(vec2 p3, vec2 p2, vec2 p1, vec2 ps, vec4 z3, vec4 z2, vec4 z1);
 	inline float findSSAAOfColorElement(int multiplier, int x, int y, int colorElement);
 	void putColor(int x, int y, Polygon3* P);
-	void loadTexture();
+	
 public:
+
+	void loadTexture(GLuint&);
 	void setAmbientLight(float intensity);
 	void drawFillAndFog(vec3& fog);
 

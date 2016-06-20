@@ -48,7 +48,7 @@ void main()
 
 
 
-	TexCoord = texCoord;
+	TexCoord = vec2(texCoord.x, 1-texCoord.y);
 }
 
 

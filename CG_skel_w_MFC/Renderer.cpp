@@ -263,7 +263,7 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		glGenBuffers(1, &VBO);
 
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + (2 * sizeof(vec3)) + sizeof(vec2) /*tex coords*/), NULL, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, numberOfVertices * (sizeof(vec4) + (2 * sizeof(vec3)) + sizeof(vec2)), NULL, GL_STATIC_DRAW);
 		
 		glBufferSubData(GL_ARRAY_BUFFER, 0, numberOfVertices * sizeof(vec4), &((*vertices)[0]));
 		GLint  vPosition = glGetAttribLocation(program, "vPosition");
@@ -294,11 +294,11 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 		}
 
 		if (textures) {
-			start = numberOfVertices * sizeof(vec4)* sizeof(vec3)* sizeof(vec3);
+			start = numberOfVertices * (sizeof(vec4) + sizeof(vec3) + sizeof(vec3));
 			glBufferSubData(GL_ARRAY_BUFFER, start, numberOfVertices * sizeof(vec2), &((*textures)[0]));
 			GLint  texCoord = glGetAttribLocation(program, "texCoord");
 			glEnableVertexAttribArray(texCoord);
-			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)start);
+			glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
 		}
 
 		//GLint  vTexCoord = glGetAttribLocation(program, "vTexCoord");
@@ -738,25 +738,40 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 }
 
+void Renderer::loadTexture(GLuint& texture){
+
+	//GLuint texture;
+	glActiveTexture(GL_TEXTURE0);
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+
+	current_texture = texture;
+
+	int width, height;
+	//unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
+	unsigned char* image = SOIL_load_image("statue1.png", &width, &height, 0, SOIL_LOAD_RGB);
+	//unsigned char* image = SOIL_load_image("b.png", &width, &height, 0, SOIL_LOAD_RGB);
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void Renderer::draw(){
 	int a = glGetError();
 	//glBindVertexArray(VAO);
 
 	/**/
-	glActiveTexture(GL_TEXTURE0);
-	GLuint texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	int width, height;
-	//unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	unsigned char* image = SOIL_load_image("statue1.png", &width, &height, 0, SOIL_LOAD_RGB);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
+	//glActiveTexture(GL_TEXTURE0);
+
+
 	//glBindTexture(GL_TEXTURE_2D, 0);
 
-
-	glEnableVertexAttribArray(0);
+	// what is that code used for??
+	/*glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
 	
 	glEnableVertexAttribArray(1);
@@ -767,8 +782,11 @@ void Renderer::draw(){
 
 	glEnableVertexAttribArray(3);
 	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(10 * sizeof(GLfloat)));
+	*/
 	/**/
 	
+	glBindTexture(GL_TEXTURE_2D, current_texture);
+
 	vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
 
 	GLuint transformId = glGetUniformLocation(program, "Tmodel");
@@ -790,6 +808,7 @@ void Renderer::draw(){
 
 	// Texture
 
+	
 	transformId = glGetUniformLocation(program, "ourTexture");
 	glUniform1i(transformId, 0);
 

@@ -436,6 +436,8 @@ void Camera::Ortho(const float left, const float right,const float bottom ,
 	}
 	ST = normalized;
 
+	ST = mat4();
+
 	//Set projecion Matrix
 	projection = mat4();
 	//projection[2][2] = 0; // projection Matrix

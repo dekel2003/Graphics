@@ -35,6 +35,8 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, NULL, (m_Textures.size() == 0 ? NULL : &m_Textures));
 	else
 		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, (m_Textures.size() == 0 ? NULL : &m_Textures));
+
+	renderer->loadTexture(texture);
 }
 
 MeshModel::~MeshModel(void)
@@ -117,7 +119,7 @@ void MeshModel::loadFile(string fileName)
 			minZ = vertices[it->v[i] - 1].z < minZ ? vertices[it->v[i] - 1].z : minZ;
 		}
 		if (0 < textures.size()) {
-			for (int i = 0; i < 2; ++i) {
+			for (int i = 0; i < 3; ++i) {
 				m_Textures.push_back(textures[(it->vt[i] - 1)]);
 			}
 		}

@@ -30,6 +30,9 @@ void main()
 		fColor = color;
 
 	fColor = texture2D(ourTexture, TexCoord);
+
+	//if (TexCoord.x > 1)
+	//	fColor = vec4(1,0,0,1);
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
