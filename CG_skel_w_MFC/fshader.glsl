@@ -4,15 +4,16 @@ in vec4 color;
 in vec3 frag;
 in vec3 norm;
 in vec2 TexCoord;
-out vec4 fColor;
 
+out vec4 fColor;
 
 uniform vec4 lPosition;
 uniform vec3 lColor;
-
 uniform int shadow; 
 uniform sampler2D ourTexture;
+uniform sampler2D normalMap;
 uniform int useTexture;
+uniform int useNormalMapping;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -25,19 +26,20 @@ void main()
 	//if (lPosition.w!=0)
 	//	pos /= pos.w;
 
-	if (shadow==2)
-	   fColor = color + putColor(color, pos/pos.w, lColor, norm, frag);
-	else
-		fColor = color;
+	vec3 normalToUse = (useNormalMapping == 1) ? normalize(texture(normalMap, TexCoord).rgb * 2.0 - 1.0) : norm;
 
-	//if (useTexture == 1)
-		fColor = texture2D(ourTexture, TexCoord);
+	vec4 colorToUse = (useTexture == 1) ? texture2D(ourTexture, TexCoord) : color;
+
+	//if (shadow==2)
+	   fColor = colorToUse + putColor(colorToUse, pos/pos.w, lColor, normalToUse, frag);
+	//else
+		//colorToUse = colorToUse;
 
 	if (shadow == 3){
-		fColor.xyz = round(fColor.xyz * 8) / 8.0;
-		//if (abs(norm.z) < 0.2)
+		fColor.xyz = round(colorToUse.xyz * 8) / 8.0;
+		//if (abs(normalToUse.z) < 0.2)
 		//	fColor = vec4(0,0,0,1);
-		if (norm.z < 0)
+		if (normalToUse.z < 0)
 			fColor = vec4(0,0,0,1);
 	}
 

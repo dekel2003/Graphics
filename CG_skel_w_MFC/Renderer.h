@@ -125,7 +125,8 @@ class Renderer
 	vector<vec4> lines;
 	vector<vec4> model_lines;
 
-	GLuint current_texture;
+	GLuint m_CurrentTexture;
+	GLuint m_CurrentNormalTextureTexture;
 
 	float* m_SSAAOutBuffer;
 	float *m_outBuffer; // 3*width*height
@@ -156,6 +157,11 @@ class Renderer
 	float AmbientIntensity = 1.0f;
 	vec3 drawingColor;
 
+	bool m_UseTexture = false;
+	bool m_UseNormalMapping = false;
+	int transformIdUseTexture;
+	int transformIdUseNormalMapping;
+
 	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
 	//Our private Funcs
@@ -176,8 +182,12 @@ class Renderer
 	void putColor(int x, int y, Polygon3* P);
 	
 public:
+	void EnableTexture();
+	void DisableTexture();
+	void EnableNormalMapping();
+	void DisableNormalMapping();
 
-	void loadTexture(GLuint&);
+	void loadTexture(GLuint&, const char* fileName, int myGL_TEXTURE);
 	void setAmbientLight(float intensity);
 	void drawFillAndFog(vec3& fog);
 
@@ -210,7 +220,8 @@ public:
 	//vector<vec2> Renderer::PointsInTriangle(vec2 pt1, vec2 pt2, vec2 pt3);
 
 	void testPointInTriangle(int x, int y);
-
+	void SetCurrentTexture(GLuint texture);
+	void SetCurrentNormalMappingTexture(GLuint texture);
 
 	Shadow shadow = FLAT;
 };

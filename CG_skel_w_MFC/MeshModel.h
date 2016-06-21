@@ -64,7 +64,8 @@ protected :
 	vec4 cube[8];
 	vec3 baseColor = vec3(256, 50, 50);
 
-	GLuint texture = -1;
+	GLuint m_TextureID = -1;
+	GLuint m_TextureNormalMapID = -1;
 
 	void computeNormalsPerFace();
 public:

@@ -665,6 +665,26 @@ void Renderer::CreateOpenGLBuffer()
 	glViewport(0, 0, m_OutBufferWidth, m_OutBufferHeight);
 }
 
+void Renderer::EnableTexture() {
+	m_UseTexture = true;
+	glUniform1i(transformIdUseTexture, m_UseTexture ? 1 : 0);
+}
+
+void Renderer::DisableTexture() {
+	m_UseTexture = false;
+	glUniform1i(transformIdUseTexture, m_UseTexture ? 1 : 0);
+}
+
+void Renderer::EnableNormalMapping() {
+	m_UseNormalMapping = true;
+	glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
+}
+
+void Renderer::DisableNormalMapping() {
+	m_UseNormalMapping = false;
+	glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
+}
+
 void Renderer::drawModelsLines(){
 	////////////////////////////////////////// draw all model's lines
 	GLuint linesSize = model_lines.size();
@@ -703,8 +723,11 @@ void Renderer::drawModelsLines(){
 		transformId = glGetUniformLocation(program, "MyColor");
 		glUniform3f(transformId, 1, 0, 0);
 
-		transformId = glGetUniformLocation(program, "useTexture");
-		glUniform1i(transformId, 0);
+		transformIdUseTexture = glGetUniformLocation(program, "useTexture");
+		glUniform1i(transformIdUseTexture, m_UseTexture ? 1 : 0);
+
+		transformIdUseNormalMapping = glGetUniformLocation(program, "useNormalMapping");
+		glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
 
 		glDrawArrays(GL_LINES, 0, linesSize);
 
@@ -806,24 +829,15 @@ void Renderer::SwapBuffers()
 	a = glGetError();
 }
 
-void Renderer::loadTexture(GLuint& texture){
-
-	//GLuint texture;
-	glActiveTexture(GL_TEXTURE0);
+void Renderer::loadTexture(GLuint& texture, const char* fileName, int myGL_TEXTURE){
+	glActiveTexture(myGL_TEXTURE);
 	glGenTextures(1, &texture);
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	current_texture = texture;
-
 	int width, height;
-	//unsigned char* image = SOIL_load_image("container.jpg", &width, &height, 0, SOIL_LOAD_RGB);
-	unsigned char* image = SOIL_load_image("statue1.png", &width, &height, 0, SOIL_LOAD_RGB);
-	//unsigned char* image = SOIL_load_image("b.png", &width, &height, 0, SOIL_LOAD_RGB);
-
+	unsigned char* image = SOIL_load_image(fileName, &width, &height, 0, SOIL_LOAD_RGB);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
-
 	glGenerateMipmap(GL_TEXTURE_2D);
-
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
@@ -832,28 +846,10 @@ void Renderer::draw(){
 	int a = glGetError();
 	//glBindVertexArray(VAO);
 
-	/**/
-	//glActiveTexture(GL_TEXTURE0);
-
-
-	//glBindTexture(GL_TEXTURE_2D, 0);
-
-	// what is that code used for??
-	/*glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
-	
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(4 * sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(7 * sizeof(GLfloat)));
-
-	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, 12 * sizeof(GLfloat), (GLvoid*)(10 * sizeof(GLfloat)));
-	*/
-	/**/
-	
-	glBindTexture(GL_TEXTURE_2D, current_texture);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_CurrentTexture);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, m_CurrentNormalTextureTexture);
 
 	vec3 color = (drawingColor / 512 + vec3(0.01))*AmbientIntensity;
 
@@ -876,9 +872,13 @@ void Renderer::draw(){
 
 	// Texture
 
-	
 	transformId = glGetUniformLocation(program, "ourTexture");
 	glUniform1i(transformId, 0);
+
+	// Normal mapping
+
+	transformId = glGetUniformLocation(program, "normalMap");
+	glUniform1i(transformId, 1);
 
 	//for (int j = 0; j < lights->size() && j<4; ++j){
 	if (lights->size() > 0){
@@ -901,7 +901,13 @@ void Renderer::draw(){
 	a = glGetError();
 }
 
+void Renderer::SetCurrentTexture(GLuint texture) {
+	m_CurrentTexture = texture;
+}
 
+void Renderer::SetCurrentNormalMappingTexture(GLuint texture) {
+	m_CurrentNormalTextureTexture = texture;
+}
 
 
 

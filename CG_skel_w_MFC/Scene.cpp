@@ -147,6 +147,22 @@ void Scene::draw() {
 	m_renderer->SwapBuffers();
 }
 
+void Scene::EnableTexture() {
+	m_renderer->EnableTexture();
+}
+
+void Scene::DisableTexture() {
+	m_renderer->DisableTexture();
+}
+
+void Scene::EnableNormalMapping() {
+	m_renderer->EnableNormalMapping();
+}
+
+void Scene::DisableNormalMapping() {
+	m_renderer->DisableNormalMapping();
+}
+
 void Scene::EnableFog() {
 	m_FogEnabled = true;
 }
