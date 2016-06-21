@@ -171,7 +171,7 @@ void MeshModel::drawVertexNormals(Renderer* renderer)
 
 void MeshModel::drawAxis(Renderer* renderer)
 {
-	vec4 camera_massCenter = _world_transform * model_to_world_transform * massCenter;
+	vec4 camera_massCenter = /*_world_transform * model_to_world_transform * */ massCenter;
 	//renderer->SetObjectMatrices(mat4(), _normal_transform); // For Some reason it did something bad so I changed
 	renderer->setColor(256, 0, 0);
 	renderer->DrawLineBetween3Dvecs(vec4(camera_massCenter.x, camera_massCenter.y, camera_massCenter.z, 1.0), vec4(camera_massCenter.x + 1, camera_massCenter.y, camera_massCenter.z, 1.0), true);
