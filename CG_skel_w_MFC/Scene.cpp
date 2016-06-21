@@ -268,6 +268,8 @@ void Scene::rotateCurrentModel(GLfloat dz){
 	models[activeModel]->setModelTransformation(RotateZ((dz * 180) / (GLfloat)m_renderer->GetWidth()));
 }
 
+
+
 void Scene::rotateCurrentModelWorld(GLfloat dz){
 	if (activeModel == -1)
 		return;

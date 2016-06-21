@@ -39,21 +39,41 @@ const int BASIC_SCREEN_HEIGHT = 512;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox;
+int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox, menuAnimation;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
 bool camIsFocused = false;
+bool colorAnim, vertexAnim;
 
 //----------------------------------------------------------------------------
 // Callbacks
 
 
-
+int prevoiusTime = 0;
 void display( void )
 {
 //Call the scene and ask it to draw itself
+
+	if (vertexAnim){
+		static int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+		prevoiusTime = timeSinceStart;
+		timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+		int timeDelta = timeSinceStart - prevoiusTime;
+		scene->rotateCurrentModel(timeDelta, 0);
+	}
+
+	if (colorAnim){
+		static int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+		prevoiusTime = timeSinceStart;
+		timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
+		int timeDelta = timeSinceStart - prevoiusTime;
+		scene->setCurrentMeshColor(sin(timeDelta), cos(2 * timeDelta), sin(3*timeDelta));
+	}
+
 	scene->draw();
+
+	glutPostRedisplay();
 }
 
 void reshape( int width, int height )
@@ -428,6 +448,18 @@ void shadowMenu(int id){
 	display();
 }
 
+void animationMenu(int id){
+	switch (id)
+	{
+	case 0: // vertex animation
+		vertexAnim = !vertexAnim;
+		break;
+	case 1: // color animation
+		colorAnim = !colorAnim;
+		break;
+	}
+}
+
 void setColorMenu(int id){
 	CColorDialog dlg;
 	if (dlg.DoModal() == IDOK){
@@ -617,6 +649,10 @@ void initMenu()
 	glutAddMenuEntry("Phong", 2);
 	glutAddMenuEntry("Toon", 3);
 
+	menuAnimation = glutCreateMenu(animationMenu);
+	glutAddMenuEntry("Vertex Animation", 0);
+	glutAddMenuEntry("Color Animation", 1);
+
 	colorMenu = glutCreateMenu(setColorMenu);
 	glutAddMenuEntry("change mesh color", 0);
 	glutAddMenuEntry("change light color", 1);
@@ -648,6 +684,7 @@ void initMenu()
 	glutAddSubMenu("Choose Camera", menuCamera);
 	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose Shadow", menuShadow);
+	glutAddSubMenu("Animation", menuAnimation);
 	glutAddSubMenu("Choose Colors", colorMenu);
 	glutAddSubMenu("Choose Fog", menuFog);
 
@@ -696,6 +733,7 @@ int my_main( int argc, char **argv )
 	scene = new Scene(renderer);
 	scene->setOrthogonalView(-1,1,-1,1,-1,1);
 
+	colorAnim = vertexAnim = false;
 
 	//Initialize Callbacks
 	glutDisplayFunc( display );
