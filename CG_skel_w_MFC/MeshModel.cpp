@@ -143,8 +143,10 @@ void MeshModel::draw(Renderer* renderer)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->setColor(color.x, color.y, color.z);
+	renderer->totalNumberOfVertices = vertex_positions.size();
 	renderer->SetCurrentTexture(m_TextureID);
 	renderer->SetCurrentNormalMappingTexture(m_TextureNormalMapID);
+
 	renderer->draw();
 	glBindVertexArray(0);
 }
@@ -207,7 +209,7 @@ void MeshModel::computeNormalsPerFace(){
 }
 
 vec4 MeshModel::getOrigin(){
-	return _world_transform * model_to_world_transform * massCenter;
+	return /*_world_transform * model_to_world_transform * */ massCenter;
 }
 
 vec3 MeshModel::getTopRightFar(){

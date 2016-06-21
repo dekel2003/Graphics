@@ -271,7 +271,7 @@ GLuint Renderer::AddTriangles(const vector<vec4>* vertices, const vec3 color,
 	//mat4 normalToCamera = world_to_camera * normalTransform;
 	//mat4 objectToClip = projectionMatrix * objectToCamera;
 	int numberOfVertices = vertices->size();
-	totalNumberOfVertices += numberOfVertices;
+	//totalNumberOfVertices += numberOfVertices;
 		GLuint VBO;
 		glGenBuffers(1, &VBO);
 

@@ -120,7 +120,7 @@ class Renderer
 	GLuint VAO;
 	GLuint VAOLines, VAOModelLines;
 	GLuint program;
-	GLuint totalNumberOfVertices = 0;
+
 
 	vector<vec4> lines;
 	vector<vec4> model_lines;
@@ -224,4 +224,5 @@ public:
 	void SetCurrentNormalMappingTexture(GLuint texture);
 
 	Shadow shadow = FLAT;
+	GLuint totalNumberOfVertices = 0;
 };
