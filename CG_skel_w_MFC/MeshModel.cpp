@@ -36,7 +36,9 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 	else
 		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, (m_Textures.size() == 0 ? NULL : &m_Textures));
 
-	renderer->loadTexture(texture);
+	renderer->loadTexture(m_TextureID, "ogre_diffuse.png", GL_TEXTURE0);
+	//renderer->loadTexture(m_TextureNormalMapID, "ogre_diffuse.png", GL_TEXTURE1);
+	renderer->loadTexture(m_TextureNormalMapID, "ogre_normalmap.png", GL_TEXTURE1);
 }
 
 MeshModel::~MeshModel(void)
@@ -141,6 +143,8 @@ void MeshModel::draw(Renderer* renderer)
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->setColor(color.x, color.y, color.z);
+	renderer->SetCurrentTexture(m_TextureID);
+	renderer->SetCurrentNormalMappingTexture(m_TextureNormalMapID);
 	renderer->draw();
 	glBindVertexArray(0);
 }

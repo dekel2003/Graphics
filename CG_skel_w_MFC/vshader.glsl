@@ -12,7 +12,6 @@ uniform mat4 Tprojection;
 uniform vec3 MyColor;
 uniform int shadow; 
 
-
 uniform vec4 lPosition;
 uniform vec3 lColor;
 
@@ -56,8 +55,11 @@ void main()
 	if (shadow == 3 && norm.z < 0)
 		color = vec4(0,0,0,1);
 
-
 	TexCoord = vec2(texCoord.x, 1-texCoord.y);
+
+	//
+	norm = (transpose(inverse(mat3(Tmodel))) * nPosition);
+	//
 }
 
 

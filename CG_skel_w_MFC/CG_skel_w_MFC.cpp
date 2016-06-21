@@ -39,7 +39,7 @@ const int BASIC_SCREEN_HEIGHT = 512;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox, menuAnimation;
+int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuTexture, menuNormalMapping, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox, menuAnimation;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -493,6 +493,38 @@ vector<GLfloat> split(const string &text, char sep) {
 	return result;
 }
 
+bool textureMenuBeingUsed = false;
+void textureMenu(int id)
+{
+	if (textureMenuBeingUsed == false) {
+		textureMenuBeingUsed = true;
+		if (id == 0){
+			scene->EnableTexture();
+		}
+		else  if (id == 1) {
+			scene->DisableTexture();
+		}
+		display();
+		textureMenuBeingUsed = false;
+	}
+}
+
+bool normalMappingMenuBeingUsed = false;
+void normalMappingMenu(int id)
+{
+	if (normalMappingMenuBeingUsed == false) {
+		normalMappingMenuBeingUsed = true;
+		if (id == 0){
+			scene->EnableNormalMapping();
+		}
+		else  if (id == 1) {
+			scene->DisableNormalMapping();
+		}
+		display();
+		normalMappingMenuBeingUsed = false;
+	}
+}
+
 bool fogMenuBeingUsed = false;
 void fogMenu(int id)
 {
@@ -649,9 +681,19 @@ void initMenu()
 	glutAddMenuEntry("Phong", 2);
 	glutAddMenuEntry("Toon", 3);
 
+
 	menuAnimation = glutCreateMenu(animationMenu);
 	glutAddMenuEntry("Vertex Animation", 0);
 	glutAddMenuEntry("Color Animation", 1);
+
+	menuTexture = glutCreateMenu(textureMenu);
+	glutAddMenuEntry("On", 0);
+	glutAddMenuEntry("Off", 1);
+
+	menuNormalMapping = glutCreateMenu(normalMappingMenu);
+	glutAddMenuEntry("On", 0);
+	glutAddMenuEntry("Off", 1);
+
 
 	colorMenu = glutCreateMenu(setColorMenu);
 	glutAddMenuEntry("change mesh color", 0);
@@ -685,6 +727,8 @@ void initMenu()
 	glutAddSubMenu("Choose Light", menuLight);
 	glutAddSubMenu("Choose Shadow", menuShadow);
 	glutAddSubMenu("Animation", menuAnimation);
+	glutAddSubMenu("Texture", menuTexture);
+	glutAddSubMenu("NormalMapping", menuNormalMapping);
 	glutAddSubMenu("Choose Colors", colorMenu);
 	glutAddSubMenu("Choose Fog", menuFog);
 
@@ -743,7 +787,7 @@ int my_main( int argc, char **argv )
 	glutReshapeFunc( reshape );
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
-	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\Temp.obj"); // DELETE THIS
+	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\bs_ears.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\OurCube.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\banana.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS

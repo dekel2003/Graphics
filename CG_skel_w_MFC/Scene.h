@@ -146,6 +146,12 @@ public:
 	void moveCamera(GLfloat dz);
 	void rotateCurrentCamera(GLfloat dz);
 
+	void EnableTexture();
+	void DisableTexture();
+
+	void EnableNormalMapping();
+	void DisableNormalMapping();
+
 	void EnableFog();
 	void DisableFog();
 
