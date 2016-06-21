@@ -108,10 +108,10 @@ void Scene::draw() {
 
 			(*it)->draw(m_renderer);
 			if (shouldDrawNormalsPerFace){
-				//(*it)->drawFaceNormals(m_renderer);
+				(*it)->drawFaceNormals(m_renderer);
 			}
 			if (shouldDrawNormalsPerVertex){
-				//(*it)->drawVertexNormals(m_renderer);
+				(*it)->drawVertexNormals(m_renderer);
 			}
 			if (shouldDrawBoundingBox){
 				m_renderer->setColor(80, 50, 230);

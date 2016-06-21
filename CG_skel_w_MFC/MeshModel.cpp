@@ -153,11 +153,11 @@ void MeshModel::draw(Renderer* renderer)
 
 void MeshModel::drawFaceNormals(Renderer* renderer)
 {
-	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-	renderer->setColor(200, 100, 50);
+	//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
+	//renderer->setColor(200, 100, 50);
 	for (vector<pair<vec3, vec3>>::iterator it = normalsToFaces.begin(); it != normalsToFaces.end(); ++it){
 		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
+		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second), true);
 	}
 }
 
@@ -167,7 +167,7 @@ void MeshModel::drawVertexNormals(Renderer* renderer)
 	renderer->setColor(200, 50, 100);
 	for (vector<pair<vec3, vec3>>::iterator it = normalsToVertices.begin(); it != normalsToVertices.end(); ++it){
 		//renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
-		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second));
+		renderer->DrawLineBetween3Dvecs(vec4(it->first), vec4(it->second), true);
 	}
 }
 
@@ -230,20 +230,20 @@ void MeshModel::drawBoundingBox(Renderer* renderer){
 		cout << cube[i] << endl;
 	}
 	*/
-	renderer->DrawLineBetween3Dvecs(cube[0], cube[1]);
-	renderer->DrawLineBetween3Dvecs(cube[2], cube[3]);
-	renderer->DrawLineBetween3Dvecs(cube[4], cube[5]);
-	renderer->DrawLineBetween3Dvecs(cube[6], cube[7]);
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[1], true);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[3], true);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[5], true);
+	renderer->DrawLineBetween3Dvecs(cube[6], cube[7], true);
 
-	renderer->DrawLineBetween3Dvecs(cube[0], cube[2]);
-	renderer->DrawLineBetween3Dvecs(cube[1], cube[3]);
-	renderer->DrawLineBetween3Dvecs(cube[4], cube[6]);
-	renderer->DrawLineBetween3Dvecs(cube[5], cube[7]);
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[2], true);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[3], true);
+	renderer->DrawLineBetween3Dvecs(cube[4], cube[6], true);
+	renderer->DrawLineBetween3Dvecs(cube[5], cube[7], true);
 
-	renderer->DrawLineBetween3Dvecs(cube[0], cube[4]);
-	renderer->DrawLineBetween3Dvecs(cube[1], cube[5]);
-	renderer->DrawLineBetween3Dvecs(cube[2], cube[6]);
-	renderer->DrawLineBetween3Dvecs(cube[3], cube[7]);
+	renderer->DrawLineBetween3Dvecs(cube[0], cube[4], true);
+	renderer->DrawLineBetween3Dvecs(cube[1], cube[5], true);
+	renderer->DrawLineBetween3Dvecs(cube[2], cube[6], true);
+	renderer->DrawLineBetween3Dvecs(cube[3], cube[7], true);
 }
 
 void MeshModel::setModelColor(float red, float green, float blue){
