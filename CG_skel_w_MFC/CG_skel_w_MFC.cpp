@@ -64,11 +64,8 @@ void display( void )
 	}
 
 	if (colorAnim){
-		static int timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
-		prevoiusTime = timeSinceStart;
-		timeSinceStart = glutGet(GLUT_ELAPSED_TIME);
-		int timeDelta = timeSinceStart - prevoiusTime;
-		scene->setCurrentMeshColor(sin(timeDelta), cos(2 * timeDelta), sin(3*timeDelta));
+		float timeSinceStart = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+		scene->setCurrentMeshColor(128 + sin(timeSinceStart) * 128, 128 + cos(2 * timeSinceStart) * 128, 128 + sin(3 * timeSinceStart) * 128);
 	}
 
 	scene->draw();
@@ -787,7 +784,7 @@ int my_main( int argc, char **argv )
 	glutReshapeFunc( reshape );
 	//TODO glutIdleFunc(); if no event occurs, can do optimizations
 
-	scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\bs_ears.obj"); // DELETE THIS
+	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\bs_ears.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\OurCube.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\banana.obj"); // DELETE THIS
 	//scene->loadOBJModel("C:\\לימודים\\גרפיקה ממוחשבת\\Projects\\TomShin2-cg_hw1-b680b2ab703e\\objects\\demo.obj"); // DELETE THIS
