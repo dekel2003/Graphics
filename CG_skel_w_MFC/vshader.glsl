@@ -15,6 +15,8 @@ uniform int shadow;
 uniform vec4 lPosition;
 uniform vec3 lColor;
 
+uniform int useTexture;
+
 out vec4 color;
 out vec3 frag;
 out vec3 norm;
@@ -34,7 +36,7 @@ void main()
 
 	vec4 vertex = vPosition;
 	if (shadow == 3){
-		vertex += 0.5 * vec4(norm, 0);
+		vertex += vec4(0.2 * norm, 1);
 	}
     gl_Position = Tprojection * Tcamera * Tmodel * vertex;
 	vec4 frag4 = Tmodel * vertex;
@@ -47,7 +49,10 @@ void main()
 	//if (lPosition.w!=0)
 	//	pos /= pos.w;
 
-	color = vec4(MyColor, 1.0f);
+	if (useTexture == 0)
+		color = vec4(MyColor, 1.0f);
+	else
+		color = vec4(1,1,1,1);
 
 	if (shadow == 0 || shadow == 1)
 		color = color + putColor(color, pos, lColor, norm, frag );
@@ -58,7 +63,7 @@ void main()
 	TexCoord = vec2(texCoord.x, 1-texCoord.y);
 
 	//
-	norm = (transpose(inverse(mat3(Tmodel))) * nPosition);
+	//norm = (transpose(inverse(mat3(Tmodel))) * nPosition);
 	//
 }
 
@@ -79,8 +84,8 @@ vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
 	e = normalize(eye - frag);
 
 	tmpColor += color * max(1, 2/1) * max(0, teta) * vec4(lColor, 1.0f);
-	//if (dot(r,normal)>0)
-		//tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
+	if (dot(r,normal)>0)
+		tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
 
 	return tmpColor;
 }

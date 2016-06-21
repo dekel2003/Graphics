@@ -44,7 +44,54 @@ char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
 bool camIsFocused = false;
-bool colorAnim, vertexAnim;
+bool colorAnim, vertexAnim, hueColorAnime;
+
+
+static float HueToRGB(float v1, float v2, float vH) {
+	if (vH < 0)
+		vH += 1;
+
+	if (vH > 1)
+		vH -= 1;
+
+	if ((6 * vH) < 1)
+		return (v1 + (v2 - v1) * 6 * vH);
+
+	if ((2 * vH) < 1)
+		return v2;
+
+	if ((3 * vH) < 2)
+		return (v1 + (v2 - v1) * ((2.0f / 3) - vH) * 6);
+
+	return v1;
+}
+
+static vec3 HSLToRGB(vec3 hsl) {
+	unsigned char r = 0;
+	unsigned char g = 0;
+	unsigned char b = 0;
+
+	if (hsl.y == 0)
+	{
+		r = g = b = (unsigned char)(hsl.z * 255);
+	}
+	else
+	{
+		float v1, v2;
+		float hue = (float)hsl.x / 360;
+
+		v2 = (hsl.z < 0.5) ? (hsl.z * (1 + hsl.y)) : ((hsl.z + hsl.y) - (hsl.z * hsl.y));
+		v1 = 2 * hsl.z - v2;
+
+		r = (unsigned char)(255 * HueToRGB(v1, v2, hue + (1.0f / 3)));
+		g = (unsigned char)(255 * HueToRGB(v1, v2, hue));
+		b = (unsigned char)(255 * HueToRGB(v1, v2, hue - (1.0f / 3)));
+
+	}
+
+	return vec3(r, g, b);
+}
+
 
 //----------------------------------------------------------------------------
 // Callbacks
@@ -68,10 +115,17 @@ void display( void )
 		scene->setCurrentMeshColor(128 + sin(timeSinceStart) * 128, 128 + cos(2 * timeSinceStart) * 128, 128 + sin(3 * timeSinceStart) * 128);
 	}
 
+	if (hueColorAnime){
+		float timeSinceStart = (glutGet(GLUT_ELAPSED_TIME) % 36000) / 100.0;
+		vec3 RGB = HSLToRGB(vec3(timeSinceStart,0.5,0.5));
+		scene->setCurrentMeshColor(RGB.x, RGB.y, RGB.z);
+	}
+
 	scene->draw();
 
 	glutPostRedisplay();
 }
+
 
 void reshape( int width, int height )
 {
@@ -454,6 +508,9 @@ void animationMenu(int id){
 	case 1: // color animation
 		colorAnim = !colorAnim;
 		break;
+	case 2: // hue Color Animation
+		hueColorAnime = !hueColorAnime;
+		break;
 	}
 }
 
@@ -682,6 +739,7 @@ void initMenu()
 	menuAnimation = glutCreateMenu(animationMenu);
 	glutAddMenuEntry("Vertex Animation", 0);
 	glutAddMenuEntry("Color Animation", 1);
+	glutAddMenuEntry("Hue Color Animation", 2);
 
 	menuTexture = glutCreateMenu(textureMenu);
 	glutAddMenuEntry("On", 0);
@@ -774,7 +832,7 @@ int my_main( int argc, char **argv )
 	scene = new Scene(renderer);
 	scene->setOrthogonalView(-1,1,-1,1,-1,1);
 
-	colorAnim = vertexAnim = false;
+	colorAnim = vertexAnim = hueColorAnime = false;
 
 	//Initialize Callbacks
 	glutDisplayFunc( display );
