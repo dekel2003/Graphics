@@ -6,6 +6,7 @@ in vec3 norm;
 in vec2 TexCoord;
 
 out vec4 fColor;
+uniform mat4 Tcamera;
 
 uniform vec4 lPosition;
 uniform vec3 lColor;
@@ -30,7 +31,7 @@ void main()
 
 	vec4 colorToUse = (useTexture == 1) ? texture2D(ourTexture, TexCoord) : color;
 
-	if (shadow==2)
+	if (shadow==2 || shadow==3)
 	    fColor = colorToUse + putColor(colorToUse, pos, lColor, normalToUse, frag);
 	else if (useTexture == 1)
 		fColor = colorToUse * color;
@@ -38,11 +39,12 @@ void main()
 		fColor = colorToUse;
 
 	if (shadow == 3){
-		fColor.xyz = round(colorToUse.xyz * 8) / 8.0;
-		//if (abs(normalToUse.z) < 0.2)
+		vec4 temp = Tcamera * vec4(norm,1);
+		vec3 cameraNorm = (temp / temp.w).xyz;
+		//if (abs(sqrt(cameraNorm.x*cameraNorm.x+cameraNorm.y*cameraNorm.y))>0.95)
 		//	fColor = vec4(0,0,0,1);
-		//if (normalToUse.z < 0)
-		//	fColor = vec4(0,0,0,1);
+		//else
+			fColor.xyz = round(fColor.xyz * 8) / 8.0;
 	}
 
 } 

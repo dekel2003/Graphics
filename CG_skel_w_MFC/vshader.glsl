@@ -34,9 +34,11 @@ void main()
 	else
 		norm = normalize((   transpose(inverse(Tmodel)) * vec4(nPosition,1)   ).xyz);
 
+	vec4 temp = Tcamera * vec4(norm,1);
+	vec3 cameraNorm = (temp / temp.w).xyz;
 	vec4 vertex = vPosition;
-	if (shadow == 3){
-		vertex += vec4(0.2 * norm, 1);
+	if (shadow == 3 && cameraNorm.z>0){
+		vertex += vec4(0.001 * norm, 0);
 	}
     gl_Position = Tprojection * Tcamera * Tmodel * vertex;
 	vec4 frag4 = Tmodel * vertex;
@@ -57,7 +59,7 @@ void main()
 	if (shadow == 0 || shadow == 1)
 		color = color + putColor(color, pos, lColor, norm, frag );
 
-	if (shadow == 3 && norm.z < 0)
+	if (shadow == 3 && cameraNorm.z < 0)
 		color = vec4(0,0,0,1);
 
 	TexCoord = vec2(texCoord.x, 1-texCoord.y);
