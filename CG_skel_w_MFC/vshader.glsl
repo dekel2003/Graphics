@@ -46,10 +46,6 @@ void main()
 	frag = (frag4 / frag4.w).xyz;
 
 
-
-
-	
-
 	if (useTexture == 0)
 		color = vec4(MyColor, 1.0f);
 	else

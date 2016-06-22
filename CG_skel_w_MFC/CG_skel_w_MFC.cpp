@@ -553,10 +553,22 @@ void textureMenu(int id)
 	if (textureMenuBeingUsed == false) {
 		textureMenuBeingUsed = true;
 		if (id == 0){
-			scene->EnableTexture();
+			CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+			if (dlg.DoModal() == IDOK)
+			{
+				std::string s((LPCTSTR)dlg.GetPathName());
+				//scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+				scene->EnableTexture(s);
+			}
 		}
 		else  if (id == 1) {
 			scene->DisableTexture();
+		}
+		else if (id == 2){ // sphere coords parametrization
+			scene->parametrizeObject(0);
+		}
+		else if (id == 3){
+			scene->parametrizeObject(1);
 		}
 		display();
 		textureMenuBeingUsed = false;
@@ -569,7 +581,13 @@ void normalMappingMenu(int id)
 	if (normalMappingMenuBeingUsed == false) {
 		normalMappingMenuBeingUsed = true;
 		if (id == 0){
-			scene->EnableNormalMapping();
+			CFileDialog dlg(TRUE, _T(".png"), NULL, NULL, _T("*.png|*.*"));
+			if (dlg.DoModal() == IDOK)
+			{
+				std::string s((LPCTSTR)dlg.GetPathName());
+				//scene->loadOBJModel((LPCTSTR)dlg.GetPathName());
+				scene->EnableNormalMapping(s);
+			}
 		}
 		else  if (id == 1) {
 			scene->DisableNormalMapping();
@@ -703,9 +721,9 @@ void addCameraToMenu(){
 
 void addLightToMenu(){
 	cout << "menu:   view=" << menuView << " light=" << menuLight << endl;
-	static int numLights = 3;
+	static int numLights = 4;
 	glutSetMenu(menuLight);
-	sprintf(c, "%s", to_string(numLights-2).c_str());
+	sprintf(c, "%s", to_string(numLights-3).c_str());
 	glutAddMenuEntry(c, numLights);
 	glutSetMenu(mainMenuRef);
 	glutChangeToSubMenu(menuLight, "Choose Light", menuLight);
@@ -744,6 +762,8 @@ void initMenu()
 	menuTexture = glutCreateMenu(textureMenu);
 	glutAddMenuEntry("On", 0);
 	glutAddMenuEntry("Off", 1);
+	glutAddMenuEntry("Parametrize Current Model - Sphere", 2);
+	glutAddMenuEntry("Parametrize Current Model - trivial", 3);
 
 	menuNormalMapping = glutCreateMenu(normalMappingMenu);
 	glutAddMenuEntry("On", 0);

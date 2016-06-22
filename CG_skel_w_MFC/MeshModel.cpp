@@ -36,10 +36,61 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 	else
 		VBO = renderer->AddTriangles(&vertex_positions, color, &normalsToFacesGeneralForm, &normalsToVerticesGeneralForm, (m_Textures.size() == 0 ? NULL : &m_Textures));
 
-	renderer->loadTexture(m_TextureID, "ogre_diffuse.png", GL_TEXTURE0);
+	//renderer->loadTexture(m_TextureID, "ogre_diffuse.png", GL_TEXTURE0);
 	//renderer->loadTexture(m_TextureNormalMapID, "ogre_diffuse.png", GL_TEXTURE1);
-	renderer->loadTexture(m_TextureNormalMapID, "ogre_normalmap.png", GL_TEXTURE1);
+	//renderer->loadTexture(m_TextureNormalMapID, "ogre_normalmap.png", GL_TEXTURE1);
+
+	program = renderer->program;
 }
+
+void MeshModel::loadTextureMap(string file, Renderer* renderer){
+	renderer->loadTexture(m_TextureID, file.c_str(), GL_TEXTURE0);
+}
+void MeshModel::loadNormalMapTexture(string file, Renderer* renderer){
+	renderer->loadTexture(m_TextureNormalMapID, file.c_str(), GL_TEXTURE1);
+	enableNormalMapping = true;
+}
+
+void MeshModel::generateTextureCoords(int type){
+	m_Textures.clear();
+	int numberOfVertices = vertex_positions.size();
+	vec3 v;
+
+	if (type == 0){
+		float r, teta, phi;
+		vec3 mc = vec3(massCenter.x, massCenter.y, massCenter.z);
+
+		for (int i = 0; i < numberOfVertices; ++i){
+			v = vec3(vertex_positions[i].x, vertex_positions[i].y, vertex_positions[i].z) - mc;
+			//v = v * vec3(1 / (maxX-minX), 1 / (maxY-minY), 1 / (maxZ-minZ));
+			r = length(v);
+			teta = atan(v.y / v.x) / (2 * M_PI) + 0.5;
+			phi = acos(v.z / r) / (2 * M_PI) + 0.5;
+			m_Textures.push_back(vec2(teta, phi));
+		}
+	}
+	else if (type == 1){
+		for (int i = 0; i < numberOfVertices; ++i){
+			v = vec3(vertex_positions[i].x-minX, vertex_positions[i].y-minY, 0);
+			v = v * vec3(1 / (maxX-minX), 1 / (maxY-minY), 1 / (maxZ-minZ));
+			//r = length(v);
+			//teta = atan(v.y / v.x) / (2 * M_PI) + 0.5;
+			//phi = acos(v.z / r) / (2 * M_PI) + 0.5;
+			m_Textures.push_back(vec2(v.x, v.y));
+		}
+	}
+
+
+	glBindVertexArray(this->VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	size_t start = numberOfVertices * (sizeof(vec4)+sizeof(vec3)+sizeof(vec3));
+	glBufferSubData(GL_ARRAY_BUFFER, start, numberOfVertices * sizeof(vec2), &((m_Textures)[0]));
+	GLint  texCoord = glGetAttribLocation(program, "texCoord");
+	glEnableVertexAttribArray(texCoord);
+	glVertexAttribPointer(texCoord, 2, GL_FLOAT, GL_FALSE, 0, (GLvoid*)(start));
+	glBindVertexArray(0);
+}
+
 
 MeshModel::~MeshModel(void)
 {
@@ -141,6 +192,17 @@ void MeshModel::draw(Renderer* renderer)
 {
 	glBindVertexArray(this->VAO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	if (m_Textures.size()==0){
+		renderer->DisableTexture();
+		renderer->DisableNormalMapping();
+	}
+	else{
+		renderer->EnableTexture();
+		if (enableNormalMapping)
+			renderer->EnableNormalMapping();
+		else
+			renderer->DisableNormalMapping();
+	}
 	renderer->SetObjectMatrices(_world_transform * model_to_world_transform, _normal_transform);
 	renderer->setColor(color.x, color.y, color.z);
 	renderer->totalNumberOfVertices = vertex_positions.size();
@@ -149,6 +211,8 @@ void MeshModel::draw(Renderer* renderer)
 
 	renderer->draw();
 	glBindVertexArray(0);
+	renderer->SetCurrentTexture(0);
+	renderer->SetCurrentNormalMappingTexture(0);
 }
 
 void MeshModel::drawFaceNormals(Renderer* renderer)

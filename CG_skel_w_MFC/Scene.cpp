@@ -153,7 +153,8 @@ void Scene::draw() {
 	m_renderer->SwapBuffers();
 }
 
-void Scene::EnableTexture() {
+void Scene::EnableTexture(string filename) {
+	models[activeModel]->loadTextureMap(filename, m_renderer);
 	m_renderer->EnableTexture();
 }
 
@@ -161,12 +162,18 @@ void Scene::DisableTexture() {
 	m_renderer->DisableTexture();
 }
 
-void Scene::EnableNormalMapping() {
-	m_renderer->EnableNormalMapping();
+void Scene::EnableNormalMapping(string filename) {
+	models[activeModel]->loadNormalMapTexture(filename, m_renderer);
+	//m_renderer->EnableNormalMapping();
 }
 
 void Scene::DisableNormalMapping() {
 	m_renderer->DisableNormalMapping();
+	models[activeModel]->enableNormalMapping = false;
+}
+
+void Scene::parametrizeObject(int type){
+	models[activeModel]->generateTextureCoords(type);
 }
 
 void Scene::EnableFog() {

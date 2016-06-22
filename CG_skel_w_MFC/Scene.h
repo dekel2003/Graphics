@@ -17,7 +17,13 @@ public:
 	void virtual drawFaceNormals(Renderer* renderer)=0;
 	void virtual drawVertexNormals(Renderer* renderer)=0;
 	void virtual setModelColor(float R, float G, float B) = 0;
+
+	void virtual loadTextureMap(string file, Renderer* renderer) = 0;
+	void virtual loadNormalMapTexture(string file, Renderer* renderer) = 0;
+	void virtual generateTextureCoords(int type) = 0;
+
 	GLuint VAO, VBO;
+	bool enableNormalMapping = false;
 protected:
 	virtual ~Model() {}
 };
@@ -146,11 +152,13 @@ public:
 	void moveCamera(GLfloat dz);
 	void rotateCurrentCamera(GLfloat dz);
 
-	void EnableTexture();
+	void EnableTexture(string filename);
 	void DisableTexture();
 
-	void EnableNormalMapping();
+	void EnableNormalMapping(string filename);
 	void DisableNormalMapping();
+
+	void parametrizeObject(int type);
 
 	void EnableFog();
 	void DisableFog();

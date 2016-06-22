@@ -64,10 +64,11 @@ protected :
 	vec4 cube[8];
 	vec3 baseColor = vec3(256, 50, 50);
 
-	GLuint m_TextureID = -1;
-	GLuint m_TextureNormalMapID = -1;
+	GLuint m_TextureID = 0;
+	GLuint m_TextureNormalMapID = 0;
 
 	void computeNormalsPerFace();
+	GLint program;
 public:
 	vec3 color = vec3(0, 70, 70);
 
@@ -86,4 +87,10 @@ public:
 	void drawAxis(Renderer* renderer);
 	void MeshModel::drawBoundingBox(Renderer* renderer);
 	void setModelColor(float R, float G, float B);
+
+	void loadTextureMap(string file, Renderer* renderer);
+	void loadNormalMapTexture(string file, Renderer* renderer);
+	void generateTextureCoords(int type);
+
+
 };

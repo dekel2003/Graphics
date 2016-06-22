@@ -119,7 +119,7 @@ class Renderer
 
 	GLuint VAO;
 	GLuint VAOLines, VAOModelLines;
-	GLuint program;
+
 
 
 	vector<vec4> lines;
@@ -225,4 +225,5 @@ public:
 
 	Shadow shadow = FLAT;
 	GLuint totalNumberOfVertices = 0;
+	GLuint program;
 };

@@ -866,6 +866,11 @@ void Renderer::draw(){
 	transformId = glGetUniformLocation(program, "MyColor");
 	glUniform3f(transformId, color.x, color.y, color.z);
 
+
+	transformId = glGetUniformLocation(program, "AmbientIntensity");
+	glUniform1f(transformId, AmbientIntensity);
+
+
 	//shadow
 
 	transformId = glGetUniformLocation(program, "shadow");

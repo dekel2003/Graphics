@@ -17,6 +17,7 @@ uniform sampler2D ourTexture;
 uniform sampler2D normalMap;
 uniform int useTexture;
 uniform int useNormalMapping;
+uniform float AmbientIntensity;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -32,6 +33,10 @@ void main()
 	vec3 normalToUse = (useNormalMapping == 1) ? normalize(texture(normalMap, TexCoord).rgb * 2.0 - 1.0) : norm;
 
 	vec4 colorToUse = (useTexture == 1) ? texture2D(ourTexture, TexCoord) : color;
+
+	if (useTexture==1){
+		colorToUse*=AmbientIntensity/2;
+	}
 
 	if (shadow==2 || shadow==3){
 		vec4 extraColor = vec4(0,0,0,0);
