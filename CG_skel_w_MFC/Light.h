@@ -13,7 +13,7 @@ public:
 	vec3 color = vec3(1,1,1);
 	vec4 location;
 	Light(){
-		location = vec4(0.5, 0.5, 0, 1);
+		location = vec4(-0.9, -0.9, -0.9, 1);
 		lightType = LIGHT_POINT;
 	}
 	void move(GLfloat dx, GLfloat dy);
@@ -27,6 +27,3 @@ public:
 
 //void Light::rotate(GLfloat dx, GLfloat dy);
 //void Light::rotate(GLfloat dz);
-
-
-

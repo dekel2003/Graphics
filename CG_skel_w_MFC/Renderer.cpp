@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <set>
 #include <list>
+#include <sstream>
 
 #define INDEX(width,x,y,c) (x+y*width)*3+c
 #define INDEXZ(width,x,y) (x+y*width)
@@ -880,12 +881,29 @@ void Renderer::draw(){
 	transformId = glGetUniformLocation(program, "normalMap");
 	glUniform1i(transformId, 1);
 
-	//for (int j = 0; j < lights->size() && j<4; ++j){
-	if (lights->size() > 0){
-		GLuint lPositionId = glGetUniformLocation(program, "lPosition");
-		glUniform4fv(lPositionId, 1, &((*lights)[0]->location[0]));
-		GLuint lColor = glGetUniformLocation(program, "lColor");
-		glUniform3fv(lColor, 1, &((*lights)[0]->color[0]));
+	transformIdUseTexture = glGetUniformLocation(program, "useTexture");
+	glUniform1i(transformIdUseTexture, m_UseTexture ? 1 : 0);
+
+	transformIdUseNormalMapping = glGetUniformLocation(program, "useNormalMapping");
+	glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
+
+
+
+	int numLights = min(lights->size(), 20);
+	transformId = glGetUniformLocation(program, "numLights");
+	glUniform1i(transformId, numLights);
+
+	stringstream ss;
+	for (int j = 0; j < numLights; ++j){
+		ss << "lPosition[" << j << "]";
+		GLuint lPositionId = glGetUniformLocation(program, ss.str().c_str());
+		glUniform4fv(lPositionId, 1, &((*lights)[j]->location[0]));
+		//cout << "[   " << (*lights)[j]->location << "   :   " << (*lights)[j]->color << "   ]" << endl;
+		ss.str("");
+		ss << "lColor[" << j << "]";
+		GLuint lColor = glGetUniformLocation(program, ss.str().c_str());
+		glUniform3fv(lColor, 1, &((*lights)[j]->color[0]));
+		ss.str("");
 	}
 	
 	//}

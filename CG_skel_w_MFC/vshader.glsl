@@ -12,8 +12,9 @@ uniform mat4 Tprojection;
 uniform vec3 MyColor;
 uniform int shadow; 
 
-uniform vec4 lPosition;
-uniform vec3 lColor;
+uniform vec4 lPosition[20];
+uniform vec3 lColor[20];
+uniform int numLights;
 
 uniform int useTexture;
 
@@ -47,17 +48,22 @@ void main()
 
 
 
-	vec4 pos = lPosition;
-	//if (lPosition.w!=0)
-	//	pos /= pos.w;
+	
 
 	if (useTexture == 0)
 		color = vec4(MyColor, 1.0f);
 	else
 		color = vec4(1,1,1,1);
 
-	if (shadow == 0 || shadow == 1)
-		color = color + putColor(color, pos, lColor, norm, frag );
+	
+	if (shadow == 0 || shadow == 1){
+		vec4 extraColor = vec4(0,0,0,0);
+		for (int j=0; j<numLights; ++j){
+				extraColor += putColor(color, lPosition[j], lColor[j], norm, frag );
+		}
+		color += extraColor;
+		color.w=1;
+	}
 
 	if (shadow == 3 && cameraNorm.z < 0)
 		color = vec4(0,0,0,1);
@@ -70,24 +76,24 @@ void main()
 }
 
 
-vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
+vec4 putColor(vec4 color, vec4 _lPosition, vec3 _lColor, vec3 normal, vec3 frag){
 
 	vec4 tmpColor = vec4(0,0,0,0);
 	vec3 l,r,e;
 	float teta;
-	vec3 eye = vec3(0.5, 0.5, 0);
-	if (lPosition.w==1.0)
-		l=normalize(lPosition.xyz-frag);
-	else
-		l = -frag;
+	vec3 eye = vec3(0, 0, 0);
+	if (_lPosition.w==1.0)
+		l=normalize(_lPosition.xyz-frag);
+	else if (_lPosition.w==0.0)
+		l = -_lPosition.xyz;
 	teta = dot(l, normal);
 
 	r = normalize((2 * teta * normal) - l);
 	e = normalize(eye - frag);
 
-	tmpColor += color * max(1, 2/1) * max(0, teta) * vec4(lColor, 1.0f);
+	tmpColor += color * max(1, 2/1) * max(0, teta) * vec4(_lColor, 1.0f);
 	if (dot(r,normal)>0)
-		tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(lColor, 1.0f);
+		tmpColor += color * max(1, 2/1) * pow(max(0, dot(r, e)), 10) * vec4(_lColor, 1.0f);
 
 	return tmpColor;
 }

@@ -8,8 +8,10 @@ in vec2 TexCoord;
 out vec4 fColor;
 uniform mat4 Tcamera;
 
-uniform vec4 lPosition;
-uniform vec3 lColor;
+uniform vec4 lPosition[20];
+uniform vec3 lColor[20];
+uniform int numLights;
+
 uniform int shadow; 
 uniform sampler2D ourTexture;
 uniform sampler2D normalMap;
@@ -23,16 +25,22 @@ void main()
    //fColor = textureLod( texture, texCoord, 0 );
    //fColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
    //fColor = color;
-	vec4 pos = lPosition;
-	//if (lPosition.w!=0)
+	
+	//if (lPosition[0].w!=0)
 	//	pos /= pos.w;
 
 	vec3 normalToUse = (useNormalMapping == 1) ? normalize(texture(normalMap, TexCoord).rgb * 2.0 - 1.0) : norm;
 
 	vec4 colorToUse = (useTexture == 1) ? texture2D(ourTexture, TexCoord) : color;
 
-	if (shadow==2 || shadow==3)
-	    fColor = colorToUse + putColor(colorToUse, pos, lColor, normalToUse, frag);
+	if (shadow==2 || shadow==3){
+		vec4 extraColor = vec4(0,0,0,0);
+		for (int j=0; j<numLights; ++j){
+		 extraColor += putColor(colorToUse, lPosition[j], lColor[j], normalToUse, frag);
+		}
+		fColor = colorToUse + extraColor;
+		fColor.w=1;
+	}
 	else if (useTexture == 1)
 		fColor = colorToUse * color;
 	else
@@ -54,11 +62,13 @@ vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){
 	vec4 tmpColor = vec4(0,0,0,0);
 	vec3 l,r,e;
 	float teta;
-	vec3 eye = vec3(0.5, 0.5, 0);
+	vec3 eye = vec3(0, 0, 0);
 	if (lPosition.w==1.0)
 		l=normalize(lPosition.xyz - frag);
+	else if (lPosition.w==0.0)
+		l = -lPosition.xyz;
 	else
-		l = -frag;
+		return vec4(1,1,1,1);
 	teta = dot(l, normal);
 
 	r = normalize((2 * teta * normal) - l);

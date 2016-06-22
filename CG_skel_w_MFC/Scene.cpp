@@ -27,10 +27,16 @@ void Scene::addLight(vec3* direction, LightType lightType){
 		light->location = *direction;
 	}
 	light->lightType = lightType;
+	if (lightType == LIGHT_PARALLEL)
+		light->location.w = 0;
 }
 
 void Scene::changeLight(vec3* direction){
 	lights[activeLight]->location = *direction;
+	if (lights[activeLight]->lightType == LIGHT_PARALLEL)
+		lights[activeLight]->location.w = 0;
+	else
+		lights[activeLight]->location.w = 1;
 }
 
 void Scene::LookAt(){
