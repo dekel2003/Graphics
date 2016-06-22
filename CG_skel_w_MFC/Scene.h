@@ -24,6 +24,7 @@ public:
 
 	GLuint VAO, VBO;
 	bool enableNormalMapping = false;
+	bool enableTextureMapping = false;
 protected:
 	virtual ~Model() {}
 };

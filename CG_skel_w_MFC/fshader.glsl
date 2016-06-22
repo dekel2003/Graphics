@@ -30,7 +30,7 @@ void main()
 	//if (lPosition[0].w!=0)
 	//	pos /= pos.w;
 
-	vec3 normalToUse = (useNormalMapping == 1) ? normalize(texture(normalMap, TexCoord).rgb * 2.0 - 1.0) : norm;
+	vec3 normalToUse = (useNormalMapping == 1) ? normalize(texture(normalMap, TexCoord).rgb * 2.0 - 1.0) * 0.5 + norm : norm;
 
 	vec4 colorToUse = (useTexture == 1) ? texture2D(ourTexture, TexCoord) : color;
 

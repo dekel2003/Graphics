@@ -155,11 +155,14 @@ void Scene::draw() {
 
 void Scene::EnableTexture(string filename) {
 	models[activeModel]->loadTextureMap(filename, m_renderer);
-	m_renderer->EnableTexture();
+	//m_renderer->EnableTexture();
+	models[activeModel]->enableTextureMapping = true;
+	
 }
 
 void Scene::DisableTexture() {
 	m_renderer->DisableTexture();
+	models[activeModel]->enableTextureMapping = false;
 }
 
 void Scene::EnableNormalMapping(string filename) {

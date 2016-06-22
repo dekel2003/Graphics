@@ -197,7 +197,10 @@ void MeshModel::draw(Renderer* renderer)
 		renderer->DisableNormalMapping();
 	}
 	else{
-		renderer->EnableTexture();
+		if (enableTextureMapping)
+			renderer->EnableTexture();
+		else
+			renderer->DisableNormalMapping();
 		if (enableNormalMapping)
 			renderer->EnableNormalMapping();
 		else
