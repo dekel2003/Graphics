@@ -127,6 +127,7 @@ class Renderer
 
 	GLuint m_CurrentTexture;
 	GLuint m_CurrentNormalTextureTexture;
+	GLuint m_CurrentSkyboxTexture;
 
 	float* m_SSAAOutBuffer;
 	float *m_outBuffer; // 3*width*height
@@ -159,8 +160,14 @@ class Renderer
 
 	bool m_UseTexture = false;
 	bool m_UseNormalMapping = false;
+	bool m_UseEnvironmentMapping = false;
 	int transformIdUseTexture;
 	int transformIdUseNormalMapping;
+	int transformIdUseEnvironmentMapping;
+
+	//GLuint cubeVAO, cubeVBO;
+	GLuint skyboxVAO, skyboxVBO;
+	GLuint m_TextureCubemapID = 0;
 
 	Renderer();
 	// the projection matrix for all the objects in the world - should be set by scene based on the camera
@@ -186,6 +193,10 @@ public:
 	void DisableTexture();
 	void EnableNormalMapping();
 	void DisableNormalMapping();
+	void EnableEnvironmentMapping();
+	void DisableEnvironmentMapping();
+	void LoadCubemap(vector<const GLchar*> faces);
+	void CreateSkyBoxObject();
 
 	void loadTexture(GLuint&, const char* fileName, int myGL_TEXTURE);
 	void setAmbientLight(float intensity);
@@ -226,4 +237,5 @@ public:
 	Shadow shadow = FLAT;
 	GLuint totalNumberOfVertices = 0;
 	GLuint program;
+	GLuint skyBoxProgram;
 };

@@ -34,12 +34,12 @@
 #define MAIN_ABOUT 14
 #define ADD_SPHERE 7
 #define ADD_OUR_MODEL 8
-const int BASIC_SCREEN_WIDTH = 512;
-const int BASIC_SCREEN_HEIGHT = 512;
+const int BASIC_SCREEN_WIDTH = 768;
+const int BASIC_SCREEN_HEIGHT = 768;
 
 Scene *scene;
 Renderer *renderer;
-int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuTexture, menuNormalMapping, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox, menuAnimation;
+int menuMesh, colorMenu, mainMenuRef, menuCamera, menuLight, menuShadow, menuFog, menuTexture, menuNormalMapping, menuEnvironmentMapping, menuSsaa, menuView, menuVertexNormals, menuFaceNormals, menuBoundingBox, menuAnimation;
 char c[2];
 int last_x,last_y;
 bool lb_down,rb_down,mb_down;
@@ -597,6 +597,22 @@ void normalMappingMenu(int id)
 	}
 }
 
+bool environmentMappingMenuBeingUsed = false;
+void EnvironmentMappingMenu(int id)
+{
+	if (environmentMappingMenuBeingUsed == false) {
+		environmentMappingMenuBeingUsed = true;
+		if (id == 0){
+			scene->EnableEnvironmentMapping();
+		}
+		else  if (id == 1) {
+			scene->DisableEnvironmentMapping();
+		}
+		display();
+		environmentMappingMenuBeingUsed = false;
+	}
+}
+
 bool fogMenuBeingUsed = false;
 void fogMenu(int id)
 {
@@ -769,6 +785,10 @@ void initMenu()
 	glutAddMenuEntry("On", 0);
 	glutAddMenuEntry("Off", 1);
 
+	menuEnvironmentMapping = glutCreateMenu(EnvironmentMappingMenu);
+	glutAddMenuEntry("On", 0);
+	glutAddMenuEntry("Off", 1);
+
 
 	colorMenu = glutCreateMenu(setColorMenu);
 	glutAddMenuEntry("change mesh color", 0);
@@ -804,6 +824,7 @@ void initMenu()
 	glutAddSubMenu("Animation", menuAnimation);
 	glutAddSubMenu("Texture", menuTexture);
 	glutAddSubMenu("NormalMapping", menuNormalMapping);
+	glutAddSubMenu("Environment Mapping", menuEnvironmentMapping);
 	glutAddSubMenu("Choose Colors", colorMenu);
 	glutAddSubMenu("Choose Fog", menuFog);
 

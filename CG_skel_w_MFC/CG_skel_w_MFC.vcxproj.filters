@@ -103,5 +103,11 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="ReadMe.txt" />
+    <None Include="vshaderskybox.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="fshaderskybox.glsl">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -5,7 +5,15 @@ in vec3 frag;
 in vec3 norm;
 in vec2 TexCoord;
 
+//in vec3 Normal;
+//in vec3 Position;
+
+//in vec3 Position;
+//in vec3 textureDir;
+
 out vec4 fColor;
+out vec3 Position;
+
 uniform mat4 Tcamera;
 
 uniform vec4 lPosition[20];
@@ -17,7 +25,11 @@ uniform sampler2D ourTexture;
 uniform sampler2D normalMap;
 uniform int useTexture;
 uniform int useNormalMapping;
+uniform int useEnvironmentMapping;
 uniform float AmbientIntensity;
+
+uniform vec3 cameraPos;
+uniform samplerCube skybox;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
 
@@ -60,6 +72,12 @@ void main()
 			fColor.xyz = round(fColor.xyz * 8) / 8.0;
 	}
 
+	if (useEnvironmentMapping == 1) {
+		vec3 I = normalize(Position - cameraPos);
+		vec3 R = reflect(I, normalize(norm));
+		vec4 reflectedColor = texture(skybox, R);
+		fColor = (fColor * 0.75) + (reflectedColor * 0.25);
+	}
 } 
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 normal, vec3 frag){

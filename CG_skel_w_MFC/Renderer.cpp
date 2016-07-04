@@ -35,10 +35,21 @@ void Renderer::Init() {
 	glGenVertexArrays(1, &VAO);
 	glGenVertexArrays(1, &VAOLines);
 	glGenVertexArrays(1, &VAOModelLines);
-	
 
 	program = InitShader("vshader.glsl", "fshader.glsl");
-	glUseProgram(program);
+	skyBoxProgram = InitShader("vshaderskybox.glsl", "fshaderskybox.glsl");
+
+	// Creates the Skybox object
+	CreateSkyBoxObject();
+	// Loads Cubemap
+	vector<const GLchar*> faces;
+	faces.push_back("posx.jpg");
+	faces.push_back("negx.jpg");
+	faces.push_back("posy.jpg");
+	faces.push_back("negy.jpg");
+	faces.push_back("posz.jpg");
+	faces.push_back("negz.jpg");
+	LoadCubemap(faces);
 
 	glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 	glEnable(GL_DEPTH_TEST);
@@ -686,6 +697,16 @@ void Renderer::DisableNormalMapping() {
 	glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
 }
 
+void Renderer::EnableEnvironmentMapping() {
+	m_UseEnvironmentMapping = true;
+	glUniform1i(transformIdUseEnvironmentMapping, m_UseEnvironmentMapping ? 1 : 0);
+}
+
+void Renderer::DisableEnvironmentMapping() {
+	m_UseEnvironmentMapping = false;
+	glUniform1i(transformIdUseEnvironmentMapping, m_UseEnvironmentMapping ? 1 : 0);
+}
+
 void Renderer::drawModelsLines(){
 	////////////////////////////////////////// draw all model's lines
 	GLuint linesSize = model_lines.size();
@@ -843,9 +864,121 @@ void Renderer::loadTexture(GLuint& texture, const char* fileName, int myGL_TEXTU
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void Renderer::LoadCubemap(vector<const GLchar*> faces) {
+	glGenTextures(1, &m_TextureCubemapID);
+	glActiveTexture(GL_TEXTURE0);
+
+	int width, height;
+	unsigned char* image;
+
+	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubemapID);
+	for (GLuint i = 0; i < faces.size(); ++i) {
+		image = SOIL_load_image(faces[i], &width, &height, 0, SOIL_LOAD_RGB);
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+
+void Renderer::CreateSkyBoxObject() {
+#pragma region "object_initialization"
+	// Set the object data (buffers, vertex attributes)
+	GLfloat skyboxSize = 1.0f;
+	GLfloat skyboxVertices[] = {
+		// Positions          
+		-skyboxSize, skyboxSize, -skyboxSize,
+		-skyboxSize, -skyboxSize, -skyboxSize,
+		skyboxSize, -skyboxSize, -skyboxSize,
+		skyboxSize, -skyboxSize, -skyboxSize,
+		skyboxSize, skyboxSize, -skyboxSize,
+		-skyboxSize, skyboxSize, -skyboxSize,
+
+		-skyboxSize, -skyboxSize, skyboxSize,
+		-skyboxSize, -skyboxSize, -skyboxSize,
+		-skyboxSize, skyboxSize, -skyboxSize,
+		-skyboxSize, skyboxSize, -skyboxSize,
+		-skyboxSize, skyboxSize, skyboxSize,
+		-skyboxSize, -skyboxSize, skyboxSize,
+
+		skyboxSize, -skyboxSize, -skyboxSize,
+		skyboxSize, -skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, -skyboxSize,
+		skyboxSize, -skyboxSize, -skyboxSize,
+
+		-skyboxSize, -skyboxSize, skyboxSize,
+		-skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, -skyboxSize, skyboxSize,
+		-skyboxSize, -skyboxSize, skyboxSize,
+
+		-skyboxSize, skyboxSize, -skyboxSize,
+		skyboxSize, skyboxSize, -skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		skyboxSize, skyboxSize, skyboxSize,
+		-skyboxSize, skyboxSize, skyboxSize,
+		-skyboxSize, skyboxSize, -skyboxSize,
+
+		-skyboxSize, -skyboxSize, -skyboxSize,
+		-skyboxSize, -skyboxSize, skyboxSize,
+		skyboxSize, -skyboxSize, -skyboxSize,
+		skyboxSize, -skyboxSize, -skyboxSize,
+		-skyboxSize, -skyboxSize, skyboxSize,
+		skyboxSize, -skyboxSize, skyboxSize
+	};
+
+	// Setup skybox VAO
+	//GLuint skyboxVAO, skyboxVBO;
+	glGenVertexArrays(1, &skyboxVAO);
+	glGenBuffers(1, &skyboxVBO);
+	glBindVertexArray(skyboxVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
+	glBindVertexArray(0);
+
+#pragma endregion
+}
+/*
+// Environment mapping
+
+// Draw skybox first
+glDepthMask(GL_FALSE);// Remember to turn depth writing off
+glUseProgram(skyBoxProgram);
+mat4 view = mat4(vec4(world_to_camera[0].x, world_to_camera[0].y, world_to_camera[0].z, 0),
+vec4(world_to_camera[1].x, world_to_camera[1].y, world_to_camera[1].z, 0),
+vec4(world_to_camera[2].x, world_to_camera[2].y, world_to_camera[2].z, 0),
+vec4(0, 0, 0, 1));	// Remove any translation component of the view matrix
+//mat4 projection = perspective(1, (float)m_OutBufferWidth / (float)m_OutBufferHeight, 0.1f, 100.0f);
+glUniformMatrix4fv(glGetUniformLocation(skyBoxProgram, "view"), 1, GL_FALSE, &(*view[0]));
+glUniformMatrix4fv(glGetUniformLocation(skyBoxProgram, "projection"), 1, GL_FALSE, &(*projectionMatrix[0]));
+glUniformMatrix4fv(glGetUniformLocation(skyBoxProgram, "model"), 1, GL_FALSE, &(*object_to_world[0]));
+
+GLint current_vao;
+glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current_vao);
+
+// skybox cube
+glBindVertexArray(skyboxVAO);
+glActiveTexture(GL_TEXTURE0);
+glUniform1i(glGetUniformLocation(skyBoxProgram, "skybox"), 0);
+glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubemapID);
+glDrawArrays(GL_TRIANGLES, 0, 36);
+glBindVertexArray(0);
+glDepthMask(GL_TRUE);
+
+glBindVertexArray(current_vao);
+*/
 void Renderer::draw(){
 	int a = glGetError();
-	//glBindVertexArray(VAO);
+
+	glUseProgram(program);
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_CurrentTexture);
@@ -863,13 +996,14 @@ void Renderer::draw(){
 	transformId = glGetUniformLocation(program, "Tprojection");
 	glUniformMatrix4fv(transformId, 1, GL_TRUE, &(*projectionMatrix[0]));
 
+	glUniform3f(glGetUniformLocation(program, "cameraPos"), world_to_camera[0][3], world_to_camera[1][3], world_to_camera[2][3]); // For Environment mapping
+
 	transformId = glGetUniformLocation(program, "MyColor");
 	glUniform3f(transformId, color.x, color.y, color.z);
 
 
 	transformId = glGetUniformLocation(program, "AmbientIntensity");
 	glUniform1f(transformId, AmbientIntensity);
-
 
 	//shadow
 
@@ -892,7 +1026,8 @@ void Renderer::draw(){
 	transformIdUseNormalMapping = glGetUniformLocation(program, "useNormalMapping");
 	glUniform1i(transformIdUseNormalMapping, m_UseNormalMapping ? 1 : 0);
 
-
+	transformIdUseEnvironmentMapping = glGetUniformLocation(program, "useEnvironmentMapping");
+	glUniform1i(transformIdUseEnvironmentMapping, m_UseEnvironmentMapping ? 1 : 0);
 
 	int numLights = min(lights->size(), 20);
 	transformId = glGetUniformLocation(program, "numLights");
@@ -910,18 +1045,45 @@ void Renderer::draw(){
 		glUniform3fv(lColor, 1, &((*lights)[j]->color[0]));
 		ss.str("");
 	}
-	
-	//}
-
-	/*
-	glBindTexture(GL_TEXTURE_2D, texture);
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, totalNumberOfVertices, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-	*/
 
 	glDrawArrays(GL_TRIANGLES, 0, totalNumberOfVertices);
 	a = glGetError();
+
+	// Environment mapping
+
+	if (m_UseEnvironmentMapping) {
+		glDepthFunc(GL_LEQUAL);
+		glUseProgram(skyBoxProgram);
+		
+		mat4 view = mat4(vec4(world_to_camera[0].x, world_to_camera[0].y, world_to_camera[0].z, 0),
+						 vec4(world_to_camera[1].x, world_to_camera[1].y, world_to_camera[1].z, 0),
+						 vec4(world_to_camera[2].x, world_to_camera[2].y, world_to_camera[2].z, 0),
+						 vec4(0, 0, 0, 1));	// Removes any translation component of the view matrix
+		//mat4 view = mat4(mat3(world_to_camera)); // Removes any translation component of the view matrix
+		/*mat4 view = mat4(vec4(world_to_camera[0].x, world_to_camera[1].x, world_to_camera[2].x, 0),
+						   vec4(world_to_camera[0].y, world_to_camera[1].y, world_to_camera[2].y, 0),
+						   vec4(world_to_camera[0].z, world_to_camera[1].z, world_to_camera[2].z, 0),
+						   vec4(0, 0, 0, 1));	*/// Removes any translation component of the view matrix
+
+		//mat4 projection = perspective(1, (float)m_OutBufferWidth / (float)m_OutBufferHeight, 0.1f, 100.0f); // This line is -probably- not needed
+
+		glUniformMatrix4fv(glGetUniformLocation(skyBoxProgram, "view"), 1, GL_FALSE, &(*view[0]));
+		glUniformMatrix4fv(glGetUniformLocation(skyBoxProgram, "projection"), 1, GL_FALSE, &(*projectionMatrix[0]));
+
+		GLint current_vao;
+		glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &current_vao);
+
+		// skybox cube
+		glBindVertexArray(skyboxVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glUniform1i(glGetUniformLocation(skyBoxProgram, "skybox"), 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubemapID);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		glBindVertexArray(0);
+		glDepthFunc(GL_LESS);
+
+		glBindVertexArray(current_vao);
+	}
 }
 
 void Renderer::SetCurrentTexture(GLuint texture) {
@@ -931,8 +1093,6 @@ void Renderer::SetCurrentTexture(GLuint texture) {
 void Renderer::SetCurrentNormalMappingTexture(GLuint texture) {
 	m_CurrentNormalTextureTexture = texture;
 }
-
-
 
 
 vec3& Polygon3::calculateColor(vector<Light*>* lights, mat4& world_to_camera,

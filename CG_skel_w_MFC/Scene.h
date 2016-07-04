@@ -159,6 +159,9 @@ public:
 	void EnableNormalMapping(string filename);
 	void DisableNormalMapping();
 
+	void EnableEnvironmentMapping();
+	void DisableEnvironmentMapping();
+
 	void parametrizeObject(int type);
 
 	void EnableFog();

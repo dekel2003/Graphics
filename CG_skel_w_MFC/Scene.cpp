@@ -175,6 +175,14 @@ void Scene::DisableNormalMapping() {
 	models[activeModel]->enableNormalMapping = false;
 }
 
+void Scene::EnableEnvironmentMapping() {
+	m_renderer->EnableEnvironmentMapping();
+}
+
+void Scene::DisableEnvironmentMapping() {
+	m_renderer->DisableEnvironmentMapping();
+}
+
 void Scene::parametrizeObject(int type){
 	models[activeModel]->generateTextureCoords(type);
 }

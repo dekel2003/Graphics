@@ -30,11 +30,12 @@ readShaderSource(const char* shaderFile)
 GLuint
 InitShader(const char* vShaderFile, const char* fShaderFile)
 {
-    struct Shader {
+    /*struct Shader {
 	const char*  filename;
 	GLenum       type;
 	GLchar*      source;
-    }  shaders[2] = {
+    }*/ 
+	Shader shaders[2] = {
 	{ vShaderFile, GL_VERTEX_SHADER, NULL },
 	{ fShaderFile, GL_FRAGMENT_SHADER, NULL }
     };
