@@ -26,7 +26,7 @@ out vec3 frag;
 out vec3 norm;
 out vec2 TexCoord;
 
-out vec3 Position;
+//out vec3 Position;
 //out vec3 Normal;
 
 vec4 putColor(vec4 color, vec4 lPosition, vec3 lColor, vec3 n, vec3 frag);
@@ -77,8 +77,8 @@ void main()
 
 	//gl_Position = projection * view * model * vec4(vertex, 1.0f);
 
-    norm = mat3(transpose(inverse(Tmodel))) * norm;
-    Position = vec3(Tmodel * vertex);
+    //norm = mat3(transpose(inverse(Tmodel))) * norm;
+    //Position = vec3(Tmodel * vertex);
 }
 
 

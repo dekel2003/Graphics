@@ -44,10 +44,10 @@ MeshModel::MeshModel(string fileName, Renderer* renderer)
 }
 
 void MeshModel::loadTextureMap(string file, Renderer* renderer){
-	renderer->loadTexture(m_TextureID, file.c_str(), GL_TEXTURE0);
+	renderer->loadTexture(m_TextureID, file.c_str(), GL_TEXTURE1);
 }
 void MeshModel::loadNormalMapTexture(string file, Renderer* renderer){
-	renderer->loadTexture(m_TextureNormalMapID, file.c_str(), GL_TEXTURE1);
+	renderer->loadTexture(m_TextureNormalMapID, file.c_str(), GL_TEXTURE2);
 	enableNormalMapping = true;
 }
 
