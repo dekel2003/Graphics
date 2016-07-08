@@ -865,8 +865,8 @@ void Renderer::loadTexture(GLuint& texture, const char* fileName, int myGL_TEXTU
 }
 
 void Renderer::LoadCubemap(vector<const GLchar*> faces) {
-	glUseProgram(skyBoxProgram);
-	glActiveTexture(GL_TEXTURE0);
+	//glUseProgram(skyBoxProgram);
+	glActiveTexture(GL_TEXTURE2);
 	glGenTextures(1, &m_TextureCubemapID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, m_TextureCubemapID);
 
